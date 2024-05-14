@@ -15,6 +15,7 @@ row.names(TA_616)<-TA_616[,1]
 Natural_History <- TA_616[,c(2,4,6,9:15)]
 colnames(Natural_History) <- TA_616[,1]
 Natural_History
+#saveRDS(Natural_History, file="NH_RRMS_BC_TA616")
 
 #Plot the distribution in each EDSS state
 plot(Natural_History[,1])

@@ -17,6 +17,7 @@ library(rsvg)
 
 
 ## 2. PARAMETERS ----
+Natural_History <- readRDS("NH_RRMS_BC_TA616")
 
 n_cycles <- 10
 
