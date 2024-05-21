@@ -1,57 +1,48 @@
 # Model inputs to extracted here from TA616 as dummy
 library(readxl)
 
-#EDSS health state costs P.68/594
-
-EDSS_health_state_costs_TA_616 <- read_excel("TA 616 EDSS health state costs .xlsx", 
-                                              range = "a2:e12")
-saveRDS(EDSS_health_state_costs_TA_616, file="EDSS_health_state_costs_TA_616.rds")
-
-#Treatment/ Admin and monitoring costs P.70/594
-Treatment_Admin_and_monitoring_costs_TA_616 <- read_excel("TA 616 Treatment Admin and monitoring costs .xlsx", 
-                                                           range = "A3:G10")
-saveRDS(Treatment_Admin_and_monitoring_costs_TA_616, file="Treatment_Admin_and_monitoring_costs_TA_616.rds")
-
-c_relapse <- 526
-c_relapse_w_hospital<-3463
-
-#AE disutilities & costs P.71/594
-
-
 #Patient baseline characteristics P.203/594#
 
 ### Natural history of acute relapse events
 # Annualised relapse rate in the first year (ARR t=1) in placebo arm of CLARITY trial
-ARR_Active_RRMS<- 0.34 
-ARR_Active_RRMS_lcl<-0.30 
-ARR_Active_RRMS_ucl <-0.38
+arr_active_rrms<- 0.34 
+arr_active_rrms_lci<-0.30 
+arr_active_rrms_uci <-0.38
 #The annualised relapse rate in the second and subsequent years were modelled by combining the rate
 #in the first year with the annual change in relapse rate per additional year of disease, via the following
 #equation ARR(t-1)*RR
 
 # 5-year RR from Tremlett 2010 (search for source and verify)
-RR_NH_5yr <- 0.229
-RR_NH_5yr_lcl <- 0.194
-RR_NH_5yr_ucl <- 0.262
+rr_nh_5yr <- 0.229
+rr_lci_nh_5yr <- 0.194
+rr_uci_nh_5yr <- 0.262
 # to be annualised with RR= exp(1/t * ln(RR)) this will be equivalent to 0.0507 per annum.
 
 # duration of relapses p.217/ 594
-
+duration_relapse_hospital <- c(39.14, 29.64)
+sd_duration_relapse_hospital <- c(7.59, 4.85)
+duration_relapse <- c(42.94, 34.31)
+sd_duration_relapse <- c(7.27, 4.89)
+n_group <- c(437, 433)
+df_duration_relapse <- rbind(duration_relapse_hospital,sd_duration_relapse_hospital,duration_relapse,
+                                  sd_duration_relapse, n_group)
+colnames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine")
+saveRDS(df_duration_relapse, file="df_duration_relapse.rds")
 
 # Hazard Ratio adjustment for the HA and RES subgroups using the the probability of 6 month progression at 96 weeks
 # HR=ln(1-Pa)/ln(1-Pb), data from CLARITY is redacted but maybe we can find this somewhere else?
 
 # Standardised Mortality Ratio for excess MS-related mortality (Manouchehrinia 2016) modeled on data from Jick 2014
-SMR <- 1.68
-SMR_lcl <-1.38
-SMR_ucl <- 2.05
+smr <- 1.68
+smr_lci <-1.38
+smr_uci <- 2.05
 
 # Relapse Rate - Treatment adjustment by multiplying the ARR in the Placebo group by the Rate Ratio (ARR Trt vs Pbo)
 # Rate Ratios from NMA on P.
 # CARES MS-11 p.225/594 TA616
-RR_ALEMTUZUMAB <- 0.51
-RR_ALEMTUZUMAB_LCI <-0.39
-RR_ALEMTUZUMAB_UCI <-0.65
+rr_alemtuzumab <- 0.51
+rr_lci_alemtuzumab <-0.39
+rr_uci_alemtuzumab <-0.65
 
 
 # treatment waning assumptions where HR waning calculated by adjusting the HR with a Weights.
@@ -61,7 +52,7 @@ W_0TO2_YR <- 1
 W_2TO5_YR <- 0.75
 W_5PLUS_YR <- 0.5
 
-# Adverse Events probabilities Table 73 P.230/594
+
 
 # The probability of discontinuation (P) from the probability of all-cause discontinuation from the NMA (p)
 # P=1-e(-((52/t)*ln(1-p))
@@ -82,6 +73,15 @@ W_5PLUS_YR <- 0.5
 
 # AE disutilities Table 8- P. 240/594
 
+
+#AE disutilities & costs P.71/594
+AE_disutilities_costs_TA_616 <- read_excel("data-raw/TA 616 AE disutilities & costs.xlsx", 
+                                           range = "A2:E13")
+u_annual_medical_edss_ta616 <-
+  
+saveRDS(u_annual_medical_edss_ta616, file="u_annual_medical_edss_ta616.rds")
+
+
 #Utilities used in TA616 Analysis Table 81 P.241/594
 
 ### Costs
@@ -91,6 +91,22 @@ W_5PLUS_YR <- 0.5
 #Drug acquisition costs Table 84 P.245/594 of TA616
 
 #Drug Administration costs Table 85 P.246/594 of TA 616
+
+#EDSS health state costs P.68/594
+
+EDSS_health_state_costs_TA_616 <- read_excel("TA 616 EDSS health state costs .xlsx", 
+                                             range = "a2:e12")
+c_annual_medical_edss_ta616 <-
+  
+saveRDS(c_annual_medical_edss_ta616, file="c_annual_medical_edss_ta616.rds")
+
+#Treatment/ Admin and monitoring costs P.70/594
+Treatment_Admin_and_monitoring_costs_TA_616 <- read_excel("TA 616 Treatment Admin and monitoring costs .xlsx", 
+                                                          range = "A3:G10")
+saveRDS(Treatment_Admin_and_monitoring_costs_TA_616, file="Treatment_Admin_and_monitoring_costs_TA_616.rds")
+
+c_relapse <- 526
+c_relapse_w_hospital<-3463
 
 #Direct medical Costs by EDSS Table 87 P.248/594 of TA616 (Hawton et al 2016a) CY2012 (Karampampa et al 2012c) CY2009 (Tyas et al 2007)
 
