@@ -1,5 +1,6 @@
 # Model inputs to extracted here from TA616 as dummy
 library(readxl)
+library(data.table)
 
 #Patient baseline characteristics P.203/594#
 
@@ -19,15 +20,17 @@ rr_uci_nh_5yr <- 0.262
 # to be annualised with RR= exp(1/t * ln(RR)) this will be equivalent to 0.0507 per annum.
 
 # duration of relapses p.217/ 594
-duration_relapse_hospital <- c(39.14, 29.64)
-sd_duration_relapse_hospital <- c(7.59, 4.85)
-duration_relapse <- c(42.94, 34.31)
-sd_duration_relapse <- c(7.27, 4.89)
-n_group <- c(437, 433)
-df_duration_relapse <- rbind(duration_relapse_hospital,sd_duration_relapse_hospital,duration_relapse,
-                                  sd_duration_relapse, n_group)
-colnames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine")
-saveRDS(df_duration_relapse, file="df_duration_relapse.rds")
+days_relapse_hospital <- c(39.14, 29.64, 34.41)
+sd_days_relapse_hospital <- c(7.59, 4.85, NA)
+days_relapse <- c(42.94, 34.31, 38.64)
+sd_days_relapse <- c(7.27, 4.89, NA)
+n_group <- c(437, 433, NA)
+df_duration_relapse <- cbind(days_relapse_hospital,sd_days_relapse_hospital,days_relapse,
+                                  sd_days_relapse, n_group)
+rownames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine", "TA616 Model")
+
+
+saveRDS(df_duration_relapse, file="data/df_duration_relapse.rds")
 
 # Hazard Ratio adjustment for the HA and RES subgroups using the the probability of 6 month progression at 96 weeks
 # HR=ln(1-Pa)/ln(1-Pb), data from CLARITY is redacted but maybe we can find this somewhere else?
@@ -59,60 +62,9 @@ W_5PLUS_YR <- 0.5
 # Treatment discontinuation annualised probabilities Table 74 P. 232/594
 
 
-### Utilities
-# The health effects of relapses were measured as QALY losses, and were calculated from the mean
-# duration of each relapse event multiplied by the loss in utility associated with each relapse.
-
-#Baseline utilities (CLARITY) Table 75 P.223//594 TA616
-
-#Utilities reported from a variety of sources Table 76 P. 236/594 (Hawton 2016a)(Orme 2007)
-
-# Carer disutilities Table 78 P.23/594 (Acaster 2013)
-
-# Health state utilities by relapse state (Ruutiainen 2016) (Orme 2007) Table 79 P.239/ 594
-
-# AE disutilities Table 8- P. 240/594
 
 
-#AE disutilities & costs P.71/594
-AE_disutilities_costs_TA_616 <- read_excel("data-raw/TA 616 AE disutilities & costs.xlsx", 
-                                           range = "A2:E13")
-u_annual_medical_edss_ta616 <-
-  
-saveRDS(u_annual_medical_edss_ta616, file="u_annual_medical_edss_ta616.rds")
 
-
-#Utilities used in TA616 Analysis Table 81 P.241/594
-
-### Costs
-
-#costs used in the Analysis Table 82 P. 242 -243 / 594 of TA616
-
-#Drug acquisition costs Table 84 P.245/594 of TA616
-
-#Drug Administration costs Table 85 P.246/594 of TA 616
-
-#EDSS health state costs P.68/594
-
-EDSS_health_state_costs_TA_616 <- read_excel("TA 616 EDSS health state costs .xlsx", 
-                                             range = "a2:e12")
-c_annual_medical_edss_ta616 <-
-  
-saveRDS(c_annual_medical_edss_ta616, file="c_annual_medical_edss_ta616.rds")
-
-#Treatment/ Admin and monitoring costs P.70/594
-Treatment_Admin_and_monitoring_costs_TA_616 <- read_excel("TA 616 Treatment Admin and monitoring costs .xlsx", 
-                                                          range = "A3:G10")
-saveRDS(Treatment_Admin_and_monitoring_costs_TA_616, file="Treatment_Admin_and_monitoring_costs_TA_616.rds")
-
-c_relapse <- 526
-c_relapse_w_hospital<-3463
-
-#Direct medical Costs by EDSS Table 87 P.248/594 of TA616 (Hawton et al 2016a) CY2012 (Karampampa et al 2012c) CY2009 (Tyas et al 2007)
-
-#Costs by relapse state  Table 90 P.252/594 , Table91 P.253/594 of TA616 (Hawton 2016b) (Karampampa 2012c)
-
-#Adverse Events unit costs Table 92 P.253/594
 
 #base case inputs used in the model Table 93 P.254 - 256 /594 of TA616
 
@@ -140,6 +92,9 @@ c_relapse_w_hospital<-3463
 
 #Orme M, Kerrigan J, Tyas D, Russell N, Nixon R. (2007) The effect of disease, functional status, and
 #relapses on the utility of people with multiple sclerosis in the UK. Value Health. 10(1): 54-60.
+
+#Ruutiainen J, Viita AM, Hahl J, Sundell J, Nissinen H. (2016) Burden of illness in multiple sclerosis
+#(DEFENSE) study: the costs and quality-of-life of Finnish patients with multiple sclerosis. J Med Econ. 19(1): 21-33.
 
 #Tyas D, Kerrigan J, Russell N, Nixon R. (2007) The distribution of the cost of multiple sclerosis in the
 #UK: how do costs vary by illness severity? Value Health. 10(5): 386-389.
