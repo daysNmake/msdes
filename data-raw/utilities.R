@@ -20,7 +20,7 @@ rownames(edss_utilities_ta616) <- paste("EDSS", 0:9, sep=" ")
 saveRDS(edss_utilities_ta616, file="data/edss_utilities.rds")
 
 # Carer disutilities Table 78 P.23/594 (Acaster 2013)
-carer_disutilities_ta616 <- read_excel("data/TA 616 Carer disutilities Table 78.xlsx", 
+carer_disutilities_ta616 <- read_excel("data-raw/TA 616 Carer disutilities Table 78.xlsx", 
                                                  range = "A2:E9")
 carer_disutilities_ta616 <- data.frame(carer_disutilities_ta616)
 rownames(carer_disutilities_ta616)<-carer_disutilities_ta616[,1]
@@ -36,19 +36,18 @@ rownames(df_u_relapse)<- c("Orme etal", "Ruutiainen etal")
 
 saveRDS(df_u_relapse, file="data/df_u_relapse.rds")
 
-# AE dis-utilities Table 8- P. 240/594
+# AE dis-utilities Table 80 P. 240/594 TA616
+advese_events_disutilities_ta616 <- read_excel("data-raw/TA 616 AE disutilities Table 80.xlsx", 
+                                       range = "A2:C14")
+advese_events_disutilities_ta616 <- data.frame(advese_events_disutilities_ta616)
+rownames(advese_events_disutilities_ta616)<-advese_events_disutilities_ta616[,1]
+advese_events_disutilities_ta616 <- advese_events_disutilities_ta616[,-1]
 
-
-#AE disutilities & costs P.71/594
-AE_disutilities_costs_TA_616 <- read_excel("data-raw/TA 616 AE disutilities & costs.xlsx", 
-                                           range = "A2:E13")
-u_annual_medical_edss_ta616 <-
-  
-  saveRDS(u_annual_medical_edss_ta616, file="data/u_annual_medical_edss_ta616.rds")
+saveRDS(advese_events_disutilities_ta616, file="data/df_u_advese_events.rds")
 
 
 #Utilities used in TA616 Analysis Table 81 P.241/594
-
+# these are the same a s the ones we have imported
 
 ### References
 #Hawton A, Green C. (2016a) Health Utilities for Multiple Sclerosis. Value Health. 19(4): 460-468.
