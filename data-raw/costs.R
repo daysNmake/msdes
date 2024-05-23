@@ -18,6 +18,8 @@ df_c_drugs_ta616 <- df_c_drugs_ta616[,-1]
 saveRDS(df_c_drugs_ta616, file="data/df_c_drugs_ta616.rds")
 
 
+
+
 #Drug Administration costs Table 85 P.246/594 of TA 616
 c_drugs_admin_ta616 <- read_excel("data-raw/TA 616 Drug Administration costs Table 85 .xlsx", 
                             range = "A2:E7")
@@ -30,7 +32,9 @@ c_drugs_admin_ta616 <- c_drugs_admin_ta616[,-1]
 saveRDS(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.rds")
 
 
-#Patient monitoring & relapse annual costs P.70/594
+
+
+#Patient monitoring annual costs P.70/594 TA616
 c_monitoring_ta616 <- read_excel("data-raw/TA 616 Treatment Admin and monitoring costs .xlsx", 
                                                           range = "A4:G10")
 
@@ -43,12 +47,6 @@ str(c_monitoring_ta616)
 
 saveRDS(c_monitoring_ta_616, file="data/df_c_monitoring_ta616.rds")
 
-c_relapse_yr1 <- c(526, 3463)
-c_relapse_yr2<-c(526, 3463)
-c_relapse_ta_616 <- data.frame(c_relapse_yr1, c_relapse_yr2)
-rownames(c_relapse_ta_616)<-c("relapse","relapse_w_hospital")
-
-saveRDS(c_relapse_ta_616, file="data/df_c_relapse_ta616.rds")
 
 
 #Direct medical and non and health state costs by edss P.68/594 TA616
@@ -66,6 +64,9 @@ df_c_direct_edss_ta616[10,1] <- 0
 str(df_c_direct_edss_ta616)
 
 saveRDS(df_c_direct_edss_ta616, file="data/df_c_direct_edss_ta616.rds")
+
+
+
 
 
 #Direct medical Costs by EDSS Tables 87&88 P.248/594 of TA616 (Hawton et al 2016a) CY2012 (Karampampa et al 2012c) CY2009 (Tyas et al 2007)
@@ -111,25 +112,49 @@ colnames(df_c_direct_nonmedical_edss) <- names
 str(df_c_direct_nonmedical_edss)
 saveRDS(df_c_direct_nonmedical_edss, file="data/df_c_direct_nonmedical_edss.rds")
 
-#Costs by relapse state  Table 90 P.252/594 , Table91 P.253/594 of TA616 (Hawton 2016b) (Karampampa 2012c)
 
-#Adverse Events unit costs Table 92 P.253/594
 
-#AE disutilities & costs P.71/594
-AE_disutilities_costs_TA_616 <- read_excel("data-raw/TA 616 AE disutilities & costs.xlsx", 
+
+#Patient relapse annual costs P.70/594 & Table91 P.253/594 TA616
+c_relapse_yr1 <- c(526, 3463)
+c_relapse_yr2<-c(526, 3463)
+c_relapse_ta_616 <- data.frame(c_relapse_yr1, c_relapse_yr2)
+rownames(c_relapse_ta_616)<-c("relapse","relapse_w_hospital")
+
+saveRDS(c_relapse_ta_616, file="data/df_c_relapse_ta616.rds")
+
+#Costs by relapse state (Hawton 2016b) (Karampampa 2012c) Table 90 P.252/594 of TA616 
+c_relapse <- read_excel("data-raw/TA 616 Costs by relapse state Tables 90 91 & AE Costs Table 92 .xlsx", 
+                                                                            range = "a14:e23")
+str(c_relapse)
+df_c_relapse <- data.frame(c_relapse)
+rownames(df_c_relapse)<-df_c_relapse[,1]
+df_c_relapse <- df_c_relapse[,-1]
+saveRDS(df_c_relapse , file="data/df_c_relapse.rds")
+
+
+
+
+
+#Adverse Events unit costs Table 92 P.253/594 is missing Malignancy and Immune thrombotic costs
+#AE costs P.71/594 TA 616 a more complete source
+c_disutilities_ta616 <- read_excel("data-raw/TA 616 AE disutilities & costs.xlsx", 
                                            range = "A2:E13")
-u_annual_medical_edss_ta616 <-
-  
-  saveRDS(u_annual_medical_edss_ta616, file="data/u_annual_medical_edss_ta616.rds")
+c_disutilities_ta616 <- c_disutilities_ta616[,c(-2,-4)]
+str(c_disutilities_ta616)
+df_c_disutilities_ta616 <- data.frame(c_disutilities_ta616)
+
+saveRDS(df_c_disutilities_ta616, file="data/df_c_disutilities_ta616.rds")
+
+
+
 
 #costs used in the Analysis Table 82 P. 242 -243 / 594 of TA616
-c_ta616 <- read_excel("data-raw/TA 616 costs used in the Analysis Table 82 .xlsx", 
-                      range = "A2:C14")
-c_ta616 <- data.frame(c_ta616)
-rownames(c_ta616)<-c_ta616[,1]
-c_ta616 <- c_ta616[,-1]
+#these have been captured in the data already downloaded
 
-saveRDS(advese_events_disutilities_ta616, file="data/df_u_advese_events.rds")
+
+
+
 
 ### References
 

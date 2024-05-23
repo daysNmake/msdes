@@ -19,21 +19,6 @@ rr_lci_nh_5yr <- 0.194
 rr_uci_nh_5yr <- 0.262
 # to be annualised with RR= exp(1/t * ln(RR)) this will be equivalent to 0.0507 per annum.
 
-# duration of relapses p.217/ 594
-days_relapse_hospital <- c(39.14, 29.64, 34.41)
-sd_days_relapse_hospital <- c(7.59, 4.85, NA)
-days_relapse <- c(42.94, 34.31, 38.64)
-sd_days_relapse <- c(7.27, 4.89, NA)
-n_group <- c(437, 433, NA)
-df_duration_relapse <- cbind(days_relapse_hospital,sd_days_relapse_hospital,days_relapse,
-                                  sd_days_relapse, n_group)
-rownames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine", "TA616 Model")
-
-
-saveRDS(df_duration_relapse, file="data/df_duration_relapse.rds")
-
-# Hazard Ratio adjustment for the HA and RES subgroups using the the probability of 6 month progression at 96 weeks
-# HR=ln(1-Pa)/ln(1-Pb), data from CLARITY is redacted but maybe we can find this somewhere else?
 
 # Standardised Mortality Ratio for excess MS-related mortality (Manouchehrinia 2016) modeled on data from Jick 2014
 smr <- 1.68
@@ -55,15 +40,73 @@ W_0TO2_YR <- 1
 W_2TO5_YR <- 0.75
 W_5PLUS_YR <- 0.5
 
+### Save parameters in data frame
+df_init_params<- data.frame(
+
+  # Annualised relapse rate in the first year (ARR t=1) in placebo arm of CLARITY trial
+  arr_active_rrms,
+  arr_active_rrms_lci,
+  arr_active_rrms_uci,
+
+  # 5-year RR from Tremlett 2010 (search for source and verify)
+  rr_nh_5yr ,
+  rr_lci_nh_5yr ,
+  rr_uci_nh_5yr ,
+
+  # Standardised Mortality Ratio for excess MS-related mortality 
+  smr ,
+  smr_lci ,
+  smr_uci ,
+  
+  # Relapse Rate 6
+  rr_alemtuzumab ,
+  rr_lci_alemtuzumab,
+  rr_uci_alemtuzumab,
+  
+  
+  # treatment waning 
+  W_0TO2_YR ,
+  W_2TO5_YR ,
+  W_5PLUS_YR
+  
+)
+
+saveRDS(df_init_params, file="data/df_init_params.rds")
+
+
+
+
+
+# duration of relapses p.217/ 594
+days_relapse_hospital <- c(39.14, 29.64, 34.41)
+sd_days_relapse_hospital <- c(7.59, 4.85, NA)
+days_relapse <- c(42.94, 34.31, 38.64)
+sd_days_relapse <- c(7.27, 4.89, NA)
+n_group <- c(437, 433, NA)
+df_duration_relapse <- cbind(days_relapse_hospital,sd_days_relapse_hospital,days_relapse,
+                             sd_days_relapse, n_group)
+rownames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine", "TA616 Model")
+
+
+saveRDS(df_duration_relapse, file="data/df_duration_relapse.rds")
+
+# Hazard Ratio adjustment for the HA and RES subgroups using the the probability of 6 month progression at 96 weeks
+# HR=ln(1-Pa)/ln(1-Pb), data from CLARITY is redacted but maybe we can find this somewhere else?
+
+
 
 
 # The probability of discontinuation (P) from the probability of all-cause discontinuation from the NMA (p)
 # P=1-e(-((52/t)*ln(1-p))
 # Treatment discontinuation annualised probabilities Table 74 P. 232/594
+treatment_discontinuation_ta616 <- read_excel("data-raw/TA 616 Treatment discontinuation Table 74.xlsx", 
+                                          range = "A2:H12", col_types = c("text", 
+                                           "text", "numeric", "numeric", "numeric", 
+                                             "numeric", "numeric", "numeric"))
+str(treatment_discontinuation_ta616)
 
-
-
-
+df_trt_discont_ta616 <- data.frame(treatment_discontinuation_ta616)
+saveRDS(df_trt_discont_ta616 , file="data/df_trt_discont_ta616.rds")
 
 
 #base case inputs used in the model Table 93 P.254 - 256 /594 of TA616

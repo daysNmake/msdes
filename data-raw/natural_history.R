@@ -5,7 +5,7 @@
 #Natural History Age>=28 Table 66 CS P.104/170 (P.220/594) TA616,  table 23 in TA533 CS
 
 library(readxl)
-TA_616 <- read_excel("TA 616.xlsx", 
+TA_616 <- read_excel("data-raw/TA 616.xlsx", 
           range = "A3:O13")
 
 #View and reformat the data
@@ -17,6 +17,6 @@ colnames(Natural_History) <- TA_616[,1]
 Natural_History
 
 # save the data as RDS file
-saveRDS(Natural_History, file="NH_RRMS_BC_TA616.rds")
+saveRDS(Natural_History, file="data/df_nh_rrms_bc_ta616.rds")
 
 ## LOndon Ontario natural history in TA767, TA699

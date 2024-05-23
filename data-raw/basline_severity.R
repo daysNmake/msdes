@@ -10,4 +10,4 @@ baseline_severity <- rbind(BL_TA616,BL_TA535_ITT,BL_TA535_HA,BL_TA535_RES,BL_UKR
 colnames(baseline_severity) <- c(paste("EDSS", 0:9, sep=" "))
 
 # save the data as RDS file
-saveRDS(baseline_severity, file="baseline_severity.rds")
+saveRDS(baseline_severity, file="data/df_baseline_severity.rds")

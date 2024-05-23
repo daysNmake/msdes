@@ -2,7 +2,7 @@
 
 library(readxl)
 library(tidyverse)
-nltuk198020203 <- read_excel("nltuk198020203.xlsx", 
+nltuk198020203 <- read_excel("data-raw/nltuk198020203.xlsx", 
                          sheet = "2020-2022", range = "A6:M107", 
                            na = "G6:G107")
 
@@ -17,4 +17,4 @@ row.names(all_cause_mortality)<-all_cause_mortality[,1]
 head(all_cause_mortality)
 
 # save the data as RDS file
-saveRDS(all_cause_mortality, file="all_cause_mortality.rds")
+saveRDS(all_cause_mortality, file="data/df_all_cause_mortality.rds")
