@@ -10,18 +10,23 @@ library(kableExtra)
 library(purrr)
 library(tidyr)
 
+#load data
+
+df_nh_rrms <- readRDS("data/df_nh_rrms_bc_ta616.rds")
 
 #Utilities
-util.data <- data.frame( name = c(),
-                         value = c(),
-                         se=rep(),
+util.data <- data.frame( name = c("u.edss0.ontx"),
+                         value = c(0.75),
+                         se=rep(0.02,1),
                          stringsAsFactors = FALSE
 )
 
 
 #Costs
-cost.data <- data.frame( name = c(),
-                         value = c(),
+cost.data <- data.frame( name = c("c.edss0.tx",
+                                  "c.edss0"),
+                         value = c(1000,
+                                   2000),
                          stringsAsFactors = FALSE
 ) %>%
   mutate(se= value/5)
@@ -30,28 +35,29 @@ cost.data <- data.frame( name = c(),
 
 #### Put objects here that do not change on any patient or intervention loop
   common_all_inputs <- add_item( #utilities
-    util_v = if(psa_bool){
-      setNames(MASS::mvrnorm(1,util.data$value,diag(util.data$se^2)),util.data$name) # multivariate normal with no correlation
-    } else{setNames(util.data$value,util.data$name)},
+    #util_v = if(psa_bool){
+    #  setNames(MASS::mvrnorm(1,util.data$value,diag(util.data$se^2)),util.data$name) # multivariate normal with no correlation
+   # } else{setNames(util.data$value,util.data$name)},
     #util.idfs.ontx = util_v[["util.idfs.ontx"]], 
-    #util.mbc.pps = util_v[["util.mbc.pps"]]
+    #util.mbc.pps = util_v[["util.mbc.pps"]],
+    nh = -log(1-df_nh_rrms),
+    coef_e00= nh[1,1]
   ) %>%
   add_item( #costs
-    cost_v = if(psa_bool){
-      setNames(draw_gamma(cost.data$value,cost.data$se),cost.data$name) #in this case I choose a gamma distribution
-    } else{setNames(cost.data$value,cost.data$name)},
+    #cost_v = if(psa_bool){
+   #   setNames(draw_gamma(cost.data$value,cost.data$se),cost.data$name) #in this case I choose a gamma distribution
+   # } else{setNames(cost.data$value,cost.data$name)},
     #cost.idfs.tx  = cost_v[["cost.idfs.tx"]],
     #cost.ae = cost_v[["cost.ae"]]
-  )
+  ) %>%
 
-
-
-#### Put objects here that do not change as we loop through treatments for a patient
-  common_pt_inputs <- add_item(sex_pt = ifelse(rbernoulli(1,p=0.01),"male","female"),
+  add_item(sex_pt = ifelse(rbernoulli(1,p=0.01),"male","female"),
                                nat.os.s = draw_resgompertz(1,
-                                                           shape=if(sex_pt=="male"){0.102}else{0.115},
-                                                           rate=if(sex_pt=="male"){0.000016}else{0.0000041},
-                                                           lower_bound = 50) ) #in years, for a patient who is 50yo
+                                shape=if(sex_pt=="male"){0.102}else{0.115},
+                                 rate=if(sex_pt=="male"){0.000016}else{0.0000041},
+                                  lower_bound = 50) #in years, for a patient who is 50yo
+                              
+                               ) 
 
 
 
@@ -68,19 +74,19 @@ cost.data <- data.frame( name = c(),
   
   init_event_list <- 
     add_tte(trt="int",
-            evts = c("start"),
-            other_inp = c("os.early","os.mbc"),
+            evts = c("start", "edss0"),
+            other_inp = c("mort.trt",), #generate an intermediate input which is not an event but that we want to save
             input={ #intervention
               start <- 0
-              
+              edss0 <- draw_tte(1,dist="exp", coef1=coef_e00)
             })
   init_event_list <- 
     add_tte(trt="noint",
             evts = c("start"),
-            other_inp = c("os.early","os.mbc"),
-            input={ #intervention
+            other_inp = c("mort.trt"), #generate an intermediate input which is not an event but that we want to save
+            input={ #reference strategy
               start <- 0
-              
+              edss0 <- draw_tte(1,dist="exp", coef1=coef_e00)
             })
   
   
