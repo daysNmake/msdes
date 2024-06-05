@@ -1,0 +1,14 @@
+"","duration_days","disutility"
+"Infusionsitereaction-alemtuzumab",5,-0.011
+"Infusionsitereaction-natalizumab",5,-0.011
+"Injectionsitereaction
+(monthly)",13,-0.011
+"PML",93.1,-0.2
+"Severeinfection",14,-0.19
+"Macularoedema",84,-0.04
+"Gastrointestinal",8,-0.24
+"Hypersensitivity",7,-1
+"Autoimmunethyroid-relatedevent",365.25,-0.11
+"Influenza-likesymptoms",7,-0.21
+"Malignancy",365.25,-0.116
+"Immunethrombocytopenicpurpura",28,-0.09

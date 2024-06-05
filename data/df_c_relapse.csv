@@ -1,0 +1,10 @@
+"","Hawton_mean.median.","Hawton_sd","Karampampa_mean.median.","Tyasetalmean"
+"Sample size",289,0,119,2048
+"Cost year",2012,0,2009,2005
+"no_relapse",229,366,4793,0
+"Any relapse",0,0,0,1623
+"Relapse_untreated",381,780,8365,0
+"Relapse_limit_daily_activ",557,993,0,0
+"Relapse _oral_steroids",738,887,10244,0
+"Relapse_intravenous_steroids",1860,1869,0,0
+"Relapse_hospital_addmision",3579,1727,0,0

@@ -71,7 +71,9 @@ df_init_params<- data.frame(
   
 )
 
-saveRDS(df_init_params, file="data/df_init_params.rds")
+
+write.csv(df_init_params, file="data/df_init_params.csv")
+#saveRDS(df_init_params, file="data/df_init_params.rds")
 
 
 
@@ -88,7 +90,8 @@ df_duration_relapse <- cbind(days_relapse_hospital,sd_days_relapse_hospital,days
 rownames(df_duration_relapse)<- c("Placebo-CLARITY", "Clarabidine", "TA616 Model")
 
 
-saveRDS(df_duration_relapse, file="data/df_duration_relapse.rds")
+write.csv(df_duration_relapse, file="data/df_duration_relapse.csv")
+#saveRDS(df_duration_relapse, file="data/df_duration_relapse.rds")
 
 # Hazard Ratio adjustment for the HA and RES subgroups using the the probability of 6 month progression at 96 weeks
 # HR=ln(1-Pa)/ln(1-Pb), data from CLARITY is redacted but maybe we can find this somewhere else?
@@ -106,7 +109,9 @@ treatment_discontinuation_ta616 <- read_excel("data-raw/TA 616 Treatment discont
 str(treatment_discontinuation_ta616)
 
 df_trt_discont_ta616 <- data.frame(treatment_discontinuation_ta616)
-saveRDS(df_trt_discont_ta616 , file="data/df_trt_discont_ta616.rds")
+
+write.csv(df_trt_discont_ta616 , file="data/df_trt_discont_ta616.csv")
+#saveRDS(df_trt_discont_ta616 , file="data/df_trt_discont_ta616.rds")
 
 
 #base case inputs used in the model Table 93 P.254 - 256 /594 of TA616

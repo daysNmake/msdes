@@ -15,7 +15,8 @@ df_c_drugs_ta616 <- data.frame(c_drugs_ta616)
 row.names(df_c_drugs_ta616)<- df_c_drugs_ta616[,1]
 df_c_drugs_ta616 <- df_c_drugs_ta616[,-1]
 
-saveRDS(df_c_drugs_ta616, file="data/df_c_drugs_ta616.rds")
+write.csv(df_c_drugs_ta616, file="data/df_c_drugs_ta616.csv")
+#saveRDS(df_c_drugs_ta616, file="data/df_c_drugs_ta616.rds")
 
 
 
@@ -29,7 +30,8 @@ c_drugs_admin_ta616 <- data.frame(c_drugs_admin_ta616)
 rownames(c_drugs_admin_ta616)<-c_drugs_admin_ta616[,1]
 c_drugs_admin_ta616 <- c_drugs_admin_ta616[,-1]
 
-saveRDS(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.rds")
+write.csv(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.csv")
+#saveRDS(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.rds")
 
 
 
@@ -45,7 +47,8 @@ c_monitoring_ta616 <- c_monitoring_ta616[,-1]
 
 str(c_monitoring_ta616)
 
-saveRDS(c_monitoring_ta_616, file="data/df_c_monitoring_ta616.rds")
+write.csv(c_monitoring_ta616, file="data/df_c_monitoring_ta616.csv")
+#saveRDS(c_monitoring_ta_616, file="data/df_c_monitoring_ta616.rds")
 
 
 
@@ -63,7 +66,8 @@ df_c_direct_edss_ta616[10,1] <- 0
 
 str(df_c_direct_edss_ta616)
 
-saveRDS(df_c_direct_edss_ta616, file="data/df_c_direct_edss_ta616.rds")
+write.csv(df_c_direct_edss_ta616, file="data/df_c_direct_edss_ta616.csv")
+#saveRDS(df_c_direct_edss_ta616, file="data/df_c_direct_edss_ta616.rds")
 
 
 
@@ -90,7 +94,9 @@ df_c_directmedical_edss <- rbind(EDSS0, EDSS1, EDSS2, EDSS3, EDSS4, EDSS5, EDSS6
 df_c_directmedical_edss <-data.frame(df_c_directmedical_edss)
 colnames(df_c_directmedical_edss) <- names
 str(df_c_directmedical_edss)
-saveRDS(df_c_directmedical_edss, file="data/df_c_directmedical_edss.rds")
+
+write.csv(df_c_directmedical_edss, file="data/df_c_directmedical_edss.csv")
+#saveRDS(df_c_directmedical_edss, file="data/df_c_directmedical_edss.rds")
 
 
 #Table 88: Annualised costs by EDSS state for non-medical direct costs 
@@ -110,7 +116,9 @@ df_c_direct_nonmedical_edss <- rbind(EDSS0, EDSS1, EDSS2, EDSS3, EDSS4, EDSS5, E
 df_c_direct_nonmedical_edss <-data.frame(df_c_direct_nonmedical_edss)
 colnames(df_c_direct_nonmedical_edss) <- names
 str(df_c_direct_nonmedical_edss)
-saveRDS(df_c_direct_nonmedical_edss, file="data/df_c_direct_nonmedical_edss.rds")
+
+write.csv(df_c_direct_nonmedical_edss, file="data/df_c_direct_nonmedical_edss.csv")
+#saveRDS(df_c_direct_nonmedical_edss, file="data/df_c_direct_nonmedical_edss.rds")
 
 
 
@@ -121,7 +129,11 @@ c_relapse_yr2<-c(526, 3463)
 c_relapse_ta_616 <- data.frame(c_relapse_yr1, c_relapse_yr2)
 rownames(c_relapse_ta_616)<-c("relapse","relapse_w_hospital")
 
-saveRDS(c_relapse_ta_616, file="data/df_c_relapse_ta616.rds")
+write.csv(c_relapse_ta_616, file="data/df_c_relapse_ta616.csv")
+#saveRDS(c_relapse_ta_616, file="data/df_c_relapse_ta616.rds")
+
+
+
 
 #Costs by relapse state (Hawton 2016b) (Karampampa 2012c) Table 90 P.252/594 of TA616 
 c_relapse <- read_excel("data-raw/TA 616 Costs by relapse state Tables 90 91 & AE Costs Table 92 .xlsx", 
@@ -130,7 +142,9 @@ str(c_relapse)
 df_c_relapse <- data.frame(c_relapse)
 rownames(df_c_relapse)<-df_c_relapse[,1]
 df_c_relapse <- df_c_relapse[,-1]
-saveRDS(df_c_relapse , file="data/df_c_relapse.rds")
+
+write.csv(df_c_relapse , file="data/df_c_relapse.csv")
+#saveRDS(df_c_relapse , file="data/df_c_relapse.rds")
 
 
 
@@ -144,7 +158,9 @@ c_disutilities_ta616 <- c_disutilities_ta616[,c(-2,-4)]
 str(c_disutilities_ta616)
 df_c_disutilities_ta616 <- data.frame(c_disutilities_ta616)
 
-saveRDS(df_c_disutilities_ta616, file="data/df_c_disutilities_ta616.rds")
+
+write.csv(df_c_disutilities_ta616, file="data/df_c_disutilities_ta616.csv")
+#saveRDS(df_c_disutilities_ta616, file="data/df_c_disutilities_ta616.rds")
 
 
 

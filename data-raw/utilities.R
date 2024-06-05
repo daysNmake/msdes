@@ -11,14 +11,16 @@ library(readxl)
 
 #Utilities reported from a variety of sources Table 76 P. 236/594 (CLARITY) (Hawton 2016a)(Orme 2007) (TA320)
 # BUT for full regression formulas on would want to look at the actual publications for inclusion of additional co-variates
+
 u_edss_ta616 <- read_excel("data-raw/TA 616 Utilities reported from a variety of population studies Table 76.xlsx", 
                                                                                           range = "A2:I13", col_types = "numeric")
 str(u_edss_ta616 )
-
 df_u_edss_ta616 <- data.frame(u_edss_ta616[-1,-1])
 rownames(df_u_edss_ta616) <- paste("EDSS", 0:9, sep=" ")
+colnames(df_u_edss_ta616)[3:4] <- c("Hawton_mean", "Hawton_se") 
 
-saveRDS(df_u_edss_ta616, file="data/df_u_edss_ta616.rds")
+write.csv(df_u_edss_ta616, file="data/df_u_edss_ta616.csv", sep= " ")
+#saveRDS(df_u_edss_ta616, file="data/df_u_edss_ta616.rds")
 
 
 
@@ -33,7 +35,8 @@ df_u_carer_ta616 <- data.frame(u_carer_ta616)
 rownames(df_u_carer_ta616)<-df_u_carer_ta616[,1]
 df_u_carer_ta616 <- df_u_carer_ta616[,-1]
 
-saveRDS(df_u_carer_ta616, file = "data/df_u_carer_ta616.rds")
+write.csv(df_u_carer_ta616, file = "data/df_u_carer_ta616.csv",sep="")
+#saveRDS(df_u_carer_ta616, file = "data/df_u_carer_ta616.rds")
 
 
 
@@ -45,7 +48,8 @@ u_sd_relapse_hospital <- c(0.013, 0.013)
 df_u_relapse <- cbind(u_mean_relapse_hospital, u_sd_relapse_hospital)
 rownames(df_u_relapse)<- c("Orme etal", "Ruutiainen etal")
 
-saveRDS(df_u_relapse, file="data/df_u_relapse.rds")
+write.csv(df_u_relapse, file="data/df_u_relapse.csv")
+#saveRDS(df_u_relapse, file="data/df_u_relapse.rds")
 
 
 
@@ -61,7 +65,8 @@ df_u_advese_events_ta616 <- data.frame(u_advese_events_ta616)
 rownames(df_u_advese_events_ta616)<-df_u_advese_events_ta616[,1]
 df_u_advese_events_ta616 <- df_u_advese_events_ta616[,-1]
 
-saveRDS(df_u_advese_events_ta616, file="data/df_u_advese_events_ta616.rds")
+write.csv(df_u_advese_events_ta616, file="data/df_u_advese_events_ta616.csv")
+#saveRDS(df_u_advese_events_ta616, file="data/df_u_advese_events_ta616.rds")
 
 
 #Utilities used in TA616 Analysis Table 81 P.241/594

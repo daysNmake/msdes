@@ -16,7 +16,8 @@ Natural_History <- TA_616[,c(2,4,6,9:15)]
 colnames(Natural_History) <- TA_616[,1]
 Natural_History
 
-# save the data as RDS file
-saveRDS(Natural_History, file="data/df_nh_rrms_bc_ta616.rds")
+# save the data as .csv file
+write.csv(Natural_History, file="data/df_nh_rrms_bc_ta616.csv")
+#saveRDS(Natural_History, file="data/df_nh_rrms_bc_ta616.rds")
 
 ## LOndon Ontario natural history in TA767, TA699

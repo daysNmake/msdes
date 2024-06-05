@@ -13,4 +13,5 @@ rownames(df_adverse_events_probabilities_ta616) <- df_adverse_events_probabiliti
 
 df_adverse_events_probabilities_ta616 <-df_adverse_events_probabilities_ta616[,-1]
 
-saveRDS(df_adverse_events_probabilities_ta616, file="df_adverse_events_probabilities_ta616.rds")
+write.csv(df_adverse_events_probabilities_ta616, file="data/df_adverse_events_probabilities_ta616.csv")
+#saveRDS(df_adverse_events_probabilities_ta616, file="df_adverse_events_probabilities_ta616.rds")

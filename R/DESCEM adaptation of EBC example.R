@@ -1,30 +1,31 @@
+### We adapt the Early breast cancer example by creating a 3 state MS model; RRMS, SPMS, Death
+# load packages
 library(descem)
-
 library(dplyr)
-
 library(flexsurv)
-
 library(ggplot2)
 library(kableExtra)
-
 library(purrr)
 library(tidyr)
 
 #load data
 
-df_nh_rrms <- readRDS("data/df_nh_rrms_bc_ta616.rds")
+df_nh <- read.csv("data/df_nh_rrms_bc_ta616.csv")
+u_nh <- read.csv("data/df_u_edss_ta616.csv")
 
+read
 #Utilities
 util.data <- data.frame( name = c("u.edss0.ontx"),
-                         value = c(0.75),
-                         se=rep(0.02,1),
+                         value = c(u_nh[1,3]),
+                         se=repc(u_nh[1,4]),
                          stringsAsFactors = FALSE
 )
 
 
 #Costs
-cost.data <- data.frame( name = c("c.edss0.tx",
-                                  "c.edss0"),
+cost.data <- data.frame( name = c("c.tx1","c.tx2","c.tx2",
+                                  "c.edss0",
+                                  c.),
                          value = c(1000,
                                    2000),
                          stringsAsFactors = FALSE
@@ -64,13 +65,33 @@ cost.data <- data.frame( name = c("c.edss0.tx",
 #### Put objects here that change as we loop through treatments for each patient (e.g. events can affect fl.tx, but events do not affect nat.os.s)
 #common across trt but changes per pt could be implemented here (if (trt==)... )
   unique_pt_inputs <- add_item(
+    f.edss0   = 1,
+    f.edss1   = 0,
+    f.edss2   = 0,
+    f.edss3   = 0,
+    f.edss4   = 0,
+    f.edss5   = 0,
+    f.edss6   = 0,
+    f.edss7   = 0,
+    f.edss8   = 0,
+    f.edss9   = 0,
+    f.rrms    = 0,
+    f.spms    = 0,
+    f.relapse = 0,
+    f.line1   = 1,
+    f.line2   = 0, 
+    f.line3   = 0,
+    f.line4   = 0,
+    f.ontx    = 1,
+    f.offtx   = 0,
+    
     #fl.idfs.ontx             = 1,
     #fl.remission             = rbernoulli(1,0.8) #80% probability of going into remission
   )
 
 
 
-#### Add initial events; two groups intervantion and no intervention
+#### Add initial events; two groups intervention and no intervention
   
   init_event_list <- 
     add_tte(trt="int",

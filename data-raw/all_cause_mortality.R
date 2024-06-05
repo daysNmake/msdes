@@ -16,5 +16,6 @@ all_cause_mortality <- data.frame(nltuk198020203)
 row.names(all_cause_mortality)<-all_cause_mortality[,1]
 head(all_cause_mortality)
 
-# save the data as RDS file
-saveRDS(all_cause_mortality, file="data/df_all_cause_mortality.rds")
+# save the data as csv file
+write.csv(all_cause_mortality, file="data/df_all_cause_mortality.csv")
+#saveRDS(all_cause_mortality, file="data/df_all_cause_mortality.rds")
