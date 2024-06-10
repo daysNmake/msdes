@@ -1,10 +1,6 @@
 # load packages
 library(descem)
 library(dplyr)
-library(flexsurv)
-library(ggplot2)
-library(kableExtra)
-library(purrr)
 library(tidyr)
 
 
