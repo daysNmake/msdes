@@ -141,10 +141,21 @@ cost.data <- data.frame( name = c(paste0("c.m_edss", 0:9, ""),
               tot.line1 # draw time on tot.line1
               
               #EDSS1-9
-              if (f.edss0==1){f.edss0<-0  
-                f.edss1<-1 
-                edss1 <- draw_tte(1,dist="exp", coef1=) 
+              if (f.edss0==1){ 
                 
+               #draw event times transitioning from edss0 to edss1-9 and select the earliest
+                edss_0_1 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_2 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_3 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_4 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_5 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_6 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_7 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_8 <- draw_tte(1,dist="exp", coef1=)
+                edss_0_9 <- draw_tte(1,dist="exp", coef1=)
+                
+                f.edss1<-1 #use min function to determine next edss state?
+                f.edss0<-0
                 } else if(f.edss1==1) {f.edss1<-0
                     f.edss2<-1
                     edss2 <- draw_tte(1,dist="exp", coef1=)
