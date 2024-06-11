@@ -1,13 +1,9 @@
-# load packages
-library(descem)
-library(dplyr)
-library(tidyr)
 
 
 #### Put objects here that change as we loop through treatments for each patient (e.g. events can affect fl.tx, but events do not affect mat.mort.s)
 #common across trt but changes per pt could be implemented here (if (trt==)... )
 unique_pt_inputs <- add_item(
-  f.edss0   = 1,
+  f.edss0   = 0,
   f.edss1   = 0,
   f.edss2   = 0,
   f.edss3   = 0,
@@ -30,6 +26,13 @@ unique_pt_inputs <- add_item(
   f.tx.clab = 0,
   f.tx.fing = 0,
   f.tx.dac  = 0,
+  f.tx.alem = 0,
+  f.tx.ib1a = 1,
+  f.tx.ib1b = 0,
+  f.tx.glat = 0,
+  f.tx.ofat = 0,
+  f.tx.pone = 0,
+  f.tx.ahsct = 0,
   f.rr2sp             = rbernoulli(1,0.1) #10% probability of converting from rrms to spms
 )
 

@@ -40,6 +40,10 @@ W_0TO2_YR <- 1
 W_2TO5_YR <- 0.75
 W_5PLUS_YR <- 0.5
 
+# treatment switching assumption
+# dummy assumption for now theat treatmetn switching after 2 years
+n_trt_dur <- 2 
+
 ### Save parameters in data frame
 df_init_params<- data.frame(
 
@@ -67,7 +71,10 @@ df_init_params<- data.frame(
   # treatment waning 
   W_0TO2_YR ,
   W_2TO5_YR ,
-  W_5PLUS_YR
+  W_5PLUS_YR,
+  
+  #treatment switching
+  n_trt_dur
   
 )
 

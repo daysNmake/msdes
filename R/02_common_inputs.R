@@ -1,11 +1,4 @@
-# load packages
-library(descem)
-library(dplyr)
-library(flexsurv)
-library(ggplot2)
-library(kableExtra)
-library(purrr)
-library(tidyr)
+
 
 #### Put objects here that do not change on any patient or intervention loop
 common_all_inputs <- add_item( #utilities
@@ -41,10 +34,10 @@ common_all_inputs <- add_item( #utilities
     #cost.ae = cost_v[["cost.ae"]]
   ) %>%
   
-  add_item(sex_pt = ifelse(rbernoulli(1,p=0.01),"male","female"),
+  add_item(sex_pt = ifelse(rbernoulli(1,p=0.5),"male","female"),
            nat.mort = draw_resgompertz(1,
-                                       shape=if(sex_pt=="male"){0.102}else{0.115},
-                                       rate=if(sex_pt=="male"){0.000016}else{0.0000041},
+                                       shape=0, # a=0 is equivalent to the exponential distribution
+                                       rate=if(sex_pt=="male"){0.000016*init_params$smr}else{0.0000041*init_params$smr}, #how do we make this depend on age? how do we make SMR probailistic?
                                        lower_bound = 50) #in years, for a patient who is 50yo
            
   ) 

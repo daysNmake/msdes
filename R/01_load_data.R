@@ -10,9 +10,10 @@ library(tidyr)
 #load data
 init_params <- read.csv("data/df_init_params.csv")
 
-p_nh <- read.csv("data/df_nh_rrms_bc_ta616.csv")
-
+r_nh <- read.csv("data/df_r_nh_rrms_bc_ta616.csv")
+r_nh <- r_nh[,-1]
 u_nh <- read.csv("data/df_u_edss_ta616.csv")
+hr_cdp <- read.csv("data/df_cdp3_ta312.csv")
 #u_relapse
 #u_carer
 #u_ae
@@ -24,11 +25,12 @@ c_tx <- read.csv("data/df_c_drugs_ta616.csv")
 #c_replase
 #c_disutilities
 
+# would not add background mortality to inital events?
 
-# Transform data
 
-r_nh <- -log(1-p_nh[,2:11]) # natural history rates by taking -log(1-P)
-
+# dummy  fixed hr used in place of trt dependent hr
+hr_int <-0.8
+hr_noint <- 1
 
 #Utilities data: health states
 util.data <- data.frame( name =  c(paste0("u.edss", 0:9, "")),
@@ -44,6 +46,6 @@ cost.data <- data.frame( name = c(paste0("c.m_edss", 0:9, ""),
                                   paste0("c.nm_edss", 0:9, ""),
                                   "c.tx.clab", "c.tx.alem", "c.tx.fing", "c.tx.nat", "c.tx.dac"),
                          value = c(c_m_nh[1:9,2],c_m_nh[10,6], c_nm_nh[1:10,6],c_tx[2:6,3]),
-                         se=     c(c_m_nh[1:9,3],c_m_nh[10,7], c_nm_nh[1:10,7], value[21:25]/5 ),
+                         se=     c(c_m_nh[1:9,3],c_m_nh[10,7], c_nm_nh[1:10,7], c_tx[2:6,3]/5 ),
                          stringsAsFactors = FALSE
 ) 
