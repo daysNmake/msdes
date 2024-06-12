@@ -2,39 +2,45 @@
 
 #### Put objects here that do not change on any patient or intervention loop
 common_all_inputs <- add_item( #utilities
-  util_v = if(psa_bool){
-    setNames(MASS::mvrnorm(1,util.data$value,diag(util.data$se^2)),util.data$name) # multivariate normal with no correlation
-  } else{setNames(util.data$value,util.data$name)},
-  util.edss0 = util_v[["u.edss0"]],     util.edss1 = util_v[["u.edss1"]], 
-  util.edss2 = util_v[["u.edss2"]],     util.edss3 = util_v[["u.edss3"]], 
-  util.edss4 = util_v[["u.edss4"]],     util.edss5 = util_v[["u.edss5"]], 
-  util.edss6 = util_v[["u.edss6"]],     util.edss7 = util_v[["u.edss7"]], 
-  util.edss8 = util_v[["u.edss8"]], 
-  util.edss9 = util_v[["u.edss9"]] 
+  u_v = if(psa_bool){
+    setNames(MASS::mvrnorm(1,u.data$value,diag(u.data$se^2)),u.data$name) # multivariate normal with no correlation
+  } else{setNames(u.data$value, u.data$name)},
+  u.edss0 = u_v[["u.edss0"]], u.edss1 = u_v[["u.edss1"]], 
+  u.edss2 = u_v[["u.edss2"]], u.edss3 = u_v[["u.edss3"]], 
+  u.edss4 = u_v[["u.edss4"]], u.edss5 = u_v[["u.edss5"]], 
+  u.edss6 = u_v[["u.edss6"]], u.edss7 = u_v[["u.edss7"]], 
+  u.edss8 = u_v[["u.edss8"]], u.edss9 = u_v[["u.edss9"]] 
 ) %>%
   add_item( #costs
-    cost_v = if(psa_bool){
-      setNames(draw_gamma(cost.data$value,cost.data$se),cost.data$name) #in this case I choose a gamma distribution
-    } else{setNames(cost.data$value,cost.data$name)},
-    cost.m_edss0  = cost_v[["c.m_edss0"]],     cost.m_edss1  = cost_v[["c.m_edss1"]],
-    cost.m_edss2  = cost_v[["c.m_edss2"]],     cost.m_edss3  = cost_v[["c.m_edss3"]],
-    cost.m_edss4  = cost_v[["c.m_edss4"]],     cost.m_edss5  = cost_v[["c.m_edss5"]],
-    cost.m_edss6  = cost_v[["c.m_edss6"]],     cost.m_edss7  = cost_v[["c.m_edss7"]],
-    cost.m_edss8  = cost_v[["c.m_edss8"]],     cost.m_edss9  = cost_v[["c.m_edss9"]],
+    c_v = if(psa_bool){
+      setNames(draw_gamma(c.data$value,c.data$se),c.data$name) # gamma distribution
+    } else{setNames(c.data$value,c.data$name)},
+    c.m_edss0  = c_v[["c.m_edss0"]],     c.m_edss1  = c_v[["c.m_edss1"]],
+    c.m_edss2  = c_v[["c.m_edss2"]],     c.m_edss3  = c_v[["c.m_edss3"]],
+    c.m_edss4  = c_v[["c.m_edss4"]],     c.m_edss5  = c_v[["c.m_edss5"]],
+    c.m_edss6  = c_v[["c.m_edss6"]],     c.m_edss7  = c_v[["c.m_edss7"]],
+    c.m_edss8  = c_v[["c.m_edss8"]],     c.m_edss9  = c_v[["c.m_edss9"]],
     
-    cost.nm_edss0  = cost_v[["c.nm_edss0"]],     cost.nm_edss1  = cost_v[["c.nm_edss1"]],
-    cost.nm_edss2  = cost_v[["c.nm_edss2"]],     cost.nm_edss3  = cost_v[["c.nm_edss3"]],
-    cost.nm_edss4  = cost_v[["c.nm_edss4"]],     cost.nm_edss5  = cost_v[["c.nm_edss5"]],
-    cost.nm_edss6  = cost_v[["c.nm_edss6"]],     cost.nm_edss7  = cost_v[["c.nm_edss7"]],
-    cost.nm_edss8  = cost_v[["c.nm_edss8"]],     cost.nm_edss9  = cost_v[["c.nm_edss9"]],
+    c.nm_edss0  = c_v[["c.nm_edss0"]],   c.nm_edss1  = c_v[["c.nm_edss1"]],
+    c.nm_edss2  = c_v[["c.nm_edss2"]],   c.nm_edss3  = c_v[["c.nm_edss3"]],
+    c.nm_edss4  = c_v[["c.nm_edss4"]],   c.nm_edss5  = c_v[["c.nm_edss5"]],
+    c.nm_edss6  = c_v[["c.nm_edss6"]],   c.nm_edss7  = c_v[["c.nm_edss7"]],
+    c.nm_edss8  = c_v[["c.nm_edss8"]],   c.nm_edss9  = c_v[["c.nm_edss9"]],
     
-    cost.tx.clab  = cost_v[["c.tx.clab"]],     cost.tx.alem  = cost_v[["c.tx.alem"]],
-    cost.tx.fing  = cost_v[["c.tx.fing"]],     cost.tx.nat  = cost_v[["c.tx.nat"]],
-    cost.tx.dac  = cost_v[["c.tx.dac"]]     
-    #cost.ae = cost_v[["cost.ae"]]
-  ) %>%
+    c.tx.clab  = c_v[["c.tx.clab"]],  c.tx.alem  = c_v[["c.tx.alem"]],
+    c.tx.fing  = c_v[["c.tx.fing"]],  c.tx.nat  = c_v[["c.tx.nat"]],
+    c.tx.dac   = c_v[["c.tx.dac"]],   c.tx.ib1a  = c_v[["c.tx.ib1a"]],     
+    c.tx.ib1b  = c_v[["c.tx.ib1b"]],  c.tx.glat  = c_v[["c.tx.glat"]],
+    
+    c.tx_admn.clab  = c_v[["c.tx_admn.clab"]],  c.tx_admn.alem  = c_v[["c.tx_admn.alem"]],
+    c.tx_admn.fing  = c_v[["c.tx_admn.fing"]],  c.tx_admn.nat   = c_v[["c.tx_admn.nat"]],
+    c.tx_admn.dac   = c_v[["c.tx_admn.dac"]],   c.tx_admn.ib1a  = c_v[["c.tx_admn.ib1a"]],     
+    c.tx_admn.ib1b  = c_v[["c.tx_admn.ib1b"]],  c.tx_admn.glat  = c_v[["c.tx_admn.glat"]]
+    
+  ) 
   
-  add_item(sex_pt = ifelse(rbernoulli(1,p=0.5),"male","female"),
+  #Put objects here that do not change as we loop through interventions for a patient
+  common_pt_inputs <-   add_item(sex_pt = ifelse(rbernoulli(1,p=0.5),"male","female"),
            nat.mort = draw_resgompertz(1,
                                        shape=0, # a=0 is equivalent to the exponential distribution
                                        rate=if(sex_pt=="male"){0.000016*init_params$smr}else{0.0000041*init_params$smr}, #how do we make this depend on age? how do we make SMR probailistic?

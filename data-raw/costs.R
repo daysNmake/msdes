@@ -3,35 +3,35 @@
 library(readxl)
 
 
-#Drug acquisition costs Table 84 P.245/594 of TA616
-c_drugs_ta616 <- read_excel("data-raw/TA 616 Drug acquisition costs Table 84 .xlsx", 
-                      range = "A3:I9")
-c_drugs_ta616[,2] <-  as.numeric(c_drugs_ta616$unit_per_pack)
-c_drugs_ta616[,4] <-  as.numeric(c_drugs_ta616$units_annual_year1)
-c_drugs_ta616[,5] <-  as.numeric(c_drugs_ta616$units_annual_year2)
-str(c_drugs_ta616)
+#Drug acquisition costs Table 84 P.245/594 of TA616 & TA312 Table B7.57
+c_drugs_ta616_312 <- read_excel("data-raw/Drug acquisition costs TA 616 312.xlsx", 
+                      range = "A3:I14")
+c_drugs_ta616_312[,2] <-  as.numeric(c_drugs_ta616_312$unit_per_pack)
+c_drugs_ta616_312[,4] <-  as.numeric(c_drugs_ta616_312$units_annual_year1)
+c_drugs_ta616_312[,5] <-  as.numeric(c_drugs_ta616_312$units_annual_year2)
+str(c_drugs_ta616_312)
 
-df_c_drugs_ta616 <- data.frame(c_drugs_ta616)
-row.names(df_c_drugs_ta616)<- df_c_drugs_ta616[,1]
-df_c_drugs_ta616 <- df_c_drugs_ta616[,-1]
+df_c_drugs <- data.frame(c_drugs_ta616_312)
+row.names(df_c_drugs)<- df_c_drugs[,1]
+df_c_drugs <- df_c_drugs[,-1]
 
-write.csv(df_c_drugs_ta616, file="data/df_c_drugs_ta616.csv")
-#saveRDS(df_c_drugs_ta616, file="data/df_c_drugs_ta616.rds")
-
-
+write.csv(df_c_drugs, file="data/df_c_drugs.csv")
+#saveRDS(df_c_drugs, file="data/df_c_drugs.rds")
 
 
-#Drug Administration costs Table 85 P.246/594 of TA 616
-c_drugs_admin_ta616 <- read_excel("data-raw/TA 616 Drug Administration costs Table 85 .xlsx", 
-                            range = "A2:E7")
 
-str(c_drugs_admin_ta616)
-c_drugs_admin_ta616 <- data.frame(c_drugs_admin_ta616)
-rownames(c_drugs_admin_ta616)<-c_drugs_admin_ta616[,1]
-c_drugs_admin_ta616 <- c_drugs_admin_ta616[,-1]
 
-write.csv(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.csv")
-#saveRDS(c_drugs_admin_ta616, file="data/df_c_drugs_admin_ta616.rds")
+#Drug Administration costs Table 85 P.246/594 of TA 616 & TA312 Table B7.57
+c_drugs_admin_ta616_312 <- read_excel("data-raw/Drug Administration costs TA 616 312.xlsx", 
+                            range = "A2:E12")
+
+str(c_drugs_admin_ta616_312)
+df_c_drugs_admin <- data.frame(c_drugs_admin_ta616_312)
+rownames(df_c_drugs_admin)<-df_c_drugs_admin[,1]
+df_c_drugs_admin <- df_c_drugs_admin[,-1]
+
+write.csv(df_c_drugs_admin, file="data/df_c_drugs_admin.csv")
+#saveRDS(c_drugs_admin, file="data/df_c_drugs_admin.rds")
 
 
 
