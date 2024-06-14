@@ -43,7 +43,7 @@ common_all_inputs <- add_item( #utilities
   common_pt_inputs <-   add_item(sex_pt = ifelse(rbernoulli(1,p=0.5),"male","female"),
            nat.mort = draw_resgompertz(1,
                                        shape=0, # a=0 is equivalent to the exponential distribution
-                                       rate=if(sex_pt=="male"){0.000016*init_params$smr}else{0.0000041*init_params$smr}, #how do we make this depend on age? how do we make SMR probailistic?
+                                       rate=if(sex_pt=="male"){0.000016*1.68}else{0.0000041*1.68}, #how do we make this depend on age? how do we make SMR probailistic?
                                        lower_bound = 50) #in years, for a patient who is 50yo
            
   ) 

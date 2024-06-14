@@ -1,9 +1,3 @@
-# load packages
-library(descem)
-library(dplyr)
-library(tidyr)
-
-
 # Add reaction to initial events
 
 
@@ -11,7 +5,7 @@ evt_react_list <-
   add_reactevt(name_evt = "start",
                input = {
                  modify_item(list("f.tx.nat"= if(trt=="int"){1}else{0}, # Natalizumab for the treatment group
-                                  "f.tx.ib1a"= if(trt=="noint"){1}else{0}, # IF-1b for the reference group
+                                  "f.tx.ib1b"= if(trt=="noint"){1}else{0}, # IF-1b for the reference group
                                   "f.tx.on" = 1, "f.line1"= 1, "f.rrms"= 1, "f.tx.off"= 0)) 
                }) %>%
   add_reactevt(name_evt = "edss0",
@@ -19,7 +13,7 @@ evt_react_list <-
                  modify_item(list("f.edss0"= 1)) #Flag that patient is now in edss0
                  
                }) %>%
-  add_reactevt(name_evt = "ttot.line1",
+  add_reactevt(name_evt = "tot.line1",
                input = {
                  modify_item(list("f.line1"= 0,"f.tx.on"= 0 , "f.tx.off"= 1)) #Flag that patient is now off-treatment, no txt switching
                  
@@ -89,7 +83,7 @@ evt_react_list <-
 #common utility across arms
 
 util_ongoing <- add_util(evt = c("start", "edss0", "edss1","edss2","edss3","edss4", "edss5","edss6","edss7", "edss8","edss9",
-                                 "tot.line1","death"),
+                                 "tot.line1"),
                          trt = c("int", "noint"),
                          util = if (f.edss0==1) {
                            u.edss0 * f.edss0  
@@ -111,19 +105,19 @@ util_ongoing <- add_util(evt = c("start", "edss0", "edss1","edss2","edss3","edss
                              u.edss8 * f.edss8 
                            } else if (f.edss9==1) {
                              u.edss9 * f.edss9 
-                         })
+                         }else{0.1})
 
 cost_ongoing <-
   add_cost(
     evt = c("start", "tot.line1") ,
     trt = "noint",
-    cost = f.tx.on*f.tx.ib1a*c.tx.ib1a + f.tx.on*f.tx.ib1a*c.tx_admn.ib1a) %>%
+    cost = f.tx.on*f.tx.ib1b*c.tx.ib1b + f.tx.on*f.tx.ib1b*c.tx_admn.ib1b) %>%
   add_cost(
     evt = c("start", "tot.line1") ,
     trt = "int",
     cost = f.tx.on*f.tx.nat*c.tx.nat + f.tx.on*f.tx.nat*c.tx_admn.nat) %>%
   add_cost(
-    evt = c("start", "edss0", "edss1","edss2","edss3","edss4", "edss5","edss6","edss7", "edss8","edss9"),
+    evt = c("edss0", "edss1","edss2","edss3","edss4", "edss5","edss6","edss7", "edss8","edss9"),
     trt = c("noint","int"),
     cost = c.m_edss0*f.edss0 + c.nm_edss0*f.edss0 +
            c.m_edss1*f.edss1 + c.nm_edss1*f.edss1 +
