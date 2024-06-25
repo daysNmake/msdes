@@ -3,7 +3,7 @@
 
 # Howard Thom 23-June-2024
 # Modified to include some uncertainty and use BCEA to analyse results.
-# Also added a numeric severity score
+# Also added a numeric severity score and repeat 'relapse' event
 
 library(descem)
 
