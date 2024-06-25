@@ -38,9 +38,9 @@ treatment_names <- c("Natalizumab",
 
 # Treatments that patients can move to at 3rd and higher line (expand to full set)
 higher_line_treatments <- c("Natalizumab",
-                              "Natalizumab biosimilar",
-                              "Alemtuzumab",
-                              "Cladribine")
+                            "Natalizumab biosimilar",
+                            "Alemtuzumab",
+                            "Cladribine")
 
 event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "death")
 
@@ -58,6 +58,11 @@ initial_edss_distribution <- c(0.8, 0.1, rep(0.0125, 8))
 # Initial proportion with SPMS
 initial_spms_prop <- 0
 
+# Annual treatment costs
+treatment_costs <- c(1000, 800, 500, 2000, 1500)
+names(treatment_costs) <- treatment_names
+
+
 
 # Global parameters of the model as they are common to all patients and treatments
 # If not using PSA just setting to mean of samples. This isn't correct as the 
@@ -71,12 +76,12 @@ common_all_inputs <-add_item(
   # Utililities for RRMS assumed to decrease with EDSS
   rrms_edss_utils = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = length(edss_values),
-                              dimnames = list(NULL, names(edss_values)))
+                   dimnames = list(NULL, names(edss_values)))
     
     # Fill with dummy values (gradual reduction bounded by 0)
     for(i_edss in 1:length(edss_values)) {
       temp[, i_edss] <- pmax(rnorm(1, mean = 1 - 0.1 * i_edss, sd = 0.01),
-                                        0)
+                             0)
     }
     temp
   } else {
@@ -101,11 +106,11 @@ common_all_inputs <-add_item(
   # Dummy values for state costs in RRMS assumed to increase with EDSS
   rrms_edss_costs = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = length(edss_values),
-                              dimnames = list(NULL, names(edss_values)))
+                   dimnames = list(NULL, names(edss_values)))
     
     for(i_edss in 1:length(edss_values)) {
       temp[, i_edss] <- pmax(rnorm(1, mean = 100 + 100 * i_edss, sd = 10),
-                                        0)
+                             0)
     }
     temp
   } else {
@@ -180,8 +185,21 @@ common_all_inputs <-add_item(
     0.04 - 0.001 * edss_values
   }
 ) %>% add_item(
-  rrms_edss_decrease = generate_rrms_edss_decrease(psa_bool),
-  spms_edss_increase = generate_spms_edss_increase(psa_bool)
+  # EDSS increase for SPMS patients assumed the same (can modify later)
+  # Also assumed independent of treatment so using 'baseline' name
+  spms_edss_increase = if(psa_bool) {
+    temp <- matrix(nrow = 1, ncol = length(edss_values),
+                   dimnames = list(NULL, names(edss_values)))
+    for(i_edss in 1:length(edss_values)) {
+      # Rates increase with higher EDSS
+      temp[, i_edss] <- exp(rnorm(1,
+                                  mean = log(0.09 + 0.001 * i_edss),
+                                  sd = 0.01))
+    }
+    temp
+  } else {
+    0.09 + 0.001 * edss_values
+  }
 ) %>% add_item(
   # Dummy rate of progression to SPMS
   spms_progression =  if(psa_bool) {exp(rnorm(1,
@@ -337,9 +355,9 @@ evt_react_list <-
                  # Just need to simulate the next time to relapse
                  new_event(list(
                    "relapse" = curtime + draw_tte(
-                   1, 
-                   dist = "exp", 
-                   coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
+                     1, 
+                     dist = "exp", 
+                     coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
                  ))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
@@ -404,7 +422,7 @@ util_ongoing <- add_util(evt = event_names,
                          trt = treatment_names,
                          util = (1 - spms_flag) * rrms_edss_utils[, edss_value == edss_values] +
                            spms_flag * spms_edss_utils[, edss_value == edss_values]
-                         )
+)
 
 # Add ongoing costs
 # Can also add instaneous costs with cost_instant (For example cost of managing relapse)
@@ -413,7 +431,7 @@ cost_ongoing <- add_cost(evt = event_names,
                          cost = (1 - spms_flag) * (
                            rrms_edss_costs[, edss_value == edss_values] +
                              treatment_costs[current_treatment = trt]
-                           ) +
+                         ) +
                            spms_flag * spms_edss_costs[, edss_value == edss_values]
 )
 
@@ -496,7 +514,7 @@ des_bcea <- bcea(eff = total_qalys,
                  interventions = treatment_names)
 
 # Plot the CE plane
-ceplane.plot(des_bcea, wtp = 20000, xlim = c(-0.05, 0.5), ylim = c(-500, 3000))
+ceplane.plot(des_bcea, wtp = 20000, xlim = c(-0.15, 0.15), ylim = c(-500, 500))
 
 #plot a CEAC
 des_multi_ce <- multi.ce(des_bcea)
