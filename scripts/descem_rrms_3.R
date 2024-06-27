@@ -27,7 +27,7 @@ options(tibble.print_max = 50)
 set.seed(243523452)
 
 n_patients <- 100
-n_samples <- 2
+n_samples <- 10
 n_treatments <- 5
 # Treatments at second line (expand to full set)
 treatment_names <- c("Natalizumab",
@@ -311,7 +311,7 @@ init_event_list <-
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-              coef1 = (spms_flag - 1) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
+              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
                 spms_flag * spms_edss_increase[, edss_value == edss_values]
             )
             edss_decrease <- draw_tte(
@@ -319,12 +319,12 @@ init_event_list <-
               dist = "exp",
               # Baseline rate related to current EDSS
               # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
-              coef1 = (spms_flag - 1) * rrms_edss_decrease[, edss_value == edss_values])
+              coef1 = (1 - spms_flag) * rrms_edss_decrease[, edss_value == edss_values])
             progression <- draw_tte(
               1,
               dist = "exp",
               # Below is zero if already progressed to SPMS
-              coef1 = (spms_flag - 1) * spms_progression
+              coef1 = (1 - spms_flag) * spms_progression
             )
             death <- draw_tte(
               1,
@@ -346,8 +346,7 @@ evt_react_list <-
                input = {
                  # This ensures that the current treatment is the initial treatment
                  # of this strategy.
-                 modify_item(list(current_treatment = trt,
-                                  edss_value = 0))
+                 modify_item(list(current_treatment = trt))
                }) %>%
   add_reactevt(name_evt = "relapse",
                input = {
@@ -369,7 +368,7 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = (spms_flag - 1) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
+                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
                        spms_flag * spms_edss_increase[, edss_value == edss_values]
                    )
                  ))
@@ -384,7 +383,7 @@ evt_react_list <-
                      1, 
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
-                     coef1 = (spms_flag - 1) * rrms_edss_decrease[, edss_value == edss_values])
+                     coef1 = (1 - spms_flag) * rrms_edss_decrease[, edss_value == edss_values])
                  ))
                }) %>%
   add_reactevt(name_evt = "progression",
