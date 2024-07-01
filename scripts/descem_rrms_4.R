@@ -143,16 +143,16 @@ common_all_inputs <-add_item(
                                        mean = log(0.8),
                                        sd = 0.01))
     temp["Natalizumab biosimilar"] <- exp(rnorm(1,
-                                                  mean = log(1),
+                                                  mean = log(0.8),
                                                   sd = 0.01))
     temp["Fingolimod"] <- exp(rnorm(1,
-                                      mean = log(1),
+                                      mean = log(0.7),
                                       sd = 0.01))
     temp["Alemtuzumab"] <- exp(rnorm(1,
-                                       mean = log(1),
+                                       mean = log(0.6),
                                        sd = 0.01))
     temp["Cladribine"] <- exp(rnorm(1,
-                                      mean = log(1),
+                                      mean = log(0.9),
                                       sd = 0.01))
     temp
   } else {c(0.8, 0.8, 0.7, 0.6, 0.9)}
