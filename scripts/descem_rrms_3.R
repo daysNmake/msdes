@@ -1,8 +1,9 @@
 # Experiment to implement RRMS DES using the DESCEM package
-# Howard Thom 24th June 2024
+# Howard Thom 24th June 2024 Modified by Ayman Sadek 01 July 2024
 
 # V2 changed samples from n_samples to 1 for random parameters
 # This doesn't work properly as each simulation looks very similar
+# fixed this issue now, you can see the differences between trt groups.
 
 # V3 puts the functions for each parameter set into add_item() expressions
 
@@ -142,16 +143,16 @@ common_all_inputs <-add_item(
                                        mean = log(0.8),
                                        sd = 0.01))
     temp[, "Natalizumab biosimilar"] <- exp(rnorm(1,
-                                                  mean = log(0.8),
+                                                  mean = log(1),
                                                   sd = 0.01))
     temp[, "Fingolimod"] <- exp(rnorm(1,
-                                      mean = log(0.7),
+                                      mean = log(1),
                                       sd = 0.01))
     temp[, "Alemtuzumab"] <- exp(rnorm(1,
-                                       mean = log(0.6),
+                                       mean = log(1),
                                        sd = 0.01))
     temp[, "Cladribine"] <- exp(rnorm(1,
-                                      mean = log(0.9),
+                                      mean = log(1),
                                       sd = 0.01))
     temp
   } else {c(0.8, 0.8, 0.7, 0.6, 0.9)}
@@ -307,11 +308,11 @@ init_event_list <-
               dist = "exp", 
               # Baseline rate modified by HR of current treatment
               # Current treatment allows treatment switching (i.e., not the trt)
-              coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
+              coef1 = baseline_arr * hr_arr[, trt == treatment_names])
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
+              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, trt == treatment_names]) +
                 spms_flag * spms_edss_increase[, edss_value == edss_values]
             )
             edss_decrease <- draw_tte(
@@ -335,7 +336,7 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates can vary by current treatment
-              coef1 = discontinuation_rate[, current_treatment == treatment_names]
+              coef1 = discontinuation_rate[, trt == treatment_names]
             )
           })
 
@@ -356,7 +357,7 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
+                     coef1 = baseline_arr * hr_arr[, trt == treatment_names])
                  ))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
@@ -368,7 +369,7 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, current_treatment == treatment_names]) +
+                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[, edss_value == edss_values] * hr_edss_increase[, trt == treatment_names]) +
                        spms_flag * spms_edss_increase[, edss_value == edss_values]
                    )
                  ))
@@ -410,7 +411,7 @@ evt_react_list <-
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = discontinuation_rate[, current_treatment == treatment_names]
+                     coef1 = discontinuation_rate[, trt == treatment_names]
                    )
                  ))
                })
