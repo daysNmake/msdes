@@ -6,10 +6,16 @@
 # Also added a numeric severity score and repeat 'relapse' event
 # Modified by Ayman Sadek 01JULY
 # Vectorised treatments and , treatment dependent hr, current treatment in individual input
+# Modified by Ayman Sadek 03JULY
+# Vectorised events and event names
+# added 3rd trt
+# added in edss initial distribution, increase, utilities & medical costs
+
 
 library(descem)
 
 library(dplyr)
+library(data.table)
 library(flexsurv)
 library(ggplot2)
 library(kableExtra)
@@ -19,10 +25,33 @@ library(BCEA)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-n_patients <- 1000
+n_patients <- 100
 n_samples <- 10
-n_treatments <- 2
-treatment_names <- c("int", "noint")
+n_treatments <- 3
+treatment_names <- c("noint", "int", "intx")
+event_names <- c("initial","sicker", "edss_increase", "death")
+
+# Define the possible EDSS values
+edss_values <- c(0:9)
+names(edss_values) <- paste("EDSS", edss_values)
+
+# RRMS EDSS Natural History
+rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
+colnames(rrms_edss_natural_history) <- row.names(rrms_edss_natural_history) <-paste("EDSS",edss_values)
+
+#edss utilities
+u_edss <- read.csv("data/df_u_edss_ta616.csv", header = T, row.names = 1)
+edss_utilities <- t(u_edss[,5:6])
+
+#edss costs
+c_m_edss <- read.csv("data/df_c_directmedical_edss.csv", header = T, row.names = 1) #need to be inflated
+c_nm_edss <- read.csv("data/df_c_direct_nonmedical_edss.csv", header = T, row.names = 1) #need to be inflated
+edss_med_costs <- t(c_m_edss[1:10,5:6])
+edss_nonmed_costs <- t(c_nm_edss[1:10,5:6])
+
+
+# Initial distribution of EDSS (dummy but could come from a registry)
+initial_edss_distribution <- c(0.1, 0.5, rep(0.4/8, 8))
 
 #Each patient is identified through "i"
 #psa_bool is the indicator of whether we want to apply a PSA or not
@@ -30,27 +59,36 @@ treatment_names <- c("int", "noint")
 # Need functions to generate the coefficients and hazard ratios
 # specific to each simulation
 # For some reason this doesn't work.
-generate_coef_noint <- function(psa_bool) {
-  coef_noint <- rnorm(1, log(0.2), 0.1)
-  if(!psa_bool) coef_noint = log(0.2)
-  return(coef_noint)
-}
+#generate_coef_noint <- function(psa_bool) {
+ # coef_noint <- rnorm(1, log(0.2), 0.1)
+  #if(!psa_bool) coef_noint = log(0.2)
+  #return(coef_noint)
+#}
 
-generate_HR_int <- function(psa_bool) {
-  HR_int <- exp(rnorm(1, log(0.8), 0.01))
-  if(!psa_bool) HR_int = log(0.8)
-  return(HR_int)
-}
+#generate_HR_int <- function(psa_bool) {
+ # HR_int <- exp(rnorm(1, log(0.8), 0.01))
+  #if(!psa_bool) HR_int = log(0.8)
+  #return(HR_int)
+#}
 
 
 #Put objects here that do not change on any patient or intervention loop
 common_all_inputs <-add_item(
   treatment_names = treatment_names,
-  util.sick = 0.8,
+  event_names =event_names,
+  n_treatments=n_treatments,
+  edss_values = edss_values,
+  rrms_edss_natural_history = rrms_edss_natural_history,
+  edss_utilities = edss_utilities,
+  edss_med_costs = edss_med_costs,
+  util.initial = 0.8,
   util.sicker = 0.5,
-  cost.sick = 3000,
+  cost.initial = 3000,
   cost.sicker = 7000,
-  cost.int = 1000) %>%
+  cost.int = 1000,
+  cost.intx = 1200
+  
+  ) %>%
   add_item(
     coef_noint = if(psa_bool){
       temp_variable <- 2
@@ -59,23 +97,69 @@ common_all_inputs <-add_item(
     else{
       log(0.2)
     }
+    
   ) %>% add_item(
+    # natural history of rrms 10x10 matrix
+    baseline_rrms_edss_increase = if(psa_bool) {
+      temp <- rrms_edss_natural_history
+      for(i_edss in 1:nrow(temp)) {
+        for (j_edss in 1:ncol(temp)){
+          # Rates increase with higher EDSS, always positive
+          temp[i_edss,j_edss] <- pmax(rnorm(1,
+                                           mean = temp[i_edss,j_edss],
+                                           sd = 0.01),0)}
+      }
+      temp
+    } else {
+      rrms_edss_natural_history
+    }
+    
+    ) %>% add_item(
     # Hazard ratios reducing risk of EDSS increase
     HR_int = if(psa_bool) {
       temp <- matrix(nrow = 1, ncol = n_treatments,
                      dimnames = list(NULL, treatment_names))
       # Dummy values but final will come from the NMA
-      temp[, "int"] <- exp(rnorm(1,
-                                         mean = log(0.2),
-                                         sd = 0.01))
       temp[, "noint"] <- exp(rnorm(1,
-                                                    mean = log(1),
+                                         mean = log(1),
+                                         sd = 0.01))
+      temp[, "int"] <- exp(rnorm(1,
+                                                    mean = log(0.2),
                                                     sd = 0.00))
+      temp[, "intx"] <- exp(rnorm(1,
+                                   mean = log(0.4),
+                                   sd = 0.00))
       temp
-    } else {matrix(c(0.2, 1), nrow = 1, ncol = n_treatments,
+    } else {matrix(c(1, 0.2, 0.4), nrow = 1, ncol = n_treatments,
                    dimnames = list(NULL, treatment_names))}
-  ) %>%
-  add_item(
+  ) %>% add_item(  
+  # Utilities for RRMS Orme et al allowed to be negative for the edss8&9
+  rrms_edss_utils = if(psa_bool) {
+    temp <- edss_utilities[1,]
+    for(j_edss in 1:length(temp)) {
+      temp[j_edss] <- rnorm(1, mean =  edss_utilities[1,j_edss], sd =  edss_utilities[2,j_edss])
+    }
+    temp
+    
+  } else {
+    edss_utilities[1,]
+  }
+  
+  ) %>% add_item(  
+    # Medical costs for RRMS Tyas et al these should inflated and drawn from a gamma distribution & replicate for non-medical costs
+    rrms_edss_costs = if(psa_bool) {
+      temp <- edss_med_costs[1,]
+      for(j_edss in 1:length(temp)) {
+        temp[j_edss] <- pmax(rnorm(1, mean =  edss_med_costs[1,j_edss], sd =  edss_med_costs[2,j_edss]),0)
+      }
+      temp
+      
+    } else {
+      edss_med_costs[1,]
+    }
+    
+    )%>%   add_item(
+  #adverse events
     coef_ae = if(psa_bool) {exp(rnorm(1, log(0.5), 0.1))} else {0.5}
   )
 
@@ -85,30 +169,45 @@ common_pt_inputs <- add_item(death= max(0.0000001, rnorm(n=1, mean=12, sd=3)))
 
 #Put objects here that change as we loop through treatments for each patient 
 # (e.g. events can affect fl.tx, but events do not affect nat.os.s)
-unique_pt_inputs <- add_item(fl.sick = 1, 
+unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Random 
+                                                 prob = initial_edss_distribution),
+                             fl.initial = 1, 
                              severity_score = 1,
-                             current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(0.5,0.5))) 
+                             current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))) 
 
 # Add time to event for each patient for each of the two treatments
 init_event_list <- 
-  add_tte(trt=treatment_names, evts = c("sick","sicker","death", "ae") ,input={ #intervention
-    sick <- 0
+  add_tte(trt=treatment_names, evts = event_names,
+          input={ #intervention
+    initial <- 0
     sicker <- draw_tte(1,dist="exp", coef1=coef_noint, hr = HR_int[, trt == treatment_names])
+    edss_increase <- draw_tte(
+      1, 
+      dist = "exp",
+      coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+    )
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
 
 # Add a reaction to the events
 # E.g. change treatment status or EDSS level
 evt_react_list <-
-  add_reactevt(name_evt = "sick",
+  add_reactevt(name_evt = "initial",
                input = {
                  modify_item(list(current_treatment = trt))
                }) %>%
   add_reactevt(name_evt = "sicker",
                input = {
-                 modify_item(list(fl.sick = 0,
+                 modify_item(list(fl.initial = 0,
                                   severity_score = severity_score * 0.8)) 
                }) %>%
+  add_reactevt(name_evt = "edss_increase",
+               input = {
+                 modify_item(list(edss_value = min(edss_value + 1, max(edss_values))))
+                 
+                 # Need to simulate the next time to EDSS increase
+
+               })%>%
   add_reactevt(name_evt = "death",
                input = {
                  modify_item(list(curtime = Inf)) 
@@ -122,21 +221,25 @@ evt_react_list <-
 
 # Add utilities
 # Example below is an expression that depends on common_all_inputs
-util_ongoing <- add_util(evt = c("sick", "sicker","death"),
+util_ongoing <- add_util(evt = event_names,
                          trt = treatment_names,
-                         util = severity_score * (util.sick * fl.sick + util.sicker * (1-fl.sick))
+                         util = severity_score * (util.initial * fl.initial + util.sicker * (1-fl.initial))
 )
 
 # Add costs
 cost_ongoing <-
   add_cost(
-    evt = c("sick", "sicker","death") ,
+    evt = event_names ,
     trt = "noint",
-    cost = cost.sick * fl.sick + cost.sicker * (1-fl.sick) ) %>%
+    cost = cost.initial * fl.initial + cost.sicker * (1-fl.initial) ) %>%
   add_cost(
-    evt = c("sick", "sicker","death") ,
+    evt = event_names ,
     trt = "int",
-    cost = cost.sick * fl.sick + cost.sicker * (1-fl.sick) + cost.int * fl.sick ) 
+    cost = cost.initial * fl.initial + cost.sicker * (1-fl.initial) + cost.int * fl.initial ) %>%
+  add_cost(
+    evt = event_names ,
+    trt = "intx",
+    cost = cost.initial * fl.initial + cost.sicker * (1-fl.initial) + cost.intx * fl.initial ) 
 
 
 # Run the simulation
@@ -147,7 +250,7 @@ total_runtime <- system.time({
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = F,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
-    trt_list = c("int", "noint"),             # intervention list
+    trt_list = treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
     unique_pt_inputs = unique_pt_inputs,      # inputs that change within a simulation between interventions
@@ -158,7 +261,7 @@ total_runtime <- system.time({
     ncores = 2,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("fl.sick", "severity_score", "current_treatment")
+    input_out=c("fl.initial", "severity_score", "current_treatment")
   )
 })
 
@@ -166,14 +269,14 @@ total_runtime <- system.time({
 # Plot the times to event
 # Straight vertical line represents the median
 data_plot <- results$final_output$merged_df %>%
-  filter(evtname != "sick") %>%
+  filter(evtname != "initial") %>%
   group_by(trt, evtname, simulation) %>%
   mutate(median = median(evttime)) %>%
   ungroup()
 
 ggplot(data_plot) +
   geom_density(aes(fill = trt, x = evttime),
-               alpha = 0.7) +
+               alpha = 0.3) +
   geom_vline(aes(xintercept = median, col = trt)) +
   facet_wrap( ~ evtname, scales = "free") +
   scale_y_continuous(expand = c(0, 0)) +
