@@ -6,6 +6,7 @@
 # fixed this issue now, you can see the differences between trt groups.
 
 # V3 puts the functions for each parameter set into add_item() expressions
+# v4 fixed matrix accessing for parameters (As they only have one row)
 
 # TODO Figure out neater way to add each parameter
 # Add relapse and other event disutility and costs
@@ -27,8 +28,8 @@ options(tibble.print_max = 50)
 
 set.seed(243523452)
 
-n_patients <- 100
-n_samples <- 10
+n_patients <- 1000
+n_samples <- 100
 n_treatments <- 5
 # Treatments at second line (expand to full set)
 treatment_names <- c("Natalizumab",
@@ -37,11 +38,16 @@ treatment_names <- c("Natalizumab",
                      "Alemtuzumab",
                      "Cladribine")
 
+treatment_codes <- c(1, 2, 3, 4, 5)
+names(treatment_codes) <- treatment_names
+
 # Treatments that patients can move to at 3rd and higher line (expand to full set)
 higher_line_treatments <- c("Natalizumab",
                             "Natalizumab biosimilar",
                             "Alemtuzumab",
                             "Cladribine")
+higher_line_treatment_codes <- c(1, 2, 4, 5)
+names(higher_line_treatment_codes) <- higher_line_treatments
 
 event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "death")
 
@@ -70,7 +76,9 @@ names(treatment_costs) <- treatment_names
 # true mean should be used
 common_all_inputs <-add_item(
   treatment_names = treatment_names,
+  treatment_codes = treatment_codes,
   higher_line_treatments = higher_line_treatments,
+  higher_line_treatment_codes = higher_line_treatment_codes,
   edss_values = edss_values,
   event_names = event_names
 ) %>% add_item(
@@ -136,22 +144,21 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Hazard ratios reducing risk of EDSS increase
   hr_edss_increase = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = n_treatments,
-                   dimnames = list(NULL, treatment_names))
+    temp <- matrix(nrow = 1, ncol = n_treatments)
     # Dummy values but final will come from the NMA
-    temp["Natalizumab"] <- exp(rnorm(1,
+    temp[treatment_codes["Natalizumab"]] <- exp(rnorm(1,
                                        mean = log(0.8),
                                        sd = 0.01))
-    temp["Natalizumab biosimilar"] <- exp(rnorm(1,
+    temp[treatment_codes["Natalizumab biosimilar"]] <- exp(rnorm(1,
                                                   mean = log(0.8),
                                                   sd = 0.01))
-    temp["Fingolimod"] <- exp(rnorm(1,
+    temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
                                       mean = log(0.7),
                                       sd = 0.01))
-    temp["Alemtuzumab"] <- exp(rnorm(1,
+    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
                                        mean = log(0.6),
                                        sd = 0.01))
-    temp["Cladribine"] <- exp(rnorm(1,
+    temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                       mean = log(0.9),
                                       sd = 0.01))
     temp
@@ -163,12 +170,12 @@ common_all_inputs <-add_item(
     for(i_edss in 1:length(edss_values)) {
       # Rates increase with higher EDSS
       temp[i_edss] <- exp(rnorm(1,
-                                  mean = log(0.09 + 0.001 * i_edss),
+                                  mean = log(0.9 + 0.01 * i_edss),
                                   sd = 0.01))
     }
     temp
   } else {
-    0.09 + 0.001 * edss_values
+    0.9 + 0.01 * edss_values
   }
 ) %>% add_item(
   rrms_edss_decrease = if(psa_bool) {
@@ -194,12 +201,12 @@ common_all_inputs <-add_item(
     for(i_edss in 1:length(edss_values)) {
       # Rates increase with higher EDSS
       temp[i_edss] <- exp(rnorm(1,
-                                  mean = log(0.09 + 0.001 * i_edss),
+                                  mean = log(0.9 + 0.01 * i_edss),
                                   sd = 0.01))
     }
     temp
   } else {
-    0.09 + 0.001 * edss_values
+    0.9 + 0.01 * edss_values
   }
 ) %>% add_item(
   # Dummy rate of progression to SPMS
@@ -211,28 +218,27 @@ common_all_inputs <-add_item(
   # Baseline annualised relapse rate
   baseline_arr = if(psa_bool) {
     exp(rnorm(1,
-              mean = log(0.3),
+              mean = log(0.8),
               sd = 0.03))
   } else {0.3}
 ) %>% add_item(
   # Hazard ratios on annualised relapse rate
   hr_arr = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = n_treatments,
-                   dimnames = list(NULL, treatment_names))
+    temp <- matrix(nrow = 1, ncol = n_treatments)
     # Dummy values but final will come from the NMA
-    temp["Natalizumab"] <- exp(rnorm(1,
+    temp[treatment_codes["Natalizumab"]] <- exp(rnorm(1,
                                        mean = log(0.8),
                                        sd = 0.01))
-    temp["Natalizumab biosimilar"] <- exp(rnorm(1,
+    temp[treatment_codes["Natalizumab biosimilar"]] <- exp(rnorm(1,
                                                   mean = log(0.8),
                                                   sd = 0.01))
-    temp["Fingolimod"] <- exp(rnorm(1,
+    temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
                                       mean = log(0.7),
                                       sd = 0.01))
-    temp["Alemtuzumab"] <- exp(rnorm(1,
+    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
                                        mean = log(0.6),
                                        sd = 0.01))
-    temp["Cladribine"] <- exp(rnorm(1,
+    temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                       mean = log(0.9),
                                       sd = 0.01))
     temp
@@ -258,14 +264,13 @@ common_all_inputs <-add_item(
   # This can be changed by adding line specific discontinuation rates
   add_item(
     discontinuation_rate = if(psa_bool) {
-      temp <- matrix(nrow = 1, ncol = n_treatments,
-                     dimnames = list(NULL, treatment_names))
-      for(treatment_name in treatment_names) {
-        temp[treatment_name] <- exp(
+      temp <- matrix(nrow = 1, ncol = n_treatments)
+      for(treatment_code in treatment_codes) {
+        temp[treatment_code] <- exp(
           rnorm(1, 
                 # Arbitrarily setting the higher treatments (Clad/Alem) to have higher
                 # discontinuation than lower treatments (nat/nat bio, fing)
-                mean = log(0.005 + 0.005 * which(treatment_name == treatment_names)),
+                mean = log(0.005 + 0.005 * treatment_code),
                 sd = 0.001)
         )
       }
@@ -291,6 +296,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                              spms_flag = sample(size = 1, x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
                              current_treatment = "Natalizumab",
+                             current_treatment_code = 1,
                              treatment_line = 2
 )
 
@@ -308,12 +314,13 @@ init_event_list <-
               dist = "exp", 
               # Baseline rate modified by HR of current treatment
               # Current treatment allows treatment switching (i.e., not the trt)
-              coef1 = baseline_arr * hr_arr[current_treatment == treatment_names])
+              coef1 = baseline_arr * hr_arr[current_treatment_code]
+              )
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
               coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase[edss_value == edss_values] * 
-                                           hr_edss_increase[current_treatment == treatment_names]) +
+                                           hr_edss_increase[current_treatment_code]) +
                 spms_flag * spms_edss_increase[edss_value == edss_values]
             )
             edss_decrease <- draw_tte(
@@ -337,7 +344,7 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates can vary by current treatment
-              coef1 = discontinuation_rate[current_treatment == treatment_names]
+              coef1 = discontinuation_rate[current_treatment_code]
             )
           })
 
@@ -348,7 +355,8 @@ evt_react_list <-
                input = {
                  # This ensures that the current treatment is the initial treatment
                  # of this strategy.
-                 modify_item(list(current_treatment = trt))
+                 modify_item(list(current_treatment = trt,
+                                  current_treatment_code = treatment_codes[trt]))
                }) %>%
   add_reactevt(name_evt = "relapse",
                input = {
@@ -358,8 +366,8 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = baseline_arr * 
-                       hr_arr[current_treatment == treatment_names])
+                     coef1 = baseline_arr *
+                       hr_arr[current_treatment_code])
                  ))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
@@ -373,7 +381,7 @@ evt_react_list <-
                      dist = "exp",
                      coef1 = (1 - spms_flag) * 
                        (baseline_rrms_edss_increase[edss_value == edss_values] * 
-                          hr_edss_increase[current_treatment == treatment_names]) +
+                          hr_edss_increase[current_treatment_code]) +
                        spms_flag * spms_edss_increase[edss_value == edss_values]
                    )
                  ))
@@ -407,6 +415,8 @@ evt_react_list <-
                input = {
                  modify_item(list(current_treatment = sample(x = higher_line_treatments,
                                                              size = 1),
+                                  current_treatment_code = sample(x = higher_line_treatment_codes,
+                                                                  size = 1),
                                   treatment_line = treatment_line + 1,
                                   discontinuation_rate = (treatment_line < 4) *  discontinuation_rate))
                  
@@ -415,7 +425,7 @@ evt_react_list <-
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = discontinuation_rate[current_treatment == treatment_names]
+                     coef1 = discontinuation_rate[current_treatment_code]
                    )
                  ))
                })
