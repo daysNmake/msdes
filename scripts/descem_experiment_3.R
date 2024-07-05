@@ -171,6 +171,7 @@ common_pt_inputs <- add_item(death= max(0.0000001, rnorm(n=1, mean=12, sd=3)))
 # (e.g. events can affect fl.tx, but events do not affect nat.os.s)
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Random 
                                                  prob = initial_edss_distribution),
+                             edss_i = edss_value,
                              fl.initial = 1, 
                              severity_score = 1,
                              current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))) 
@@ -203,10 +204,18 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
-                 modify_item(list(edss_value = min(edss_value + 1, max(edss_values))))
+                 modify_item(list(edss_i = edss_value,
+                                  edss_value = min(edss_value + 1, max(edss_values))
+                                  ))
                  
                  # Need to simulate the next time to EDSS increase
-
+                 new_event(list(
+                   "edss_increase" = curtime + draw_tte(
+                     1, 
+                     dist = "exp",
+                     coef1 = (baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+                   )
+                 ))
                })%>%
   add_reactevt(name_evt = "death",
                input = {
@@ -261,7 +270,7 @@ total_runtime <- system.time({
     ncores = 2,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("fl.initial", "severity_score", "current_treatment")
+    input_out=c("edss_value", "edss_i", "severity_score", "current_treatment")
   )
 })
 
