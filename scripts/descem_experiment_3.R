@@ -4,16 +4,20 @@
 # Howard Thom 23-June-2024
 # Modified to include some uncertainty and use BCEA to analyse results.
 # Also added a numeric severity score and repeat 'relapse' event
+
 # Modified by Ayman Sadek 01JULY
 # Vectorised treatments and , treatment dependent hr, current treatment in individual input
+
 # Modified by Ayman Sadek 03JULY
 # Vectorised events and event names
 # added 3rd trt
-# added in edss initial distribution, increase, utilities & medical costs
+# added in edss: initial distribution, increase, utilities & medical costs
 
+# Modified by Ayman Sadek 08JULY
+# added in relapse rates
 
 library(descem)
-
+library(readr)
 library(dplyr)
 library(data.table)
 library(flexsurv)
@@ -25,11 +29,15 @@ library(BCEA)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-n_patients <- 100
-n_samples <- 10
+n_patients <- 1000
+n_samples <- 100
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
-event_names <- c("initial","sicker", "edss_increase", "death")
+event_names <- c("initial","sicker", "relapse", "edss_increase", "death")
+
+initial_age <- 20 
+time_horizon <- 80 # Years so lifetime
+prop_female <- 0.50
 
 # Define the possible EDSS values
 edss_values <- c(0:9)
@@ -53,23 +61,16 @@ edss_nonmed_costs <- t(c_nm_edss[1:10,5:6])
 # Initial distribution of EDSS (dummy but could come from a registry)
 initial_edss_distribution <- c(0.1, 0.5, rep(0.4/8, 8))
 
+# Annual treatment costs
+
+# baseline population risk parameters: relapse rates and SMR
+df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
+#Placebo arm of the clarabidine study in tA616
+bl_rrms_rr <- as.double(c(df_init_params[1], sqrt(437)*(df_init_params[3]-df_init_params[2])/3.92))
+#row.names(bl_rrms_rr) <- c("active rrms blrr", "active rrms blrr sd")
+
 #Each patient is identified through "i"
 #psa_bool is the indicator of whether we want to apply a PSA or not
-
-# Need functions to generate the coefficients and hazard ratios
-# specific to each simulation
-# For some reason this doesn't work.
-#generate_coef_noint <- function(psa_bool) {
- # coef_noint <- rnorm(1, log(0.2), 0.1)
-  #if(!psa_bool) coef_noint = log(0.2)
-  #return(coef_noint)
-#}
-
-#generate_HR_int <- function(psa_bool) {
- # HR_int <- exp(rnorm(1, log(0.8), 0.01))
-  #if(!psa_bool) HR_int = log(0.8)
-  #return(HR_int)
-#}
 
 
 #Put objects here that do not change on any patient or intervention loop
@@ -79,8 +80,10 @@ common_all_inputs <-add_item(
   n_treatments=n_treatments,
   edss_values = edss_values,
   rrms_edss_natural_history = rrms_edss_natural_history,
+  initial_edss_distribution=initial_edss_distribution,
   edss_utilities = edss_utilities,
   edss_med_costs = edss_med_costs,
+  bl_rrms_rr=bl_rrms_rr,
   util.initial = 0.8,
   util.sicker = 0.5,
   cost.initial = 3000,
@@ -115,25 +118,57 @@ common_all_inputs <-add_item(
     }
     
     ) %>% add_item(
-    # Hazard ratios reducing risk of EDSS increase
+      
+      # Baseline annualised relapse rate placebo arm of the Clarabidine Trial TA616
+      baseline_arr = if(psa_bool) {
+         exp(rnorm(1,
+                  mean = log(bl_rrms_rr[1]),
+                  sd = 0.01))
+      } else {bl_rrms_rr[1]}
+      
+    )%>% add_item(
+    
+      # Hazard ratios reducing risk of EDSS increase
     HR_int = if(psa_bool) {
       temp <- matrix(nrow = 1, ncol = n_treatments,
                      dimnames = list(NULL, treatment_names))
       # Dummy values but final will come from the NMA
       temp[, "noint"] <- exp(rnorm(1,
-                                         mean = log(1),
-                                         sd = 0.01))
+                                   mean = log(1),
+                                   sd = 0.01))
       temp[, "int"] <- exp(rnorm(1,
-                                                    mean = log(0.2),
-                                                    sd = 0.00))
+                                  mean = log(0.2),
+                                  sd = 0.01))
       temp[, "intx"] <- exp(rnorm(1,
                                    mean = log(0.4),
-                                   sd = 0.00))
+                                   sd = 0.01))
       temp
     } else {matrix(c(1, 0.2, 0.4), nrow = 1, ncol = n_treatments,
                    dimnames = list(NULL, treatment_names))}
-  ) %>% add_item(  
-  # Utilities for RRMS Orme et al allowed to be negative for the edss8&9
+    
+  ) %>% add_item(
+    
+    # Hazard ratios on annualised relapse rate
+    hr_arr = if(psa_bool) {
+      temp <- matrix(nrow = 1, ncol = n_treatments,
+                     dimnames = list(NULL, treatment_names))
+      # Dummy values but final will come from the NMA
+      temp[, "noint"] <- exp(rnorm(1,
+                                   mean = log(1),
+                                   sd = 0.01))
+      temp[, "int"] <- exp(rnorm(1,
+                                 mean = log(0.2),
+                                 sd = 0.01))
+      temp[, "intx"] <- exp(rnorm(1,
+                                  mean = log(0.4),
+                                  sd = 0.01))
+      temp
+    } else {matrix(c(1, 0.2, 0.4), nrow = 1, ncol = n_treatments,
+                   dimnames = list(NULL, treatment_names))}
+    
+  )%>% add_item(  
+ 
+     # Utilities for RRMS Orme et al allowed to be negative for the edss8&9
   rrms_edss_utils = if(psa_bool) {
     temp <- edss_utilities[1,]
     for(j_edss in 1:length(temp)) {
@@ -173,6 +208,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                                                  prob = initial_edss_distribution),
                              edss_i = edss_value,
                              fl.initial = 1, 
+                             n_relapse = 0,
                              severity_score = 1,
                              current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))) 
 
@@ -181,12 +217,22 @@ init_event_list <-
   add_tte(trt=treatment_names, evts = event_names,
           input={ #intervention
     initial <- 0
+    
     sicker <- draw_tte(1,dist="exp", coef1=coef_noint, hr = HR_int[, trt == treatment_names])
+    
+    relapse <- draw_tte(
+      1, 
+      dist = "exp", 
+      # Baseline rate modified by HR of current treatment
+      # Current treatment to be implemented in later version
+      coef1 = baseline_arr * hr_arr[, trt == treatment_names])
+    
     edss_increase <- draw_tte(
       1, 
       dist = "exp",
       coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
     )
+    
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
 
@@ -196,12 +242,28 @@ evt_react_list <-
   add_reactevt(name_evt = "initial",
                input = {
                  modify_item(list(current_treatment = trt))
+                 
                }) %>%
   add_reactevt(name_evt = "sicker",
                input = {
                  modify_item(list(fl.initial = 0,
                                   severity_score = severity_score * 0.8)) 
+                 
                }) %>%
+  add_reactevt(name_evt = "relapse",
+               input = {
+                 modify_item(list(n_relapse= n_relapse + 1))
+                 
+                 # Currenly no impact on costs or utilities of relapse
+                 # Just need to simulate the next time to relapse
+                 new_event(list(
+                   "relapse" = curtime + draw_tte(
+                     1, 
+                     dist = "exp", 
+                     coef1 = baseline_arr * hr_arr[, trt == treatment_names])
+                 ))
+                 
+               })%>%
   add_reactevt(name_evt = "edss_increase",
                input = {
                  modify_item(list(edss_i = edss_value,
@@ -209,13 +271,13 @@ evt_react_list <-
                                   ))
                  
                  # Need to simulate the next time to EDSS increase
-                 new_event(list(
+                 if (edss_i < 9 | edss_value < 9) {new_event(list(
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
                      coef1 = (baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
                    )
-                 ))
+                 ))}
                })%>%
   add_reactevt(name_evt = "death",
                input = {
@@ -267,10 +329,10 @@ total_runtime <- system.time({
     evt_react_list = evt_react_list,          # reaction of events
     util_ongoing_list = util_ongoing,
     cost_ongoing_list = cost_ongoing,
-    ncores = 2,                               # number of cores to use, recommended not to use all
+    ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("edss_value", "edss_i", "severity_score", "current_treatment")
+    input_out=c("edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment")
   )
 })
 
@@ -303,6 +365,24 @@ psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 head(results$output_psa[[1]]$merged_df)
 head(results$output_psa[[2]]$merged_df)
 
+# compare number of relapses across groups
+n_dead <- psa_ipd[psa_ipd$evtname == "death"]
+n_rel_trt <- c(sum(n_dead$n_relapse[n_dead$trt == "noint"]),
+sum(n_dead$n_relapse[n_dead$trt == "intx"]),
+sum(n_dead$n_relapse[n_dead$trt == "int"])
+)
+names(n_rel_trt) <- c("noint","intx" ,"int" )
+n_rel_trt
+
+# compare number of dead patients in edss groups
+# add in a flag for alive patients and repeat for alive patients
+edss_dis <- matrix(rep(1:9,3), byrow =TRUE, nrow = 3, dimnames = list(treatment_names, paste("edss", rep(1:9))))
+for (j in 1:length(edss_dis[1,])){
+edss_dis[1,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "noint"])
+edss_dis[2,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "intx"])
+edss_dis[3,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "int"])
+}
+edss_dis
 # Get the total costs and QALYs for each patient
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                     dimnames = list(NULL, treatment_names, NULL))
