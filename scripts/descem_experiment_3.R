@@ -16,6 +16,11 @@
 # Modified by Ayman Sadek 08JULY
 # added in relapse rates
 
+# Modified by Ayman Sadek 10ULY
+# added age & sex dependent morality multiplied by SMR
+# Could add in SMR by edss state, mortality would have to be an individal patient input
+
+
 library(descem)
 library(readr)
 library(dplyr)
@@ -67,7 +72,13 @@ initial_edss_distribution <- c(0.1, 0.5, rep(0.4/8, 8))
 df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
 #Placebo arm of the clarabidine study in tA616
 bl_rrms_rr <- as.double(c(df_init_params[1], sqrt(437)*(df_init_params[3]-df_init_params[2])/3.92))
-#row.names(bl_rrms_rr) <- c("active rrms blrr", "active rrms blrr sd")
+
+#mortality
+mortality <- read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1)
+mortality <- mortality[,c(3,9)]
+colnames(mortality) <- c("male", "female")
+
+smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
 #Each patient is identified through "i"
 #psa_bool is the indicator of whether we want to apply a PSA or not
@@ -84,6 +95,8 @@ common_all_inputs <-add_item(
   edss_utilities = edss_utilities,
   edss_med_costs = edss_med_costs,
   bl_rrms_rr=bl_rrms_rr,
+  mortality=mortality,
+  smr=smr,
   util.initial = 0.8,
   util.sicker = 0.5,
   cost.initial = 3000,
@@ -108,9 +121,9 @@ common_all_inputs <-add_item(
       for(i_edss in 1:nrow(temp)) {
         for (j_edss in 1:ncol(temp)){
           # Rates increase with higher EDSS, always positive
-          temp[i_edss,j_edss] <- pmax(rnorm(1,
-                                           mean = temp[i_edss,j_edss],
-                                           sd = 0.01),0)}
+          temp[i_edss,j_edss] <- exp(rnorm(1,
+                                           mean = log(temp[i_edss,j_edss]),
+                                           sd = 0.01))}
       }
       temp
     } else {
@@ -200,7 +213,12 @@ common_all_inputs <-add_item(
 
 
 #Put objects here that do not change as we loop through treatments for a patient
-common_pt_inputs <- add_item(death= max(0.0000001, rnorm(n=1, mean=12, sd=3))) 
+common_pt_inputs <- add_item(age = initial_age, # Fixed
+                             sex = sample(size = 1, x = c("male", "female"), # Random 
+                                          prob = c(1 - prop_female, prop_female)),
+                             death = draw_tte(1, dist = "exp",
+                                            coef1 = mortality[age, sex == c("male", "female")]*smr[1])
+                            )
 
 #Put objects here that change as we loop through treatments for each patient 
 # (e.g. events can affect fl.tx, but events do not affect nat.os.s)
@@ -235,6 +253,8 @@ init_event_list <-
     
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
+
+
 
 # Add a reaction to the events
 # E.g. change treatment status or EDSS level
@@ -320,7 +340,7 @@ total_runtime <- system.time({
     debug=F,
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = F,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = T,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     trt_list = treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
@@ -365,24 +385,32 @@ psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 head(results$output_psa[[1]]$merged_df)
 head(results$output_psa[[2]]$merged_df)
 
-# compare number of relapses across groups
-n_dead <- psa_ipd[psa_ipd$evtname == "death"]
-n_rel_trt <- c(sum(n_dead$n_relapse[n_dead$trt == "noint"]),
-sum(n_dead$n_relapse[n_dead$trt == "intx"]),
-sum(n_dead$n_relapse[n_dead$trt == "int"])
-)
-names(n_rel_trt) <- c("noint","intx" ,"int" )
+###compare the results per group if interest
+# compare number of relapses across trt groups
+dead <- psa_ipd[psa_ipd$evtname == "death"]
+n_rel_trt<- c(rep(0, length(treatment_names)))
+names(n_rel_trt) <- treatment_names
+for (i  in 1:length(treatment_names)) {
+  n_rel_trt[i] <- sum(dead$n_relapse[dead$trt == names(n_rel_trt[i])])
+}
 n_rel_trt
 
 # compare number of dead patients in edss groups
-# add in a flag for alive patients and repeat for alive patients
-edss_dis <- matrix(rep(1:9,3), byrow =TRUE, nrow = 3, dimnames = list(treatment_names, paste("edss", rep(1:9))))
-for (j in 1:length(edss_dis[1,])){
-edss_dis[1,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "noint"])
-edss_dis[2,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "intx"])
-edss_dis[3,j]<- length(n_dead$edss_value[n_dead$edss_value==j & n_dead$trt == "int"])
-}
+edss_dis <- matrix(rep(1:10,length(treatment_names)), byrow =TRUE, nrow = length(treatment_names), 
+                   dimnames = list(treatment_names, paste("edss", rep(0:9))))
+for (i in 1:nrow(edss_dis)){
+for (j in 1:ncol(edss_dis)){
+edss_dis[i,j]<- length(dead$edss_value[dead$trt == names(edss_dis[,i]) & dead$edss_value==j-1])
+}}
 edss_dis
+
+# add in a flag for alive patients and repeat for alive patients if any are alive
+
+for(i in 1:n_patients){
+x <- psa_ipd[psa_ipd$pat_id ==i & psa_ipd$evttime == max(psa_ipd$evttime) & psa_ipd$evtname != "death"]
+
+print(x)
+}
 # Get the total costs and QALYs for each patient
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                     dimnames = list(NULL, treatment_names, NULL))
