@@ -18,7 +18,7 @@
 
 # Modified by Ayman Sadek 10ULY
 # added age & sex dependent morality multiplied by SMR
-# Could add in SMR by edss state, mortality would have to be an individal patient input
+# Could add in SMR by edss state, mortality would have to be an individual patient input
 
 
 library(descem)
@@ -38,7 +38,7 @@ n_patients <- 1000
 n_samples <- 100
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
-event_names <- c("initial","sicker", "relapse", "edss_increase", "death")
+event_names <- c("initial","sicker", "relapse", "edss_increase", "edss_decrease" , "death")
 
 initial_age <- 20 
 time_horizon <- 80 # Years so lifetime
@@ -80,8 +80,9 @@ colnames(mortality) <- c("male", "female")
 
 smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
-#Each patient is identified through "i"
-#psa_bool is the indicator of whether we want to apply a PSA or not
+# Initial proportion with SPMS
+initial_spms_prop <- 0
+
 
 
 #Put objects here that do not change on any patient or intervention loop
@@ -97,6 +98,7 @@ common_all_inputs <-add_item(
   bl_rrms_rr=bl_rrms_rr,
   mortality=mortality,
   smr=smr,
+  initial_spms_prop=initial_spms_prop,
   util.initial = 0.8,
   util.sicker = 0.5,
   cost.initial = 3000,
@@ -131,6 +133,31 @@ common_all_inputs <-add_item(
     }
     
     ) %>% add_item(
+      # dummy data, hopefully replace with natural history of spms 10x10 matrix
+      rrms_edss_decrease = if(psa_bool) {
+        temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
+                       dimnames = list(names(edss_values), names(edss_values)))
+        for(i_edss in 1:nrow(temp)) {
+          for (j_edss in 1:ncol(temp)){
+            # Rates increase with higher EDSS, always positive
+            temp[i_edss,j_edss] <- exp(rnorm(1,
+                                             mean = log(0.1 - 0.001 *i_edss*j_edss),
+                                             sd = 0.01))}
+        }
+        temp
+      } else {
+        temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
+                       dimnames = list(names(edss_values), names(edss_values)))
+        for(i_edss in 1:nrow(temp)) {
+          for (j_edss in 1:ncol(temp)){
+            # Rates increase with higher EDSS, always positive
+            temp[i_edss,j_edss] <- exp(rnorm(1,
+                                             mean = log(0.1 - 0.001 *i_edss*j_edss),
+                                             sd = 0.01))}
+        }
+        temp
+      }
+    )%>% add_item(
       
       # Baseline annualised relapse rate placebo arm of the Clarabidine Trial TA616
       baseline_arr = if(psa_bool) {
@@ -228,6 +255,8 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                              fl.initial = 1, 
                              n_relapse = 0,
                              severity_score = 1,
+                             spms_flag = sample(size = 1, x = c(0, 1), # Random
+                                                prob = c(1 - initial_spms_prop, initial_spms_prop)),
                              current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))) 
 
 # Add time to event for each patient for each of the two treatments
@@ -251,6 +280,13 @@ init_event_list <-
       coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
     )
     
+    edss_decrease <- draw_tte(
+      1, 
+      dist = "exp",
+      # Baseline rate related to current EDSS
+      # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
+      coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
+
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
 
@@ -274,7 +310,7 @@ evt_react_list <-
                input = {
                  modify_item(list(n_relapse= n_relapse + 1))
                  
-                 # Currenly no impact on costs or utilities of relapse
+                 # Currently no impact on costs or utilities of relapse
                  # Just need to simulate the next time to relapse
                  new_event(list(
                    "relapse" = curtime + draw_tte(
@@ -298,6 +334,19 @@ evt_react_list <-
                      coef1 = (baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
                    )
                  ))}
+               }) %>%
+  add_reactevt(name_evt = "edss_decrease",
+               input = {
+                 modify_item(list(edss_i = max(edss_i - 1, min(edss_values))))
+                 
+                 # Need to simulate the next time to EDSS decrease
+                 new_event(list(
+                   "edss_decrease" = curtime + draw_tte(
+                     1, 
+                     dist = "exp",
+                     # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+                     coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
+                 ))
                })%>%
   add_reactevt(name_evt = "death",
                input = {
