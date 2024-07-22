@@ -35,10 +35,10 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 n_patients <- 1000
-n_samples <- 100
+n_samples <- 10
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
-event_names <- c("initial","sicker", "relapse", "edss_increase", "edss_decrease" , "death")
+event_names <- c("initial","sicker", "relapse", "edss_increase", "edss_decrease", "progression","treatment_switch", "death")
 
 initial_age <- 20 
 time_horizon <- 80 # Years so lifetime
@@ -157,7 +157,15 @@ common_all_inputs <-add_item(
         }
         temp
       }
-    )%>% add_item(
+    ) %>% add_item(
+      
+      # Dummy rate of progression to SPMS
+      spms_progression =  if(psa_bool) {exp(rnorm(1,
+                                                  mean = log(0.002),
+                                                  sd = 0.0001))
+      } else {0.002}
+      
+    ) %>% add_item(
       
       # Baseline annualised relapse rate placebo arm of the Clarabidine Trial TA616
       baseline_arr = if(psa_bool) {
@@ -206,7 +214,29 @@ common_all_inputs <-add_item(
     } else {matrix(c(1, 0.2, 0.4), nrow = 1, ncol = n_treatments,
                    dimnames = list(NULL, treatment_names))}
     
-  )%>% add_item(  
+  ) %>% 
+  # Treatment switch follows discontinuation rates
+  # Dummy values assume the discontinuation doesn't depend on line of therapy
+  # (E.g., cladribine disctoninuation rate is same at 1st and 2nd line)
+  # This can be changed by adding line specific discontinuation rates
+  add_item(
+    discontinuation_rate = if(psa_bool) {
+      temp <- matrix(nrow = 1, ncol = n_treatments,
+                     dimnames = list(NULL, treatment_names))
+      for(i in 1:length(treatment_names)) {
+        temp[i] <- exp(
+          rnorm(1, 
+                # Arbitrarily setting the higher treatments (Clad/Alem) to have higher
+                # discontinuation than lower treatments (nat/nat bio, fing)
+                mean = log(0.05 + 0.005 * i),
+                sd = 0.001)
+        )
+      }
+      temp
+    }
+    else {0.05 + 0.005 * 1:length(treatment_names)}
+    
+  ) %>% add_item(  
  
      # Utilities for RRMS Orme et al allowed to be negative for the edss8&9
   rrms_edss_utils = if(psa_bool) {
@@ -257,9 +287,12 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                              severity_score = 1,
                              spms_flag = sample(size = 1, x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
-                             current_treatment=sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))) 
+                             current_treatment=trt, #sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))
+                             treatment_line = 2,
+                             n_switch = 0
+                             ) 
 
-# Add time to event for each patient for each of the two treatments
+# Add time to event for each patient for each of the treatments
 init_event_list <- 
   add_tte(trt=treatment_names, evts = event_names,
           input={ #intervention
@@ -274,21 +307,35 @@ init_event_list <-
       # Current treatment to be implemented in later version
       coef1 = baseline_arr * hr_arr[, trt == treatment_names])
     
-    #edss decrease if spms else edss increase
+    #edss decrease if spms else edss increase & spms progression
     if (spms_flag) {
-       edss_decrease <- draw_tte(
-      1, 
-      dist = "exp",
-      # Baseline rate related to current EDSS
-      # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
-      coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
+             edss_decrease <- draw_tte(
+            1, 
+            dist = "exp",
+            # Baseline rate related to current EDSS
+            # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
+            # do  this flags work? Ayman
+            coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
      } else {
-      edss_increase <- draw_tte(
-        1, 
-        dist = "exp",
-        coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
-      )
+              edss_increase <- draw_tte(
+                1, 
+                dist = "exp",
+                coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+              )
+              progression <- draw_tte(
+                1,
+                dist = "exp",
+                # Below is zero if already progressed to SPMS
+                coef1 = (1 - spms_flag) * spms_progression
+              )
     }
+    
+    treatment_switch <- draw_tte(
+      1,
+      dist = "exp",
+      # Discontinuation rates can vary by current treatment
+      coef1 = discontinuation_rate[,current_treatment]
+    )
     
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
@@ -351,20 +398,48 @@ evt_react_list <-
                          1, 
                          dist = "exp",
                          # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+                         # Does this flag work? Ayman
                          coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
                      ))}
                    
                    }) %>%
+  add_reactevt(name_evt = "progression",
+               # Progression can only occur once so just change the SPMS status
+               input = {
+                 modify_item(list(spms_flag = 1))
+                 
+               }) %>%
+  # Currently assumes patients switch only twice so 4th line is final (As in protocol)
+      add_reactevt(name_evt = "treatment_switch",
+             input = {
+               modify_item(list(current_treatment = sample(x = treatment_names[-match(current_treatment, treatment_names)],
+                                                           size = 1),
+                                treatment_line = treatment_line + 1,
+                                n_switch = n_switch +1)
+               )
+               
+               # Sample next discontinuation event. This will be zero if treatment_line >=4
+              if (treatment_line >= 2 & treatment_line <4)  {new_event(list(
+                 "treatment_switch" = curtime + draw_tte(
+                   1,
+                   dist = "exp",
+                   coef1 = discontinuation_rate[,current_treatment]
+                 )
+               ))
+               }
+             }
+) %>%
   add_reactevt(name_evt = "death",
                input = {
                  modify_item(list(curtime = Inf)) 
+                 
                }) %>%
   add_reactevt(name_evt = "ae",
                input = {
                  new_event(list("ae" = curtime + draw_tte(1, dist = "exp", coef1 = coef_ae)))
                }
                ) 
-
+    
 
 # Add utilities
 # Example below is an expression that depends on common_all_inputs
@@ -408,7 +483,8 @@ total_runtime <- system.time({
     ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("spms_flag", "edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment")
+    input_out=c("spms_flag", "edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment",
+                "treatment_line", "n_switch")
   )
 })
 
