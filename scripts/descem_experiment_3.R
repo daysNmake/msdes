@@ -81,7 +81,7 @@ colnames(mortality) <- c("male", "female")
 smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
 # Initial proportion with SPMS
-initial_spms_prop <- 0
+initial_spms_prop <- 0.2
 
 
 
@@ -274,19 +274,22 @@ init_event_list <-
       # Current treatment to be implemented in later version
       coef1 = baseline_arr * hr_arr[, trt == treatment_names])
     
-    edss_increase <- draw_tte(
-      1, 
-      dist = "exp",
-      coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
-    )
-    
-    edss_decrease <- draw_tte(
+    #edss decrease if spms else edss increase
+    if (spms_flag) {
+       edss_decrease <- draw_tte(
       1, 
       dist = "exp",
       # Baseline rate related to current EDSS
       # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
       coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
-
+     } else {
+      edss_increase <- draw_tte(
+        1, 
+        dist = "exp",
+        coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+      )
+    }
+    
     ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
   }) 
 
@@ -335,19 +338,23 @@ evt_react_list <-
                    )
                  ))}
                }) %>%
-  add_reactevt(name_evt = "edss_decrease",
-               input = {
-                 modify_item(list(edss_i = max(edss_i - 1, min(edss_values))))
-                 
-                 # Need to simulate the next time to EDSS decrease
-                 new_event(list(
-                   "edss_decrease" = curtime + draw_tte(
-                     1, 
-                     dist = "exp",
-                     # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
-                     coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
-                 ))
-               })%>%
+  
+      add_reactevt(name_evt = "edss_decrease",
+                   input = {
+                            modify_item(list(edss_i = edss_value,
+                            edss_value = max(edss_value - 1, min(edss_values))
+                            ))
+                     
+                     # Need to simulate the next time to EDSS decrease
+                     if (edss_i > 0 | edss_value > 0) {  new_event(list(
+                       "edss_decrease" = curtime + draw_tte(
+                         1, 
+                         dist = "exp",
+                         # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+                         coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
+                     ))}
+                   
+                   }) %>%
   add_reactevt(name_evt = "death",
                input = {
                  modify_item(list(curtime = Inf)) 
@@ -401,7 +408,7 @@ total_runtime <- system.time({
     ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment")
+    input_out=c("spms_flag", "edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment")
   )
 })
 
