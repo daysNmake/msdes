@@ -489,7 +489,7 @@ total_runtime <- system.time({
 })
 
 
-# Plot the times to event
+# Plot the Overall median times to event regardless of treatment switching
 # Straight vertical line represents the median
 data_plot <- results$final_output$merged_df %>%
   filter(evtname != "initial") %>%
@@ -505,6 +505,61 @@ ggplot(data_plot) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
   theme_bw()
+
+# Plot the times to event on second treatment line
+# Straight vertical line represents the median
+data_plot_trtln2 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==2 ] %>%
+  filter(evtname != "initial") %>%
+  group_by(current_treatment, evtname, simulation) %>%
+  mutate(median = median(evttime)) %>%
+  ungroup()
+
+ggplot(data_plot_trtln2) +
+  geom_density(aes(fill = current_treatment, x = evttime),
+               alpha = 0.3) +
+  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  facet_wrap( ~ evtname, scales = "free") +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(title = "median time on 2ndline current_treatment ")+
+  theme_bw()
+
+# Plot the times to event on third treatment line
+# Straight vertical line represents the median
+data_plot_trtln3 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==3 ] %>%
+  filter(evtname != "initial") %>%
+  group_by(current_treatment, evtname, simulation) %>%
+  mutate(median = median(evttime)) %>%
+  ungroup()
+
+ggplot(data_plot_trtln3) +
+  geom_density(aes(fill = current_treatment, x = evttime),
+               alpha = 0.3) +
+  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  facet_wrap( ~ evtname, scales = "free") +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(title = "median time on 3rdline current_treatment")+
+  theme_bw()
+
+# Plot the times to event on fourth treatment line
+# Straight vertical line represents the median
+data_plot_trtln4 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==4 ] %>%
+  filter(evtname != "initial") %>%
+  group_by(current_treatment, evtname, simulation) %>%
+  mutate(median = median(evttime)) %>%
+  ungroup()
+
+ggplot(data_plot_trtln4) +
+  geom_density(aes(fill = current_treatment, x = evttime),
+               alpha = 0.3) +
+  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  facet_wrap( ~ evtname, scales = "free") +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(title = "median time on 4th current_treatment")+
+  theme_bw()
+
 
 # Summarise the cost-effectiveness results
 
