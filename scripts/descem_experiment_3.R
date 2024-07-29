@@ -35,7 +35,7 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 n_patients <- 1000
-n_samples <- 10
+n_samples <- 1000
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
 event_names <- c("initial","sicker", "relapse", "edss_increase", "edss_decrease", "progression","treatment_switch", "death")
@@ -298,14 +298,14 @@ init_event_list <-
           input={ #intervention
     initial <- 0
     
-    sicker <- draw_tte(1,dist="exp", coef1=coef_noint, hr = HR_int[, trt == treatment_names])
+    sicker <- draw_tte(1,dist="exp", coef1=coef_noint, hr = HR_int[, current_treatment == treatment_names])
     
     relapse <- draw_tte(
       1, 
       dist = "exp", 
       # Baseline rate modified by HR of current treatment
       # Current treatment to be implemented in later version
-      coef1 = baseline_arr * hr_arr[, trt == treatment_names])
+      coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
     
     #edss decrease if spms else edss increase & spms progression
     if (spms_flag) {
@@ -320,7 +320,7 @@ init_event_list <-
               edss_increase <- draw_tte(
                 1, 
                 dist = "exp",
-                coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+                coef1 = (baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values] * HR_int[, current_treatment == treatment_names]) 
               )
               progression <- draw_tte(
                 1,
@@ -366,7 +366,7 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = baseline_arr * hr_arr[, trt == treatment_names])
+                     coef1 = baseline_arr * hr_arr[, current_treatment == treatment_names])
                  ))
                  
                })%>%
@@ -381,7 +381,7 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = (baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] * HR_int[, trt == treatment_names]) 
+                     coef1 = (baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] * HR_int[, current_treatment == treatment_names]) 
                    )
                  ))}
                }) %>%
@@ -510,54 +510,54 @@ ggplot(data_plot) +
 # Straight vertical line represents the median
 data_plot_trtln2 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==2 ] %>%
   filter(evtname != "initial") %>%
-  group_by(current_treatment, evtname, simulation) %>%
+  group_by(trt, evtname, simulation) %>%
   mutate(median = median(evttime)) %>%
   ungroup()
 
 ggplot(data_plot_trtln2) +
-  geom_density(aes(fill = current_treatment, x = evttime),
+  geom_density(aes(fill = trt, x = evttime),
                alpha = 0.3) +
-  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  geom_vline(aes(xintercept = median, col = trt)) +
   facet_wrap( ~ evtname, scales = "free") +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(title = "median time on 2ndline current_treatment ")+
+  labs(title = "median event time on 2nd line, grouped by 1st trt")+
   theme_bw()
 
 # Plot the times to event on third treatment line
 # Straight vertical line represents the median
 data_plot_trtln3 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==3 ] %>%
   filter(evtname != "initial") %>%
-  group_by(current_treatment, evtname, simulation) %>%
+  group_by(trt, evtname, simulation) %>%
   mutate(median = median(evttime)) %>%
   ungroup()
 
 ggplot(data_plot_trtln3) +
-  geom_density(aes(fill = current_treatment, x = evttime),
+  geom_density(aes(fill = trt, x = evttime),
                alpha = 0.3) +
-  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  geom_vline(aes(xintercept = median, col = trt)) +
   facet_wrap( ~ evtname, scales = "free") +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(title = "median time on 3rdline current_treatment")+
+  labs(title = "median event time on 3rd line, grouped by 1st trt")+
   theme_bw()
 
 # Plot the times to event on fourth treatment line
 # Straight vertical line represents the median
 data_plot_trtln4 <- results$final_output$merged_df[results$final_output$merged_df$treatment_line ==4 ] %>%
   filter(evtname != "initial") %>%
-  group_by(current_treatment, evtname, simulation) %>%
+  group_by(trt, evtname, simulation) %>%
   mutate(median = median(evttime)) %>%
   ungroup()
 
 ggplot(data_plot_trtln4) +
-  geom_density(aes(fill = current_treatment, x = evttime),
+  geom_density(aes(fill = trt, x = evttime),
                alpha = 0.3) +
-  geom_vline(aes(xintercept = median, col = current_treatment)) +
+  geom_vline(aes(xintercept = median, col = trt)) +
   facet_wrap( ~ evtname, scales = "free") +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(title = "median time on 4th current_treatment")+
+  labs(title = "median event time on 4th line, grouped by 1st trt")+
   theme_bw()
 
 
