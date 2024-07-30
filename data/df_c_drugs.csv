@@ -1,13 +1,14 @@
-"","unit_per_pack","unit_.cost","units_annual_year1","units_annual_year2","cost_annual_year1","cost_annual_year.2.","Dose","pack"
-"Cladribine Tablets (SOT-RRMs)",1,2047,2,2,26373,26373,"0.875mg/kgperdose","10mg tab"
-"Cladribine Tablets (RES-RRMs)",1,2047,2,2,25917,25917,"0.875mg/kgperdose","10mg tab"
-"Alemtuzumab",1,7045,5,3,35225,21135,"12mg perinfusion","12mgvial"
-"Fingolimod - List price",28,1470,365.25,365.25,19176,19176,"1 tab per day","cap"
-"Natalizumab",1,1130,13,13,14690,14690,"Once every 4 weeks (300mgsequating to 1x
-15ml-vial)","15ml vial"
-"Daclizumab - List price",1,1597,12,12,19160,19160,"Once monthly","syringe"
-"SC IFNβ-1a 44μg",NA,NA,NA,NA,8942,8942,NA,NA
-"SC IFNβ-1a 22μg",NA,NA,NA,NA,7513,7513,NA,NA
-"IM IFNβ-1a",NA,NA,NA,NA,8502,8502,NA,NA
-"IFNβ-1b",NA,NA,NA,NA,7259,7259,NA,NA
-"Glatiramer acetate",NA,NA,NA,NA,5823,5823,NA,NA
+,cost_annual_yr1,cost_annual_yr2
+Natalizumab,14690,14690
+Natalizumab biosimilar,14690,14690
+Fingolimod,19176,19176
+Alemtuzumab,35225,21135
+Cladribine,26373,26373
+Daclizumab ,19160,19160
+Dimethyl fumarate,17910.29,17910.29
+PegIFN-β-1 SC 125μg,8502,8502
+IFNβ-1a SC 44μg,8942,8942
+IFNβ-1a SC 22μg,7513,7513
+IFNβ-1a IM 30μg,8502,8502
+IFNβ-1b SC 250μg,7259,7259
+Glatiramer acetate,5823,5823

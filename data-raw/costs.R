@@ -13,8 +13,10 @@ str(c_drugs_ta616_312)
 
 df_c_drugs <- data.frame(c_drugs_ta616_312)
 row.names(df_c_drugs)<- df_c_drugs[,1]
-df_c_drugs <- df_c_drugs[,-1]
-
+df_c_drugs <- df_c_drugs[,-1:-5]
+df_c_drugs <- df_c_drugs[,-3:-4]
+dim(df_c_drugs)
+df_c_drugs["Dimethyl fumarate",1:2] <- 17910.29
 write.csv(df_c_drugs, file="data/df_c_drugs.csv")
 #saveRDS(df_c_drugs, file="data/df_c_drugs.rds")
 
@@ -29,7 +31,8 @@ str(c_drugs_admin_ta616_312)
 df_c_drugs_admin <- data.frame(c_drugs_admin_ta616_312)
 rownames(df_c_drugs_admin)<-df_c_drugs_admin[,1]
 df_c_drugs_admin <- df_c_drugs_admin[,-1]
-
+df_c_drugs_admin <- df_c_drugs_admin[,-3:-4]
+df_c_drugs_admin["Dimethyl fumarate",1:2] <- 0
 write.csv(df_c_drugs_admin, file="data/df_c_drugs_admin.csv")
 #saveRDS(c_drugs_admin, file="data/df_c_drugs_admin.rds")
 
@@ -43,12 +46,16 @@ c_monitoring_ta616 <- read_excel("data-raw/TA 616 Treatment Admin and monitoring
 c_monitoring_ta616 <- data.frame(c_monitoring_ta616)
 c_monitoring_ta616 <- c_monitoring_ta616[,-2:-5]
 rownames(c_monitoring_ta616)<-c_monitoring_ta616[,1]
-c_monitoring_ta616 <- c_monitoring_ta616[,-1]
+c_monitoring <- c_monitoring_ta616[,-1]
 
-str(c_monitoring_ta616)
+str(c_monitoring)
+c_monitoring["Dimethyl fumarate",1:2] <- c_monitoring["PegIFN-β-1 SC 125μg",1:2] <- 
+  c_monitoring["IFNβ-1a SC 22μg",1:2] <- c_monitoring["IFNβ-1a SC 44μg",1:2] <- 
+  c_monitoring["IFNβ-1a IM 30μg",1:2] <- c_monitoring["IFNβ-1b SC 250μg",1:2] <- c(521.08,512.54)
+c_monitoring["Glatiramer Acetate",1:2] <- 414.00
 
-write.csv(c_monitoring_ta616, file="data/df_c_monitoring_ta616.csv")
-#saveRDS(c_monitoring_ta_616, file="data/df_c_monitoring_ta616.rds")
+write.csv(c_monitoring, file="data/df_c_monitoring.csv")
+#saveRDS(c_monitoring, file="data/df_c_monitoring.rds")
 
 
 

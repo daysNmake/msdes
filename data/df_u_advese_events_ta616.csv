@@ -1,14 +1,12 @@
-"","duration_days","disutility"
-"Infusionsitereaction-alemtuzumab",5,-0.011
-"Infusionsitereaction-natalizumab",5,-0.011
-"Injectionsitereaction
-(monthly)",13,-0.011
-"PML",93.1,-0.2
-"Severeinfection",14,-0.19
-"Macularoedema",84,-0.04
-"Gastrointestinal",8,-0.24
-"Hypersensitivity",7,-1
-"Autoimmunethyroid-relatedevent",365.25,-0.11
-"Influenza-likesymptoms",7,-0.21
-"Malignancy",365.25,-0.116
-"Immunethrombocytopenicpurpura",28,-0.09
+,disutility,duration_days
+Infusion site reaction,-0.011,5
+Injection site reaction,-0.011,13
+PML,-0.2,93.1
+Severe infection,-0.19,14
+Macular oedema,-0.04,84
+Gastrointestinal,-0.24,8
+Hypersensitivity,-1,7
+Autoimmune thyroid-related event,-0.11,365.25
+Influenza-like symptoms,-0.21,7
+Malignancy,-0.116,365.25
+Immune thrombocytopenic purpura,-0.09,28

@@ -1,15 +1,14 @@
-"","cost_annual_yr1","cost_annual_yr2","method","break_down"
-"Cladribine
-Tablets",0,0,"Oral","None"
-"Alemtuzumab",2782,1681,"Infusion","5x admin in yr1 or 3x in yr2 & 3x 1g-methylprednisolone & 1x paracetamol &x 2 200mg-Aciclovir 
-
-
-"
-"Fingolimod",551,0,"Oral","monitor ECG yr1"
-"Natalizumab",7159,7159,"Infusion","13 per annum"
-"Daclizumab",204,0,"Subcutaneous","one time  self- administration training"
-"SC IFNβ-1a 44μg",174,0,NA,NA
-"SC IFNβ-1a 22μg",174,0,NA,NA
-"IM IFNβ-1a",174,0,NA,NA
-"IFNβ-1b",174,0,NA,NA
-"Glatiramer acetate",174,0,NA,NA
+,cost_annual_yr1,cost_annual_yr2
+Natalizumab,7159,7159
+Natalizumab biosimilar,7159,7159
+Fingolimod,551,0
+Alemtuzumab,2782,1681
+Cladribine,0,0
+Daclizumab,204,0
+Dimethyl fumarate,0,0
+PegIFN-β-1 SC 125μg,174,0
+IFNβ-1a SC 44μg,174,0
+IFNβ-1a SC 22μg,174,0
+IFNβ-1a IM 30μg,174,0
+IFNβ-1b SC 250μg,174,0
+Glatiramer acetate,174,0

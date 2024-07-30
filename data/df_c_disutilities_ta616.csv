@@ -1,12 +1,12 @@
-"","Adverse.event","Duration...days.","Cost"
-"1","Infusion site reaction",5,0
-"2","Injection site reaction",13,6.79
-"3","PML",93.1,1268.11
-"4","Severe infection",14,3287.62
-"5","Macular oedema",84,245.46
-"6","Gastrointestinal",8,707.28
-"7","Hypersensitivity",7,156.68
-"8","Autoimmune thyroid-related event",365.25,543.63
-"9","Influenza-like symptoms",7,6.79
-"10","Malignancy",365.25,11427.59
-"11","Immune thrombocytopenic purpura",28,939.54
+Adverse.event,Cost,Duration...days.
+Infusion site reaction,0,5
+Injection site reaction,6.79,13
+PML,1268.11,93.1
+Severe infection,3287.62,14
+Macular oedema,245.46,84
+Gastrointestinal,707.28,8
+Hypersensitivity,156.68,7
+Autoimmune thyroid-related event,543.63,365.25
+Influenza-like symptoms,6.79,7
+Malignancy,11427.59,365.25
+Immune thrombocytopenic purpura,939.54,28
