@@ -14,8 +14,10 @@ nltuk198020203 <- nltuk198020203[,-7]
 colnames(nltuk198020203) <- rep(c("age", "mx", "qx", "lx", "dx", "ex"), 2)
 all_cause_mortality <- data.frame(nltuk198020203)
 row.names(all_cause_mortality)<-all_cause_mortality[,1]
-head(all_cause_mortality)
+r_all_cause_mortality <- -log(1-all_cause_mortality)
+r_all_cause_mortality
+head(r_all_cause_mortality)
 
 # save the data as csv file
-write.csv(all_cause_mortality, file="data/df_all_cause_mortality.csv")
+write.csv(r_all_cause_mortality, file="data/df_r_all_cause_mortality.csv")
 #saveRDS(all_cause_mortality, file="data/df_all_cause_mortality.rds")
