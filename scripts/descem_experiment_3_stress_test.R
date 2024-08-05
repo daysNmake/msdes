@@ -18,7 +18,7 @@
 
 # Modified by Ayman Sadek 10ULY
 # added age & sex dependent morality multiplied by SMR
-# Could add in SMR by edss state, mortality would have to be an individual patient input
+# Could add in SMR by edss state, r_mortality would have to be an individual patient input
 
 
 library(descem)
@@ -35,7 +35,7 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 n_patients <- 1000
-n_samples <- 100
+n_samples <- 1000
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
 event_names <- c("initial", "relapse", "edss_increase", "edss_decrease", "progression","treatment_switch", "death")
@@ -48,7 +48,7 @@ prop_female <- 0.50
 edss_values <- c(0:9)
 names(edss_values) <- paste("EDSS", edss_values)
 
-# RRMS EDSS Natural History
+# RRMS EDSS Natural History Rates
 rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
 colnames(rrms_edss_natural_history) <- row.names(rrms_edss_natural_history) <-paste("EDSS",edss_values)
 
@@ -70,13 +70,16 @@ initial_edss_distribution <- c(0.1, 0.5, rep(0.4/8, 8))
 
 # baseline population risk parameters: relapse rates and SMR
 df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
-#Placebo arm of the clarabidine study in tA616
-bl_rrms_rr <- as.double(c(df_init_params[1], sqrt(437)*(df_init_params[3]-df_init_params[2])/3.92))
 
-#mortality
-mortality <- read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1)
-mortality <- mortality[,c(3,9)]
-colnames(mortality) <- c("male", "female")
+#Placebo arm of the clarabidine study in tA616 as rate
+r_bl_rrms_rr <- as.double(c(df_init_params[1], sqrt(437)*(df_init_params[3]-df_init_params[2])/3.92))
+r_bl_rrms_rr <- -log(1-r_bl_rrms_rr)
+
+#r_mortality as rates
+r_mortality <- read.csv("data/df_r_all_cause_mortality.csv", header = T, row.names = 1)
+r_mortality <- r_mortality[,c(3,9)]
+colnames(r_mortality) <- c("male", "female")
+
 
 smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
@@ -95,8 +98,8 @@ common_all_inputs <-add_item(
   initial_edss_distribution=initial_edss_distribution,
   edss_utilities = edss_utilities,
   edss_med_costs = edss_med_costs,
-  bl_rrms_rr=bl_rrms_rr,
-  mortality=mortality,
+  r_bl_rrms_rr=r_bl_rrms_rr,
+  r_mortality=r_mortality,
   smr=smr,
   initial_spms_prop=initial_spms_prop,
   util.initial = 0.8,
@@ -108,10 +111,10 @@ common_all_inputs <-add_item(
   add_item(
     coef_noint = if(psa_bool){
       temp_variable <- 2
-      return(rnorm(1, log(0.2), 0.1))
+      return(exp(rnorm(1, log(0.02), 0.01)))
     }
     else{
-      log(0.2)
+      0.02
     }
     
   ) %>% add_item(
@@ -168,9 +171,9 @@ common_all_inputs <-add_item(
       # Baseline annualised relapse rate placebo arm of the Clarabidine Trial TA616
       baseline_arr = if(psa_bool) {
          exp(rnorm(1,
-                  mean = log(bl_rrms_rr[1]),
+                  mean = log(r_bl_rrms_rr[1]),
                   sd = 0.01))
-      } else {bl_rrms_rr[1]}
+      } else {r_bl_rrms_rr[1]}
       
     )%>% add_item(
     
@@ -218,7 +221,7 @@ common_all_inputs <-add_item(
   # (E.g., cladribine disctoninuation rate is same at 1st and 2nd line)
   # This can be changed by adding line specific discontinuation rates
   add_item(
-    discontinuation_rate = matrix(c(0.1,0.1,0) ,nrow = 1, ncol = n_treatments,
+    discontinuation_rate = matrix(c(0.1,0.1,1) ,nrow = 1, ncol = n_treatments,
                      dimnames = list(NULL, treatment_names))
 
     
@@ -250,8 +253,8 @@ common_all_inputs <-add_item(
     }
     
     )%>%   add_item(
-  #adverse events
-    coef_ae = if(psa_bool) {exp(rnorm(1, log(0.5), 0.1))} else {0.5}
+  #adverse events rates
+    coef_ae = if(psa_bool) {exp(rnorm(1, log(0.05), 0.01))} else {0.05}
   )
 
 
@@ -260,7 +263,7 @@ common_pt_inputs <- add_item(age = initial_age, # Fixed
                              sex = sample(size = 1, x = c("male", "female"), # Random 
                                           prob = c(1 - prop_female, prop_female)),
                              death = draw_tte(1, dist = "exp",
-                                            coef1 = mortality[age, sex == c("male", "female")]*smr[1])
+                                            coef1 = log(r_mortality[age, sex == c("male", "female")]), hr=smr[1])
                             )
 
 #Put objects here that change as we loop through treatments for each patient 
@@ -287,7 +290,7 @@ init_event_list <-
       dist = "exp", 
       # Baseline rate modified by HR of current treatment
       # Current treatment to be implemented in later version
-      coef1 = baseline_arr, hr=hr_arr[, current_treatment == treatment_names])
+      coef1 = log(baseline_arr), hr=hr_arr[, current_treatment == treatment_names])
     
     #edss decrease if spms else edss increase & spms progression
     if (spms_flag) {
@@ -297,19 +300,19 @@ init_event_list <-
             # Baseline rate related to current EDSS
             # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
             # do  this flags work? Ayman
-            coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
+            coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values]))
      } else {
               edss_increase <- draw_tte(
                 1, 
                 dist = "exp",
-                coef1 = baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values], 
+                coef1 = log(baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values]), 
                 hr= HR_int[, current_treatment == treatment_names] 
               )
               progression <- draw_tte(
                 1,
                 dist = "exp",
                 # Below is zero if already progressed to SPMS
-                coef1 = (1 - spms_flag) * spms_progression
+                coef1 = (1 - spms_flag) * log(spms_progression)
               )
     }
     
@@ -317,10 +320,10 @@ init_event_list <-
       1,
       dist = "exp",
       # Discontinuation rates can vary by current treatment
-      coef1 = discontinuation_rate[,current_treatment]
+      coef1 = log(discontinuation_rate[,current_treatment])
     )
     
-    ae <- draw_tte(1, dist = "exp", coef1 = coef_ae)
+    ae <- draw_tte(1, dist = "exp", coef1 = log(coef_ae))
   }) 
 
 
@@ -343,7 +346,7 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = baseline_arr, hr= hr_arr[, current_treatment == treatment_names])
+                     coef1 = log(baseline_arr), hr= hr_arr[, current_treatment == treatment_names])
                  ))
                  
                })%>%
@@ -358,7 +361,7 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values] ,
+                     coef1 = log(baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values]) ,
                      hr = HR_int[, current_treatment == treatment_names]
                    )
                  ))}
@@ -377,7 +380,7 @@ evt_react_list <-
                          dist = "exp",
                          # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
                          # Does this flag work? Ayman
-                         coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
+                         coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values]))
                      ))}
                    
                    }) %>%
@@ -401,7 +404,7 @@ evt_react_list <-
                  "treatment_switch" = curtime + draw_tte(
                    1,
                    dist = "exp",
-                   coef1 = discontinuation_rate[,current_treatment]
+                   coef1 = log(discontinuation_rate[,current_treatment])
                  )
                ))
                }
@@ -414,7 +417,7 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "ae",
                input = {
-                 new_event(list("ae" = curtime + draw_tte(1, dist = "exp", coef1 = coef_ae)))
+                 new_event(list("ae" = curtime + draw_tte(1, dist = "exp", coef1 = log(coef_ae))))
                }
                ) 
     
