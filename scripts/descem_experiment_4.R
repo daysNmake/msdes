@@ -538,11 +538,8 @@ common_all_inputs <-add_item(
 
 
 #Put objects here that do not change as we loop through treatments for a patient
-common_pt_inputs <- add_item(age = initial_age, # Fixed
-                             sex = sample(size = 1, x = c("male", "female"), # Random 
-                                          prob = c(1 - prop_female, prop_female)),
-                             death = draw_tte(1, dist = "exp",
-                                            coef1 = r_mortality[age, sex == c("male", "female")], hr=smr[1])
+common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"), # Random 
+                                          prob = c(1 - prop_female, prop_female))
                             )
 
 #Put objects here that change as we loop through treatments for each patient 
@@ -557,7 +554,11 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                                                 prob = c(1 - relapse_hospital_prop, relapse_hospital_prop)),
                              current_treatment=trt, 
                              treatment_line = 2,
-                             n_switch = 0
+                             n_switch = 0,
+                             age = initial_age, # Fixed
+                             death = draw_tte(1, dist = "exp",
+                                              coef1 = log(r_mortality[age, sex == c("male", "female")]),
+                                              hr=smr[1])
                              ) 
 
 # Add time to event for each patient for each of the treatments
@@ -572,7 +573,8 @@ init_event_list <-
       dist = "exp", 
       # Baseline rate modified by HR of current treatment
       # Current treatment to be implemented in later version
-      coef1 = baseline_arr, hr=hr_arr[, current_treatment == treatment_names])
+      coef1 = log(baseline_arr), 
+      hr=hr_arr[, current_treatment == treatment_names])
     
     #edss decrease if spms else edss increase & spms progression
     if (spms_flag) {
@@ -582,19 +584,19 @@ init_event_list <-
             # Baseline rate related to current EDSS
             # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
             # do  this flags work? Ayman
-            coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])
+            coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values]))
      } else {
               edss_increase <- draw_tte(
                 1, 
                 dist = "exp",
-                coef1 = baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values],
+                coef1 = log(baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values]),
                    hr = HR_int[, current_treatment == treatment_names] 
               )
               progression <- draw_tte(
                 1,
                 dist = "exp",
                 # Below is zero if already progressed to SPMS
-                coef1 = (1 - spms_flag) * spms_progression
+                coef1 = (1 - spms_flag) * log(spms_progression)
               )
     }
     
@@ -602,12 +604,12 @@ init_event_list <-
       1,
       dist = "exp",
       # Discontinuation rates can vary by current treatment
-      coef1 = discontinuation_rate[,current_treatment]
+      coef1 = log(discontinuation_rate[,current_treatment])
     )
     
     ae <- draw_tte(1, dist = "exp",
                    #Infusion site reaction adverse event. To repeat for each ae ( in a loop?)
-                   coef1 = adverse_events_rates[1, current_treatment == treatment_names])
+                   coef1 = log(adverse_events_rates[1, current_treatment == treatment_names]))
   }) 
 
 
@@ -630,7 +632,7 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = baseline_arr, hr = hr_arr[, current_treatment == treatment_names])
+                     coef1 = log(baseline_arr, hr = hr_arr[, current_treatment == treatment_names]))
                  ))
                  
                })%>%
@@ -645,7 +647,7 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values],
+                     coef1 = log(baseline_rrms_edss_increase[edss_i == edss_values, edss_value == edss_values]),
                         hr = HR_int[, current_treatment == treatment_names]
                    )
                  ))}
@@ -664,7 +666,7 @@ evt_react_list <-
                          dist = "exp",
                          # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
                          # BUT does this flag do what its meant to? Ayman
-                         coef1 = (1 - spms_flag) * rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values])
+                         coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values]))
                      ))}
                    
                    }) %>%
@@ -688,7 +690,7 @@ evt_react_list <-
                  "treatment_switch" = curtime + draw_tte(
                    1,
                    dist = "exp",
-                   coef1 = discontinuation_rate[,current_treatment]
+                   coef1 = log(discontinuation_rate[,current_treatment])
                  )
                ))
                }
@@ -707,7 +709,7 @@ evt_react_list <-
                                           1, 
                                         dist = "exp", 
                                         #Infusion site reaction adverse event. To repeat for each ae ( in a loop?)
-                                        coef1 = adverse_events_rates[1, current_treatment == treatment_names])))
+                                        coef1 = log(adverse_events_rates[1, current_treatment == treatment_names]))))
                }) 
     
 
