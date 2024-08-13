@@ -34,8 +34,8 @@ library(BCEA)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-n_patients <- 100
-n_samples <- 10
+n_patients <- 1000
+n_samples <- 1000
 n_treatments <- 3
 treatment_names <- c("noint", "int", "intx")
 event_names <- c("initial","sicker", "relapse", "edss_increase", "edss_decrease", "progression","treatment_switch", "death")
@@ -88,6 +88,8 @@ initial_spms_prop <- 0.2
 
 #Put objects here that do not change on any patient or intervention loop
 common_all_inputs <-add_item(
+  initial_age = initial_age,
+  time_horizon = time_horizon,
   treatment_names = treatment_names,
   event_names =event_names,
   n_treatments=n_treatments,
@@ -288,21 +290,18 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Ra
                              current_treatment=trt, #sample(treatment_names,1,replace=TRUE, prob=c(rep(1/n_treatments, n_treatments)))
                              treatment_line = 2,
                              n_switch = 0,
-                             age = initial_age, # Fixed
-                             death = draw_tte(1, dist = "exp",
-                                              coef1 = log(r_mortality[age, sex == c("male", "female")]),
-                                              hr=smr[1])
+                             age = initial_age
                              ) 
 
 # Add time to event for each patient for each of the treatments
 init_event_list <- 
   add_tte(trt=treatment_names, evts = event_names,
           input={ #intervention
-    initial <- 0
+    initial <- initial_age
     
     sicker <- draw_tte(1,dist="exp", 
                        coef1=log(coef_noint), 
-                       hr = HR_int[, current_treatment == treatment_names])
+                       hr = HR_int[, current_treatment == treatment_names]) + initial
     
     relapse <- draw_tte(
       1, 
@@ -310,7 +309,7 @@ init_event_list <-
       # Baseline rate modified by HR of current treatment
       # Current treatment to be implemented in later version
       coef1 = log(baseline_arr),
-      hr=hr_arr[, current_treatment == treatment_names])
+      hr=hr_arr[, current_treatment == treatment_names]) + initial
     
     #edss decrease if spms else edss increase & spms progression
     if (spms_flag) {
@@ -320,20 +319,20 @@ init_event_list <-
             # Baseline rate related to current EDSS
             # Below is zero if spms_flag is 1 since patients should have EDSS decease if SPMS
             # do  this flags work? Ayman
-            coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values]))
+            coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values, edss_value == edss_values])) + initial
      } else {
               edss_increase <- draw_tte(
                 1, 
                 dist = "exp",
                 coef1 = log(baseline_rrms_edss_increase[edss_value == edss_values, edss_value == edss_values]),
                 hr = HR_int[, current_treatment == treatment_names] 
-              )
+              ) + initial
               progression <- draw_tte(
                 1,
                 dist = "exp",
                 # Below is zero if already progressed to SPMS
                 coef1 = (1 - spms_flag) * log(spms_progression)
-              )
+              ) + initial
     }
     
     treatment_switch <- draw_tte(
@@ -341,10 +340,16 @@ init_event_list <-
       dist = "exp",
       # Discontinuation rates can vary by current treatment
       coef1 = log(discontinuation_rate[,current_treatment])
-    )
+    ) + initial
     
     ae <- draw_tte(1, dist = "exp", 
-                   coef1 = log(coef_ae))
+                   coef1 = log(coef_ae)) + initial
+    
+    
+    #death <- draw_tte(1, dist = "exp",
+                     #coef1 = log(r_mortality[age, sex == c("male", "female")]),
+                    # hr=smr[1]) + initial + relapse 
+    
   }) 
 
 
@@ -354,37 +359,45 @@ init_event_list <-
 evt_react_list <-
   add_reactevt(name_evt = "initial",
                input = {
-                 modify_item(list(current_treatment = trt))
-                 
+                 modify_item(list(current_treatment = trt,
+                                  age = round(curtime)
+                                  ))
+                 #future death events do not exceed 100 years
+                 modify_event(list("death"= min(cur_evtlist[["death"]], curtime + time_horizon)))
                }) %>%
   add_reactevt(name_evt = "sicker",
                input = {
                  modify_item(list(fl.initial = 0,
-                                  severity_score = severity_score * 0.8)) 
+                                  severity_score = severity_score * 0.8,
+                                  age = round(curtime)
+                                  )) 
                  
                }) %>%
   add_reactevt(name_evt = "relapse",
                input = {
-                 modify_item(list(n_relapse= n_relapse + 1))
-                 
-                 # Currently no impact on costs or utilities of relapse
-                 # Just need to simulate the next time to relapse
-                 new_event(list(
-                   "relapse" = curtime + draw_tte(
-                     1, 
-                     dist = "exp", 
-                     coef1 = log(baseline_arr),
-                     hr = hr_arr[, current_treatment == treatment_names])
-                 ))
-                 
+                 modify_item(list(n_relapse= n_relapse + 1,
+                                  age = round(curtime)
+                                  ))
+
+                  # Currently no impact on costs or utilities of relapse
+                  # Just need to simulate the next time to relapse
+                  new_event(list(
+                       "relapse" = curtime + draw_tte(
+                         1, 
+                         dist = "exp", 
+                         coef1 = log(baseline_arr),
+                         hr = hr_arr[, current_treatment == treatment_names]),
+                                      "death" = curtime + draw_tte(1, dist = "exp",
+                                       coef1 = log(r_mortality[age, sex == c("male", "female")]),
+                                       hr=smr[1])))
                })%>%
   add_reactevt(name_evt = "edss_increase",
                input = {
                  modify_item(list(edss_i = edss_value,
-                                  edss_value = min(edss_value + 1, max(edss_values))
+                                  edss_value = min(edss_value + 1, max(edss_values)),
+                                  age = round(curtime)
                                   ))
-                 
-                 # Need to simulate the next time to EDSS increase
+                   # Need to simulate the next time to EDSS increase
                  if (edss_i < 9 | edss_value < 9) {new_event(list(
                    "edss_increase" = curtime + draw_tte(
                      1, 
@@ -398,9 +411,9 @@ evt_react_list <-
       add_reactevt(name_evt = "edss_decrease",
                    input = {
                             modify_item(list(edss_i = edss_value,
-                            edss_value = max(edss_value - 1, min(edss_values))
+                            edss_value = max(edss_value - 1, min(edss_values)),
+                            age = round(curtime)
                             ))
-                     
                      # Need to simulate the next time to EDSS decrease
                      if (edss_i > 0 | edss_value > 0) {  new_event(list(
                        "edss_decrease" = curtime + draw_tte(
@@ -410,12 +423,13 @@ evt_react_list <-
                          # Does this flag work? Ayman
                          coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_i == edss_values, edss_value == edss_values]))
                      ))}
-                   
                    }) %>%
   add_reactevt(name_evt = "progression",
                # Progression can only occur once so just change the SPMS status
                input = {
-                 modify_item(list(spms_flag = 1))
+                 modify_item(list(spms_flag = 1,
+                                  age = round(curtime)
+                                  ))
                  
                }) %>%
   # Currently assumes patients switch only twice so 4th line is final (As in protocol)
@@ -424,18 +438,20 @@ evt_react_list <-
                modify_item(list(current_treatment = sample(x = treatment_names[-match(current_treatment, treatment_names)],
                                                            size = 1),
                                 treatment_line = treatment_line + 1,
-                                n_switch = n_switch +1)
-               )
-               
+                                n_switch = n_switch +1,
+                                age = round(curtime)
+                                ))
+
                # Sample next discontinuation event. This will be zero if treatment_line >=4
-              if (treatment_line >= 2 & treatment_line <4)  {new_event(list(
-                 "treatment_switch" = curtime + draw_tte(
-                   1,
-                   dist = "exp",
-                   coef1 = log(discontinuation_rate[,current_treatment])
-                 )
-               ))
-               }
+              if (treatment_line >= 2 & treatment_line <4) {
+                  new_event(list(
+                   "treatment_switch" = curtime + draw_tte(
+                     1,
+                     dist = "exp",
+                     coef1 = log(discontinuation_rate[,current_treatment])
+                   )
+                 ))
+                }  
              }
 ) %>%
   add_reactevt(name_evt = "death",
@@ -445,9 +461,10 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "ae",
                input = {
+                 modify_item(list(age = round(curtime)))
                  new_event(list("ae" = curtime + draw_tte(1, dist = "exp", 
                                                           coef1 = log(coef_ae))))
-               }
+                 }
                ) 
     
 
@@ -493,7 +510,7 @@ total_runtime <- system.time({
     ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("spms_flag", "edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment",
+    input_out=c("age", "sex", "spms_flag", "edss_i", "edss_value", "severity_score", "n_relapse", "current_treatment",
                 "treatment_line", "n_switch")
   )
 })
