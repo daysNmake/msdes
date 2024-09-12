@@ -85,7 +85,7 @@ test_RunEngine <- function(trt_list,
                          if (is.null(input_list_trt$init_event_list)) {
                            evt_list <- list(cur_evtlist = setNames(0,"start"), time_data = NULL)
                          } else{
-                           evt_list <- do.call("InitEventList",list(trt,input_list_trt))
+                           evt_list <- do.call("test_InitEventList",list(trt,input_list_trt))
                          }
                          
                          input_list_trt <- c(input_list_trt,evt_list$time_data,evt_list["cur_evtlist"])

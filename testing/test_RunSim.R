@@ -1,5 +1,11 @@
 # Tests of RunSim
 
+library(doParallel)
+library(data.table)
+
+source("testing/test_RunEngine.R")
+source("testing/test_engine_helper_f.R")
+
 test_RunSim <- function (trt_list = c("int", "noint"), common_all_inputs = NULL, 
                          common_pt_inputs = NULL, unique_pt_inputs = NULL, init_event_list = NULL, 
                          evt_react_list = evt_react_list, util_ongoing_list = NULL, 
@@ -9,7 +15,7 @@ test_RunSim <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
                          input_out = NULL, ipd = TRUE, debug = FALSE) 
 {
   # Omitted call to parallel while doing tests
- # registerDoParallel(ncores)
+  registerDoParallel(ncores)
   # Below is redundant?
   trt_list <- trt_list
   output_psa <- list()
@@ -60,7 +66,7 @@ test_RunSim <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
                                       input_list = input_list)
     }
     else {
-      final_output <- RunEngine(trt_list = trt_list, 
+      final_output <- test_RunEngine(trt_list = trt_list, 
                                 common_pt_inputs = common_pt_inputs, 
                                 unique_pt_inputs = unique_pt_inputs, 
                                 input_list = input_list)
@@ -82,7 +88,7 @@ test_RunSim <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
 
 
 # Test call 
-RunSim(trt_list = c("int", "noint"), 
+test_RunSim(trt_list = c("int", "noint"), 
             common_all_inputs = add_item(treatment_names = c("int", "noint"),
                                          event_names = "stroke"), 
              common_pt_inputs = NULL, 
