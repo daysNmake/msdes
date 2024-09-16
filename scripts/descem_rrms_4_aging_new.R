@@ -112,6 +112,7 @@ common_all_inputs <-add_item(
   higher_line_treatment_codes = higher_line_treatment_codes,
   initial_age = initial_age,
   time_horizon = time_horizon,
+  prop_female = prop_female,
   edss_values = edss_values,
   event_names = event_names,
   r_bl_rrms_rr = r_bl_rrms_rr,
