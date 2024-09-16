@@ -29,8 +29,8 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 set.seed(243523452)
-
-n_patients <- 10
+source("R/draw_tte_new.R")
+n_patients <- 100
 n_samples <- 1
 n_treatments <- 5
 # Treatments at second line (expand to full set)
@@ -360,7 +360,7 @@ init_event_list <-
               dist = "exp",
               coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss_value == edss_values]) +
                 spms_flag * log(spms_edss_increase[edss_value == edss_values]),
-              hr = hr_edss_increase[current_treatment_code] 
+              hr = hr_edss_increase[current_treatment_code] #give hr of 0 by using log(1)?
             )
             edss_decrease <- draw_tte(
               1, 
@@ -374,12 +374,15 @@ init_event_list <-
               # Below is zero if already progressed to SPMS
               coef1 = (1 - spms_flag) * log(spms_progression)
             )
-            source("R/draw_tte_new.R")
+            
             death <- draw_tte_new(
               1,
               dist = "pwexp",
-              coef1 = c(log(r_mortality[(initial_age+1):nrow(r_mortality), sex == c("male", "female")])),
-              time = c(r_mortality[(initial_age+1):nrow(r_mortality)])
+              coef1 = c(log((1 - prop_female) * r_mortality[(initial_age+1):nrow(r_mortality), c("male")] +
+                              prop_female *  r_mortality[(initial_age+1):nrow(r_mortality), c("female")],
+              )),
+              time = c(r_mortality[(initial_age+1):nrow(r_mortality)]),
+              hr=smr[1]
             )
             treatment_switch <- draw_tte(
               1,
@@ -399,7 +402,7 @@ evt_react_list <-
                  modify_item(list(current_treatment = trt,
                                   current_treatment_code = treatment_codes[trt],
                                   #future death events do not exceed 100 years
-                                  "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
+                                  "death"= min(cur_evtlist[["death"]], time_horizon)
                              ))
                }) %>%
   add_reactevt(name_evt = "age",
@@ -461,8 +464,9 @@ evt_react_list <-
                # Death only occurs once.
                # Set current time to Inf so simulation ends.
                input = {
-                 modify_item(list(curtime = Inf,
-                                  age = age + round(curtime))) 
+                 modify_item(list(curtime = Inf #,
+                                  #age = initial_age + round(curtime)
+                                  )) 
                }) %>%
   # Currently assumes patients switch only twice so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
