@@ -1,5 +1,5 @@
 # Experiment to implement RRMS DES using the DESCEM package
-# Howard Thom 24th June 2024 Modified by Ayman Sadek 01 July 2024
+# Howard Thom & Ayman Sadek 23 Sep 2024
 
 # V2 changed samples from n_samples to 1 for random parameters
 # This doesn't work properly as each simulation looks very similar
@@ -7,6 +7,8 @@
 
 # V3 puts the functions for each parameter set into add_item() expressions
 # v4 fixed matrix accessing for parameters (As they only have one row)
+
+# V5 fixed aging and death and modified matrix accessing for parameters to index on rows and columns
 
 # TODO Figure out neater way to add each parameter
 # Add relapse and other event disutility and costs
@@ -32,8 +34,8 @@ source("R/draw_tte_new.R")
 
 set.seed(243523452)
 
-n_patients <- 100
-n_samples <- 1
+n_patients <- 1000
+n_samples <- 100
 n_treatments <- 5
 # Treatments at second line (expand to full set)
 treatment_names <- c("Natalizumab",
@@ -95,13 +97,37 @@ r_mortality[,1] <- as.numeric(r_mortality[,1])
 dimnames(r_mortality) <-  list(NULL, c("time" ,"male", "female"))
 
 
+#edss costs direct medical costs Tyas etal. 2005
+c_m_edss <- read.csv("data/df_c_directmedical_edss.csv", header = T, row.names = 1) #need to be inflated
+edss_med_costs <- t(c_m_edss[1:10,5:6])
+
 #MS specific standardised mortality rate Manouchehrinia 2016
 smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
-# Annual treatment costs
-treatment_costs <- c(1000, 800, 500, 2000, 1500)
-names(treatment_costs) <- treatment_names
+# Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
+c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
+c_tx <- c_tx[-2,]
+c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
+c_tx_admin <- c_tx_admin[-2,]
+c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
+c_tx_monitor <- c_tx_monitor[-2,]
 
+## Relapse Costs (Hawton 2016b and Karampampa 2012c)
+c_relapse <-read.csv("data/df_c_relapse.csv", header = T, row.names = 1)
+c_relapse <- c_relapse[5:9,1:2]
+
+## Adverse Events costs TA616
+c_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
+
+## edss utilities columns 5&6 Orme etal 2007
+u_edss <- read.csv("data/df_u_edss_ta616.csv", header = T, row.names = 1)
+edss_utilities <- t(u_edss[,5:6])
+
+## Relapse utilities
+u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
+
+## Adverse Events disutilities TA616 
+u_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
 
 
 # Global parameters of the model as they are common to all patients and treatments
@@ -116,70 +142,97 @@ common_all_inputs <-add_item(
   time_horizon = time_horizon,
   prop_female = prop_female,
   edss_values = edss_values,
+  c_tx = c_tx, 
+  c_tx_admin = c_tx_admin, 
+  c_tx_monitor = c_tx_monitor,
   event_names = event_names,
   r_bl_rrms_rr = r_bl_rrms_rr,
   r_mortality = r_mortality, 
   smr = smr, 
+  initial_spms_prop = initial_spms_prop,
+  relapse_hospital_prop = relapse_hospital_prop 
 ) %>% add_item(
+  # Utilities for RRMS Orme etal. allowed to be negative for the edss8&9
+  u_rrms_edss = if(psa_bool) {
+    temp <- edss_utilities[1,]
+    for(j_edss in 1:length(temp)) {
+      temp[j_edss] <- rnorm(1, mean =  edss_utilities[1,j_edss], sd =  edss_utilities[2,j_edss])
+    }
+    temp
+    
+  } else {
+    edss_utilities[1,]
+  }
   # Utililities for RRMS assumed to decrease with EDSS
-  rrms_edss_utils = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = length(edss_values),
-                   dimnames = list(NULL, names(edss_values)))
+#  rrms_edss_utils = if(psa_bool) {
+#    temp <- matrix(nrow = 1, ncol = length(edss_values),
+#                   dimnames = list(NULL, names(edss_values)))
     
     # Fill with dummy values (gradual reduction bounded by 0)
-    for(i_edss in 1:length(edss_values)) {
-      temp[i_edss] <- pmax(rnorm(1, mean = 1 - 0.1 * i_edss, sd = 0.01),
-                             0)
-    }
-    temp
-  } else {
-    1 - 0.1 * edss_values
-  }
-) %>% add_item (
+#    for(i_edss in 1:length(edss_values)) {
+#      temp[i_edss] <- pmax(rnorm(1, mean = 1 - 0.1 * i_edss, sd = 0.01),
+#                             0)
+#    }
+#    temp
+#  } else {
+#    1 - 0.1 * edss_values
+#  }
+#) %>% add_item (
   # Placeholder SPMS EDSS utilities assumed to be lower than RRMS
-  spms_edss_utils = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = length(edss_values),
-                   dimnames = list(NULL, names(edss_values)))
+#  spms_edss_utils = if(psa_bool) {
+#    temp <- matrix(nrow = 1, ncol = length(edss_values),
+#                   dimnames = list(NULL, names(edss_values)))
     
     # Fill with dummy values (gradual reduction bounded by 0)
-    for(i_edss in 1:length(edss_values)) {
-      temp[i_edss] <- pmax(rnorm(1, mean = (1 - 0.1 * i_edss), sd = 0.01),
-                             0)
-    }
-    0.5 * temp
-  } else {
-    0.5 * (1 - 0.1 * edss_values)
-  }
+#    for(i_edss in 1:length(edss_values)) {
+#      temp[i_edss] <- pmax(rnorm(1, mean = (1 - 0.1 * i_edss), sd = 0.01),
+#                             0)
+#    }
+#    0.5 * temp
+#  } else {
+#    0.5 * (1 - 0.1 * edss_values)
+#  }
 ) %>% add_item(
-  # Dummy values for state costs in RRMS assumed to increase with EDSS
-  rrms_edss_costs = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = length(edss_values),
-                   dimnames = list(NULL, names(edss_values)))
-    
-    for(i_edss in 1:length(edss_values)) {
-      temp[i_edss] <- pmax(rnorm(1, mean = 100 + 100 * i_edss, sd = 10),
-                             0)
+  # Medical costs for RRMS Tyas et al these should inflated and drawn from a gamma distribution & replicate for non-medical costs
+  c_rrms_edss = if(psa_bool) {
+    temp <- edss_med_costs[1,]
+    for(j_edss in 1:length(temp)) {
+      temp[j_edss] <- pmax(rnorm(1, mean =  edss_med_costs[1,j_edss], sd =  edss_med_costs[2,j_edss]),0)
     }
     temp
-  } else {
-    100 + 100 * edss_values
-  }
-) %>% add_item(
-  # Costs assumed higher
-  spms_edss_costs = if(psa_bool) {
-    temp <- matrix(nrow = 1, ncol = length(edss_values),
-                   dimnames = list(NULL, names(edss_values)))
     
-    for(i_edss in 1:length(edss_values)) {
-      temp[i_edss] <- pmax(rnorm(1, mean = 100 + 100 * i_edss, sd = 10),
-                             0)
-    }
-    1.5 * temp
   } else {
-    1.5 * (100 + 100 * edss_values)
+    edss_med_costs[1,]
   }
-) %>% add_item(
-  treatment_costs = treatment_costs
+  # Dummy values for state costs in RRMS assumed to increase with EDSS
+#  rrms_edss_costs = if(psa_bool) {
+#    temp <- matrix(nrow = 1, ncol = length(edss_values),
+#                   dimnames = list(NULL, names(edss_values)))
+    
+#    for(i_edss in 1:length(edss_values)) {
+#      temp[i_edss] <- pmax(rnorm(1, mean = 100 + 100 * i_edss, sd = 10),
+#                             0)
+#    }
+#    temp
+#  } else {
+#    100 + 100 * edss_values
+#  }
+#) %>% add_item(
+#  # Costs assumed higher
+#  spms_edss_costs = if(psa_bool) {
+#    temp <- matrix(nrow = 1, ncol = length(edss_values),
+#                   dimnames = list(NULL, names(edss_values)))
+#    
+#    for(i_edss in 1:length(edss_values)) {
+#      temp[i_edss] <- pmax(rnorm(1, mean = 100 + 100 * i_edss, sd = 10),
+#                             0)
+#    }
+#    1.5 * temp
+#  } else {
+#    1.5 * (100 + 100 * edss_values)
+#  }
+#) %>% add_item(
+#  treatment_costs = treatment_costs
 ) %>% add_item(
   # Hazard ratios reducing risk of EDSS increase
   hr_edss_increase = if(psa_bool) {
@@ -361,14 +414,131 @@ common_all_inputs <-add_item(
           rnorm(1, 
                 # Arbitrarily setting the higher treatments (Clad/Alem) to have higher
                 # discontinuation than lower treatments (nat/nat bio, fing)
-                mean = log(0.005 + 0.005 * treatment_code),
+                mean = log(0.05 + 0.005 * treatment_code),
                 sd = 0.001)
         )
       }
       temp
     }
-    else {0.005 + 0.005 * 1:length(treatment_names)}
-  )
+    else {0.05 + 0.005 * 1:length(treatment_names)}
+  ) %>% add_item(  
+    # Relapse costs are treatment & severity agnostic
+    c_relapsing = if(psa_bool) {
+      temp <- c_relapse[,1]
+      for(i in 1:length(temp)) {
+        temp[i] <- pmax(rnorm(1, mean =  c_relapse[i,1], sd =  c_relapse[i,2]),0)
+      }
+      temp
+      
+    } else {
+      c_relapse[,1]
+    }
+    
+  ) %>% add_item(  
+    # Relapse dis-utilities are treatment & severity agnostic, in TA616 the same regard less of hospitalisation
+    u_relapsing = if(psa_bool) {
+      pmin(rnorm(1, mean =  u_relapse[1,1], sd =  u_relapse[1,2]),0)
+      
+    } else {
+      u_relapse[1,1]
+    }
+    
+  ) %>% add_item(
+    # costs of adverse events
+    c_adverse_events = if(psa_bool) {
+      temp <- matrix(nrow = nrow(c_ae), ncol = 1,
+                     dimnames = list(rownames(c_ae),NULL ))
+      
+      temp["Infusion site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Infusion site reaction",1], 
+                                                     sd =  c_ae["Infusion site reaction",1]/5),0)
+      
+      temp["Injection site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Injection site reaction",1], 
+                                                      sd =  c_ae["Injection site reaction",1]/5),0)
+      
+      temp["PML",1] <- pmax(rnorm(1, mean =  c_ae["PML",1], 
+                                  sd =  c_ae["PML",1]/5),0)
+      
+      temp["Severe infection",1] <- pmax(rnorm(1, mean =  c_ae["Severe infection",1], 
+                                               sd =  c_ae["Severe infection",1]/5),0)
+      
+      temp["Macular oedema",1] <- pmax(rnorm(1, mean =  c_ae["Macular oedema",1], 
+                                             sd =  c_ae["Macular oedema",1]/5),0)
+      
+      temp["Gastrointestinal",1] <- pmax(rnorm(1, mean =  c_ae["Gastrointestinal",1], 
+                                               sd =  c_ae["Gastrointestinal",1]/5),0)
+      
+      temp["Hypersensitivity",1] <- pmax(rnorm(1, mean =  c_ae["Hypersensitivity",1], 
+                                               sd =  c_ae["Hypersensitivity",1]/5),0)
+      
+      temp["Autoimmune thyroid-related event",1] <- pmax(rnorm(1, mean =  c_ae["Autoimmune thyroid-related event",1], 
+                                                               sd =  c_ae["Autoimmune thyroid-related event",1]/5),0)
+      
+      temp["Influenza-like symptoms",1] <- pmax(rnorm(1, mean =  c_ae["Influenza-like symptoms",1], 
+                                                      sd =  c_ae["Influenza-like symptoms",1]/5),0)
+      
+      temp["Malignancy",1] <- pmax(rnorm(1, mean =  c_ae["Malignancy",1], 
+                                         sd =  c_ae["Malignancy",1]/5),0)
+      
+      temp["Immune thrombocytopenic purpura",1] <- pmax(rnorm(1, mean =  c_ae["Immune thrombocytopenic purpura",1], 
+                                                              sd =  c_ae["Immune thrombocytopenic purpura",1]/5),0)
+      temp
+    } else {c_ae[,1]}
+    
+  )  %>% add_item(
+    # dis-utility of adverse events
+    u_adverse_events = if(psa_bool) {
+      temp <- matrix(nrow = nrow(u_ae), ncol = 1,
+                     dimnames = list(rownames(c_ae),NULL ))
+      
+      temp["Infusion site reaction",1] <- pmax(rnorm(1, mean =  u_ae["Infusion site reaction",1], 
+                                                     sd =  u_ae["Infusion site reaction",1]/5),0)
+      
+      temp["Injection site reaction",1] <- pmax(rnorm(1, mean =  u_ae["Injection site reaction",1], 
+                                                      sd =  u_ae["Injection site reaction",1]/5),0)
+      
+      temp["PML",1] <- pmax(rnorm(1, mean =  u_ae["PML",1], 
+                                  sd =  u_ae["PML",1]/5),0)
+      
+      temp["Severe infection",1] <- pmax(rnorm(1, mean =  u_ae["Severe infection",1], 
+                                               sd =  u_ae["Severe infection",1]/5),0)
+      
+      temp["Macular oedema",1] <- pmax(rnorm(1, mean =  u_ae["Macular oedema",1], 
+                                             sd =  u_ae["Macular oedema",1]/5),0)
+      
+      temp["Gastrointestinal",1] <- pmax(rnorm(1, mean =  u_ae["Gastrointestinal",1], 
+                                               sd =  u_ae["Gastrointestinal",1]/5),0)
+      
+      temp["Hypersensitivity",1] <- pmax(rnorm(1, mean =  u_ae["Hypersensitivity",1], 
+                                               sd =  u_ae["Hypersensitivity",1]/5),0)
+      
+      temp["Autoimmune thyroid-related event",1] <- pmax(rnorm(1, mean =  u_ae["Autoimmune thyroid-related event",1], 
+                                                               sd =  u_ae["Autoimmune thyroid-related event",1]/5),0)
+      
+      temp["Influenza-like symptoms",1] <- pmax(rnorm(1, mean =  u_ae["Influenza-like symptoms",1], 
+                                                      sd =  u_ae["Influenza-like symptoms",1]/5),0)
+      
+      temp["Malignancy",1] <- pmax(rnorm(1, mean =  u_ae["Malignancy",1], 
+                                         sd =  u_ae["Malignancy",1]/5),0)
+      
+      temp["Immune thrombocytopenic purpura",1] <- pmax(rnorm(1, mean =  u_ae["Immune thrombocytopenic purpura",1], 
+                                                              sd =  u_ae["Immune thrombocytopenic purpura",1]/5),0)
+      temp
+    } else {u_ae[,1]}
+  )  %>% add_item(
+    # rates of adverse events
+    adverse_events_rates = if(psa_bool) {
+      temp <- r_ae
+      for(i in 1:nrow(temp)) {
+        for (j in 1:ncol(temp)){
+          # Rates are specified by AEs in rows [i] and treatments columns[j]
+          temp[i,j] <- exp(rnorm(1,
+                                 mean = log(temp[i,j]),
+                                 sd = temp[i,j]/5))}
+      }
+      temp
+    } else {r_ae}
+    
+  )  
 
 
 
@@ -384,11 +554,15 @@ common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"), # R
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Random 
                                                  prob = initial_edss_distribution),
                              edss.i = edss_value,
+                             n_relapse = 0,
                              spms_flag = sample(size = 1, x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
+                             relapse_hospital_flag = sample(size = 1, x = c(0, 1), # Random
+                                                            prob = c(1 - relapse_hospital_prop, relapse_hospital_prop)),
                              current_treatment = "Natalizumab",
                              current_treatment_code = 1,
                              treatment_line = 2,
+                             n_switch = 0,
                              age = initial_age
 )
 
@@ -416,14 +590,15 @@ init_event_list <-
               dist = "exp",
               coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
                 spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
-              hr = hr_edss_increase[current_treatment_code] #give hr of 0 by using log(1)?
+             # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
+              hr = ((1 - spms_flag) * hr_edss_increase[current_treatment_code])+ spms_flag 
             )
             #edss_increase <- draw_tte(
             #1, 
             #dist = "exp",
             #coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss_value == edss_values]) +
             #  spms_flag * log(spms_edss_increase[edss_value == edss_values]),
-            #hr = hr_edss_increase[current_treatment_code] #give hr of 0 by using log(1)?
+            #hr = hr_edss_increase[current_treatment_code] 
             #)
             edss_decrease <- draw_tte(
               1, 
@@ -443,6 +618,7 @@ init_event_list <-
               # Below is zero if already progressed to SPMS
               coef1 = (1 - spms_flag) * log(spms_progression)
             )
+            source("R/draw_tte_new.R")
             death <- draw_tte_new(
               1,
               dist = "pwexp",
@@ -480,7 +656,8 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "relapse",
                input = {
-                 modify_item(list(age = initial_age + round(curtime)))
+                 modify_item(list(n_relapse= n_relapse + 1,
+                                  age = initial_age + round(curtime)))
                  # Currenly no impact on costs or utilities of relapse
                  # Just need to simulate the next time to relapse
                  new_event(list(
@@ -505,7 +682,8 @@ evt_react_list <-
                      coef1 = (1 - spms_flag) * 
                        log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
                        spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
-                     hr = hr_edss_increase[current_treatment_code]
+                     # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
+                     hr = ((1 - spms_flag) * hr_edss_increase[current_treatment_code])+ spms_flag 
                    )
                  ))
 #               })   add_reactevt(name_evt = "edss_increase",
@@ -576,6 +754,7 @@ evt_react_list <-
                                                                   size = 1),
                                   treatment_line = treatment_line + 1,
                                   discontinuation_rate = (treatment_line < 4) *  discontinuation_rate,
+                                  n_switch = n_switch +1,
                                   age = initial_age + round(curtime)))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
@@ -592,8 +771,8 @@ evt_react_list <-
 # Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
 util_ongoing <- add_util(evt = event_names,
                          trt = treatment_names,
-                         util = (1 - spms_flag) * rrms_edss_utils[edss_value == edss_values] +
-                           spms_flag * spms_edss_utils[edss_value == edss_values]
+                         util = (1 - spms_flag) * u_rrms_edss[edss_value == edss_values] +
+                           spms_flag * u_rrms_edss[edss_value == edss_values]
 )
 
 # Add ongoing costs
@@ -601,11 +780,29 @@ util_ongoing <- add_util(evt = event_names,
 cost_ongoing <- add_cost(evt = event_names,
                          trt = treatment_names,
                          cost = (1 - spms_flag) * (
-                           rrms_edss_costs[edss_value == edss_values] +
-                             treatment_costs[current_treatment = trt]
+                           c_rrms_edss[edss_value == edss_values] #+
+                             #treatment_costs[current_treatment = trt] treatment costs should be instantaneous not ongoing
                          ) +
-                           spms_flag * spms_edss_costs[edss_value == edss_values]
+                           spms_flag * c_rrms_edss[edss_value == edss_values]
 )
+#Add instant costs
+# Treatment Costs, need to figure out how to manipulate the costs according to year 1 or 2+ of treatment
+cost_instant <-
+  add_cost(evt = c("initial", "treatment_switch") ,
+           trt = treatment_names,
+           cost = c_tx[current_treatment_code] +
+             c_tx_admin[current_treatment_code] +
+             c_tx_monitor[current_treatment_code]) %>% 
+  add_cost(evt = "relapse" ,
+               trt = treatment_names,
+               cost = c_relapsing[4]) 
+
+# Add instant utilities
+# Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
+util_instant <-   add_util(evt = "relapse" ,
+                           trt = treatment_names,
+                           util = u_relapsing) 
+
 
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
@@ -622,15 +819,16 @@ total_runtime <- system.time({
     evt_react_list = evt_react_list,          # reaction of events
     util_ongoing_list = util_ongoing,
     cost_ongoing_list = cost_ongoing,
-    #util_instant_list = util_instant,
-    #cost_instant_list = cost_instant,
-    ncores = 2,                               # number of cores to use, recommended not to use all
+    util_instant_list = util_instant,
+    cost_instant_list = cost_instant,
+    ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("age", "sex")           
+    input_out=c("age", "sex", "spms_flag", "edss.i", "edss_value", "n_relapse", "current_treatment",
+                "treatment_line", "n_switch")           
   )
 })
-
+saveRDS(results, file ="descem5_1000x100.RDS")
 # Simulated patients for first simulation
 psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 # compare patient characteristics of dead patients
@@ -691,7 +889,7 @@ des_bcea <- bcea(eff = total_qalys,
                  interventions = treatment_names)
 
 # Plot the CE plane
-ceplane.plot(des_bcea, wtp = 20000, xlim = c(-0.15, 0.15), ylim = c(-500, 500))
+ceplane.plot(des_bcea, wtp = 20000)
 
 #plot a CEAC
 des_multi_ce <- multi.ce(des_bcea)
