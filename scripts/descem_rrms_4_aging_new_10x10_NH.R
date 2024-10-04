@@ -220,6 +220,20 @@ common_all_inputs <-add_item(
            dimnames = list(names(edss_values), names(edss_values)))
     
   }
+ #  baseline_rrms_edss_increase = if(psa_bool) {
+ # temp <- matrix(nrow = 1, ncol = length(edss_values),
+ #                dimnames = list(NULL, names(edss_values)))
+ # for(i_edss in 1:length(edss_values)) {
+    # Rates increase with higher EDSS
+ #   temp[i_edss] <- exp(rnorm(1,
+ #                              mean = log(0.9 + 0.01 * i_edss),
+ #                             sd = 0.01))
+ # }
+ # temp
+ #} else {
+ #  0.9 + 0.01 * edss_values
+ #}
+  
 ) %>% add_item(
   rrms_edss_decrease = if(psa_bool) {
     temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
@@ -237,6 +251,21 @@ common_all_inputs <-add_item(
     matrix(rep(0.6 - 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
            dimnames = list(names(edss_values), names(edss_values)))
   }
+  #  rrms_edss_decrease = if(psa_bool) {
+  #temp <- matrix(nrow = 1, ncol = length(edss_values),
+  #               dimnames = list(NULL, names(edss_values)))
+  #for(i_edss in 1:length(edss_values)) {
+    # Rates decrease with higher EDSS
+  #  temp[i_edss] <- exp(rnorm(1,
+  #                            mean = log(0.04 - 0.001 * i_edss),
+  #                            sd = 0.01))
+  #  
+  #}
+  #temp
+  #} else {
+  #  0.04 - 0.001 * edss_values
+  #}
+  
 ) %>% add_item(
   # EDSS increase for SPMS patients assumed the same (can modify later)
   # Also assumed independent of treatment so using 'baseline' name
@@ -256,6 +285,20 @@ common_all_inputs <-add_item(
            dimnames = list(names(edss_values), names(edss_values)))
     
   }
+  #  spms_edss_increase = if(psa_bool) {
+  #temp <- matrix(nrow = 1, ncol = length(edss_values),
+  #               dimnames = list(NULL, names(edss_values)))
+  #for(i_edss in 1:length(edss_values)) {
+    # Rates increase with higher EDSS
+  #  temp[i_edss] <- exp(rnorm(1,
+  #                            mean = log(0.9 + 0.01 * i_edss),
+  #                            sd = 0.01))
+  #}
+  #temp
+  #} else {
+  #  0.9 + 0.01 * edss_values
+  #}
+  
 ) %>% add_item(
   # Dummy rate of progression to SPMS
   spms_progression =  if(psa_bool) {exp(rnorm(1,
@@ -375,19 +418,31 @@ init_event_list <-
                 spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
               hr = hr_edss_increase[current_treatment_code] #give hr of 0 by using log(1)?
             )
+            #edss_increase <- draw_tte(
+            #1, 
+            #dist = "exp",
+            #coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss_value == edss_values]) +
+            #  spms_flag * log(spms_edss_increase[edss_value == edss_values]),
+            #hr = hr_edss_increase[current_treatment_code] #give hr of 0 by using log(1)?
+            #)
             edss_decrease <- draw_tte(
               1, 
               dist = "exp",
               # Baseline rate related to current EDSS
               # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
               coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
+            #edss_decrease <- draw_tte(
+            #  1, 
+            #  dist = "exp",
+              # Baseline rate related to current EDSS
+              # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+            #  coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values]))
             progression <- draw_tte(
               1,
               dist = "exp",
               # Below is zero if already progressed to SPMS
               coef1 = (1 - spms_flag) * log(spms_progression)
             )
-            source("R/draw_tte_new.R")
             death <- draw_tte_new(
               1,
               dist = "pwexp",
@@ -453,7 +508,23 @@ evt_react_list <-
                      hr = hr_edss_increase[current_treatment_code]
                    )
                  ))
-               }) %>%
+#               })   add_reactevt(name_evt = "edss_increase",
+#                                 input = {
+#                                   modify_item(list(edss_value = min(edss_value + 1, max(edss_values)),
+#                                                    age = initial_age + round(curtime)))
+                                   
+                                   # Need to simulate the next time to EDSS increase
+#                                   new_event(list(
+#                                     "edss_increase" = curtime + draw_tte(
+#                                       1, 
+#                                       dist = "exp",
+#                                       coef1 = (1 - spms_flag) * 
+#                                         log(baseline_rrms_edss_increase[edss_value == edss_values]) +
+#                                         spms_flag * log(spms_edss_increase[edss_value == edss_values]),
+#                                       hr = hr_edss_increase[current_treatment_code]
+#                                     )
+#                                   ))
+                                 })%>%
   add_reactevt(name_evt = "edss_decrease",
                input = {
                  modify_item(list(edss.i = edss_value,
@@ -468,6 +539,19 @@ evt_react_list <-
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
                      coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
                  ))
+#                 add_reactevt(name_evt = "edss_decrease",
+#                              input = {
+#                                modify_item(list(edss_value = max(edss_value - 1, min(edss_values)),
+#                                                 age = initial_age + round(curtime)))
+                                
+                                # Need to simulate the next time to EDSS decrease
+#                                new_event(list(
+#                                  "edss_decrease" = curtime + draw_tte(
+#                                    1, 
+#                                    dist = "exp",
+                                    # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+#                                    coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss_value == edss_values]))
+#                                ))
                }) %>%
   add_reactevt(name_evt = "progression",
                # Progression can only occur once so just change the SPMS status
