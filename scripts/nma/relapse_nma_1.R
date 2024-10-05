@@ -187,4 +187,4 @@ mix_fit_RE <- nma(mix_net,
 
 # Forest plot but on log rate ratio scale
 # Ideally want some way to plot on natural scale
-plot(mix_releff_FE, ref_line = 1)
+plot(mix_releff_FE, ref_line = 0)
