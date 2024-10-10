@@ -6,15 +6,15 @@ library(readxl)
 library(descem)
 
 #Read and save data
-edss_model_names <- read_excel("data-raw/ExponentialSurvivalModels.xlsx", 
+edss_model_names <- read_excel("data-raw/ExponentialSurvivalModels (2).xlsx", 
                                range = "A23:A26", col_names = FALSE)
 
-tto_edss_increase_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels.xlsx", 
+tto_edss_increase_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (2).xlsx", 
                                           sheet = "Natalizumab", range = "B6:B9", 
                                           col_names = FALSE,col_types = c("numeric")))
 dimnames(tto_edss_increase_harrms_mu) <- edss_model_names
 
-tto_edss_increase_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels.xlsx", 
+tto_edss_increase_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (2).xlsx", 
                                                        sheet = "Natalizumab", range = "B13:E16", 
                                                        col_names = FALSE,col_types = c("numeric")))
 dimnames(tto_edss_increase_harrms_sigma) <- c(edss_model_names, edss_model_names)
@@ -28,7 +28,7 @@ tto_edss_increase <- mvrnorm(n = 1,
 
 
 #set some patient characteristics
-patient_age=22
+patient_age=-10
 patient_edss=3
 patient_gender =1
 
