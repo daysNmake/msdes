@@ -10,6 +10,7 @@
 
 # V5 fixed aging and death and modified matrix accessing for parameters to index on rows and columns
 # V5.1 added in the full number of treatments and updated data 
+    # Added registry data but not working correctly 
 
 # TODO Figure out neater way to add each parameter
 # Modularise, optimise, and add RShiny interface
@@ -74,18 +75,18 @@ edss_values <- c(0:9)
 names(edss_values) <- paste("EDSS", edss_values)
 
 ## RRMS EDSS Natural History Palace etal
-rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
-colnames(rrms_edss_natural_history) <- row.names(rrms_edss_natural_history) <-paste("EDSS",edss_values)
+#rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
+#colnames(rrms_edss_natural_history) <- row.names(rrms_edss_natural_history) <-paste("EDSS",edss_values)
 
 ## Natural History MS Registry
-#tto_edss_increase_harrms_mu <- t(read.csv("data/v_tto_edss_increase_harrms_mu.csv", header = T, row.names = 1))
-#tto_edss_increase_harrms_sigma <- read.csv( file="data/m_tto_edss_increase_harrms_sigma.csv", header = T, row.names = 1)
-#tto_edss_increase_spms_mu <- t(read.csv("data/v_tto_edss_increase_spms_mu.csv", header = T, row.names = 1))
-#tto_edss_increase_spms_sigma <- read.csv("data/m_tto_edss_increase_spms_sigma.csv", header = T, row.names = 1)
-#tto_edss_decrease_rrms_mu <- t(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1))
-#tto_edss_decrease_rrms_sigma <- read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1)
-#tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
-#tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
+tto_edss_increase_harrms_mu <- t(read.csv("data/v_tto_edss_increase_harrms_mu.csv", header = T, row.names = 1))
+tto_edss_increase_harrms_sigma <- read.csv( file="data/m_tto_edss_increase_harrms_sigma.csv", header = T, row.names = 1)
+tto_edss_increase_spms_mu <- t(read.csv("data/v_tto_edss_increase_spms_mu.csv", header = T, row.names = 1))
+tto_edss_increase_spms_sigma <- read.csv("data/m_tto_edss_increase_spms_sigma.csv", header = T, row.names = 1)
+tto_edss_decrease_rrms_mu <- t(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1))
+tto_edss_decrease_rrms_sigma <- read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1)
+tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
+tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
 
 
 # Initial distribution of EDSS (dummy but could come from a registry)
@@ -307,45 +308,54 @@ common_all_inputs <-add_item(
   } else {c(0.8, 0.8, 0.7, 0.6, 0.9, 0.45, 0.4, 0.4, 0.35, 0.3, 0.3, 0.25, 0.2, 0.15)}
   
 ) %>% add_item(
-#  baseline_rrms_edss_increase = if(psa_bool) {
-
-#    mvrnorm(n = 1, 
-#            mu = tto_edss_increase_harrms_mu, 
-#            Sigma = tto_edss_increase_harrms_sigma) 
-#
-#  } else {tto_edss_increase_harrms_mu }
-  
   baseline_rrms_edss_increase = if(psa_bool) {
-    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
-                   dimnames = list(names(edss_values), names(edss_values)))
-    for(i_edss in 1:length(edss_values)) {
-      for(j_edss in 1:length(edss_values)) {
-      # Rates increase with higher EDSS
-      temp[i_edss,j_edss] <- exp(rnorm(1,
-                                  mean = log(0.6 + 0.004 * i_edss*j_edss),
-                                  sd = 0.01))
-    }}
-    temp
-  } else {
-    matrix(rep(0.6 + 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
-           dimnames = list(names(edss_values), names(edss_values)))
-  }) %>% add_item(
+
+    mvrnorm(n = 1, 
+            mu = tto_edss_increase_harrms_mu, 
+            Sigma = tto_edss_increase_harrms_sigma) 
+
+  } else {tto_edss_increase_harrms_mu }
+  
+#  baseline_rrms_edss_increase = if(psa_bool) {
+#    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
+#                   dimnames = list(names(edss_values), names(edss_values)))
+#    for(i_edss in 1:length(edss_values)) {
+#      for(j_edss in 1:length(edss_values)) {
+#      # Rates increase with higher EDSS
+#      temp[i_edss,j_edss] <- exp(rnorm(1,
+#                                  mean = log(0.6 + 0.004 * i_edss*j_edss),
+#                                  sd = 0.01))
+#    }}
+#    temp
+#  } else {
+#    matrix(rep(0.6 + 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
+#           dimnames = list(names(edss_values), names(edss_values)))
+#  }
+) %>% add_item(
   rrms_edss_decrease = if(psa_bool) {
-    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
-                   dimnames = list(names(edss_values), names(edss_values)))
-    for(i_edss in 1:length(edss_values)) {
-      for(j_edss in 1:length(edss_values)) {
+    
+    mvrnorm(n = 1, 
+            mu = tto_edss_decrease_rrms_mu, 
+            Sigma = tto_edss_decrease_rrms_sigma) 
+    
+  } else {tto_edss_decrease_rrms_mu }
+  
+#  rrms_edss_decrease =  if(psa_bool) {
+#    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
+#                   dimnames = list(names(edss_values), names(edss_values)))
+#    for(i_edss in 1:length(edss_values)) {
+#      for(j_edss in 1:length(edss_values)) {
       # Rates decrease with higher EDSS
-      temp[i_edss,j_edss] <- exp(rnorm(1,
-                                  mean = log(0.6 - 0.004 * i_edss * j_edss),
-                                  sd = 0.01))
+#      temp[i_edss,j_edss] <- exp(rnorm(1,
+#                                  mean = log(0.6 - 0.004 * i_edss * j_edss),
+#                                  sd = 0.01))
       
-    }}
-    temp
-  } else {
-    matrix(rep(0.6 - 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
-           dimnames = list(names(edss_values), names(edss_values)))
-  }
+#    }}
+#    temp
+#  } else {
+#    matrix(rep(0.6 - 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
+#           dimnames = list(names(edss_values), names(edss_values)))
+#  }
   #  rrms_edss_decrease = if(psa_bool) {
   #temp <- matrix(nrow = 1, ncol = length(edss_values),
   #               dimnames = list(NULL, names(edss_values)))
@@ -365,21 +375,29 @@ common_all_inputs <-add_item(
   # EDSS increase for SPMS patients assumed the same (can modify later)
   # Also assumed independent of treatment so using 'baseline' name
   spms_edss_increase = if(psa_bool) {
-    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
-                   dimnames = list(names(edss_values), names(edss_values)))
-    for(i_edss in 1:length(edss_values)) {
-      for(j_edss in 1:length(edss_values)) {
-      # Rates increase with higher EDSS
-      temp[i_edss,j_edss] <- exp(rnorm(1,
-                                  mean = log(0.6 + 0.004 * i_edss*j_edss),
-                                  sd = 0.01))
-    }}
-    temp
-  } else {
-    matrix(rep(0.6 + 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
-           dimnames = list(names(edss_values), names(edss_values)))
     
-  }
+    mvrnorm(n = 1, 
+            mu = tto_edss_increase_spms_mu, 
+            Sigma = tto_edss_increase_spms_sigma) 
+    
+  } else {tto_edss_increase_spms_mu}
+  
+#  spms_edss_increase  = if(psa_bool) {
+#    temp <- matrix(nrow = length(edss_values), ncol = length(edss_values),
+#                   dimnames = list(names(edss_values), names(edss_values)))
+#    for(i_edss in 1:length(edss_values)) {
+#      for(j_edss in 1:length(edss_values)) {
+      # Rates increase with higher EDSS
+#      temp[i_edss,j_edss] <- exp(rnorm(1,
+#                                  mean = log(0.6 + 0.004 * i_edss*j_edss),
+#                                  sd = 0.01))
+#    }}
+#    temp
+#  } else {
+#    matrix(rep(0.6 + 0.04 * edss_values, length(edss_values)),byrow=TRUE ,nrow = length(edss_values), ncol = length(edss_values),
+#           dimnames = list(names(edss_values), names(edss_values)))
+    
+#  }
   #  spms_edss_increase = if(psa_bool) {
   #temp <- matrix(nrow = 1, ncol = length(edss_values),
   #               dimnames = list(NULL, names(edss_values)))
@@ -395,6 +413,15 @@ common_all_inputs <-add_item(
   #}
   
 ) %>% add_item(
+  spms_edss_decrease = if(psa_bool) {
+    
+    mvrnorm(n = 1, 
+            mu = tto_edss_decrease_spms_mu, 
+            Sigma = tto_edss_decrease_spms_sigma) 
+    
+  } else {tto_edss_decrease_spms_mu }
+  
+  )%>% add_item(
   # Dummy rate of progression to SPMS
   spms_progression =  if(psa_bool) {exp(rnorm(1,
                                               mean = log(0.002),
@@ -658,12 +685,16 @@ init_event_list <-
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-             # coef1 = baseline_rrms_edss_increase["(Intercept)"]
-             #   + baseline_rrms_edss_increase["AgeDuringEvent"]  #must mean centre this *age
-              #  + baseline_rrms_edss_increase["GenderMALE"]   #*sex 
-              #  + baseline_rrms_edss_increase["BaselineWebEDSS"],  #*edss_value
-              coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
-                spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
+              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
+                + baseline_rrms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
+                + baseline_rrms_edss_increase["GenderMALE"]   #*sex covariate
+                + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
+                      + spms_flag * (spms_edss_increase["(Intercept)"]
+                      + spms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
+                      + spms_edss_increase["GenderMALE"]   #*sex covariate
+                      + spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
+           #   coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
+           #     spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
              # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
               hr = ((1 - spms_flag) * hr_edss_increase[current_treatment_code])+ spms_flag 
             )
@@ -679,7 +710,16 @@ init_event_list <-
               dist = "exp",
               # Baseline rate related to current EDSS
               # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
-              coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
+              coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"]
+               + rrms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
+               + rrms_edss_decrease["GenderMALE"]   #*sex covariate
+               + rrms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate
+                             + spms_flag * (spms_edss_decrease["(Intercept)"]
+                             + spms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
+                             + spms_edss_decrease["GenderMALE"]   #*sex covariate
+                             + spms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate 
+            )
+             # coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
             #edss_decrease <- draw_tte(
             #  1, 
             #  dist = "exp",
@@ -753,13 +793,17 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                   #  coef1 = baseline_rrms_edss_increase["(Intercept)"] +
-                   #    baseline_rrms_edss_increase["AgeDuringEvent"]*age + #must mean centre this
-                   #    baseline_rrms_edss_increase["GenderMALE"]*sex +
-                    #   baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value,
-                     coef1 = (1 - spms_flag) * 
-                      log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
-                       spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
+                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
+                           + baseline_rrms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
+                           + baseline_rrms_edss_increase["GenderMALE"]   #*sex covariate
+                           + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
+                                    +  spms_flag * (spms_edss_increase["(Intercept)"]
+                                     + spms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
+                                     + spms_edss_increase["GenderMALE"]   #*sex covariate
+                                     + spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate  
+                   #  coef1 = (1 - spms_flag) * 
+                   #   log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
+                   #    spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
                      # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
                      hr = ((1 - spms_flag) * hr_edss_increase[current_treatment_code])+ spms_flag 
                    )
@@ -793,7 +837,16 @@ evt_react_list <-
                      1, 
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
-                     coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
+                     coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"]
+                      + rrms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
+                      + rrms_edss_decrease["GenderMALE"]   #*sex covariate
+                      + rrms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate
+                                    + spms_flag * (spms_edss_decrease["(Intercept)"]
+                                    + spms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
+                                    + spms_edss_decrease["GenderMALE"]   #*sex covariate
+                                    + spms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate 
+                   )
+                     #coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
                  ))
 #                 add_reactevt(name_evt = "edss_decrease",
 #                              input = {
