@@ -1,14 +1,15 @@
-,cost_annual_yr1,cost_annual_yr2
-Natalizumab,14690,14690
-Natalizumab biosimilar,14690,14690
-Fingolimod,19176,19176
-Alemtuzumab,35225,21135
-Cladribine,26373,26373
-Daclizumab ,19160,19160
-Dimethyl fumarate,17910.29,17910.29
-PegIFN-β-1 SC 125μg,8502,8502
-IFNβ-1a SC 44μg,8942,8942
-IFNβ-1a SC 22μg,7513,7513
-IFNβ-1a IM 30μg,8502,8502
-IFNβ-1b SC 250μg,7259,7259
-Glatiramer acetate,5823,5823
+Treatment,cost_annual_yr1,cost_annual_yr2,average_annual_cost
+Natalizumab,14690,14690,14690
+Natalizumab biosimilar,13221,13221,13221
+Fingolimod,19176,19176,19176
+Alemtuzumab,35225,21135,28180
+Cladribine,26373,26373,26373
+Ponesimod,14009.56,14009.56,14009.56
+Ofatumumab ,22388,17910,20149
+Ocrelizumab,19160,19160,19160
+PegIFN-?-1 SC 125?g,8502,8502,8502
+IFN?-1a SC 44?g,10311,10311,10311
+IFN?-1a SC 22?g,7976,7976,7976
+IFN?-1a IM 30?g,8502,8502,8502
+IFN?-1b SC 250?g,7239,7239,7239
+Glatiramer Acetate 20-40mg,6681,6681,6681
