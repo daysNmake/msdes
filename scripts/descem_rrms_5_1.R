@@ -685,14 +685,14 @@ init_event_list <-
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
-                + baseline_rrms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                + baseline_rrms_edss_increase["GenderMALE"]   #*sex covariate
-                + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
-                      + spms_flag * (spms_edss_increase["(Intercept)"]
-                      + spms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                      + spms_edss_increase["GenderMALE"]   #*sex covariate
-                      + spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
+              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"] +
+                 baseline_rrms_edss_increase["AgeDuringEvent"] + # *age covariate mean centred
+                 baseline_rrms_edss_increase["GenderMALE"] +  #*sex covariate
+                 baseline_rrms_edss_increase["BaselineWebEDSS"] ) + #*edss_value covariate
+                       spms_flag * (spms_edss_increase["(Intercept)"] +
+                       spms_edss_increase["AgeDuringEvent"]  + # *age covariate mean centred
+                       spms_edss_increase["GenderMALE"] +  #*sex covariate
+                       spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
            #   coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
            #     spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
              # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
