@@ -35,7 +35,7 @@ source("R/draw_tte_new.R")
 
 set.seed(243523452)
 
-n_patients <- 10
+n_patients <- 100
 n_samples <- 10
 
 # Treatments at second line (expand to full set)
@@ -70,6 +70,7 @@ names(higher_line_treatment_codes) <- higher_line_treatments
 event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "death")
 
 initial_age <- 20 
+rrms_average_age <- 4.57
 time_horizon <- 80 # Years so lifetime
 prop_female <- 0.50
 
@@ -167,6 +168,7 @@ common_all_inputs <-add_item(
   higher_line_treatments = higher_line_treatments,
   higher_line_treatment_codes = higher_line_treatment_codes,
   initial_age = initial_age,
+  rrms_average_age = rrms_average_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
   edss_values = edss_values,
@@ -659,7 +661,7 @@ common_pt_inputs <- add_item(sex = sample(size = 1, x = c(1, 0), # Random
 # Note that the current treatment is later initialised to trt
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Random 
                                                  prob = initial_edss_distribution),
-                             edss.i = edss_value,
+                             #edss.i = edss_value,
                              n_relapse = 0,
                              spms_flag = sample(size = 1, x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
@@ -695,13 +697,13 @@ init_event_list <-
               1, 
               dist = "exp",
               coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"] +
-                 baseline_rrms_edss_increase["AgeDuringEvent"] + # *age covariate mean centred
-                 baseline_rrms_edss_increase["GenderMALE"] +  #*sex covariate
-                 baseline_rrms_edss_increase["BaselineWebEDSS"] ) + #*edss_value covariate
+                 baseline_rrms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age) + #  covariate mean centred
+                 baseline_rrms_edss_increase["GenderMALE"]*sex +  # covariate
+                 baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value ) + # covariate
                        spms_flag * (spms_edss_increase["(Intercept)"] +
-                       spms_edss_increase["AgeDuringEvent"]  + # *age covariate mean centred
-                       spms_edss_increase["GenderMALE"] +  #*sex covariate
-                       spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
+                       spms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  + # *age covariate mean centred
+                       spms_edss_increase["GenderMALE"]*sex +  # covariate
+                       spms_edss_increase["BaselineWebEDSS"]*edss_value ), # covariate    
            #   coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
            #     spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
              # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
@@ -720,13 +722,13 @@ init_event_list <-
               # Baseline rate related to current EDSS
               # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
               coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"]
-               + rrms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
-               + rrms_edss_decrease["GenderMALE"]   #*sex covariate
-               + rrms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate
+               + rrms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+               + rrms_edss_decrease["GenderMALE"]*sex   # covariate
+               + rrms_edss_decrease["BaselineWebEDSS"]*edss_value ) #*edss_value covariate
                              + spms_flag * (spms_edss_decrease["(Intercept)"]
-                             + spms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
-                             + spms_edss_decrease["GenderMALE"]   #*sex covariate
-                             + spms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate 
+                             + spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+                             + spms_edss_decrease["GenderMALE"]*sex   #*sex covariate
+                             + spms_edss_decrease["BaselineWebEDSS"]*edss_value ) # covariate 
             )
              # coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
             #edss_decrease <- draw_tte(
@@ -793,30 +795,30 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
-                 modify_item(list(edss.i = edss_value,
+                 modify_item(list(#edss.i = edss_value,
                                   edss_value = min(edss_value + 1, max(edss_values)),
                                   age = initial_age + round(curtime)))
                  
                  # Need to simulate the next time to EDSS increase
-                 new_event(list(
+                 if (edss_value < 9) {new_event(list(
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
                      coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
-                           + baseline_rrms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                           + baseline_rrms_edss_increase["GenderMALE"]   #*sex covariate
+                           + baseline_rrms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+                           + baseline_rrms_edss_increase["GenderMALE"]*sex   #*sex covariate
                            + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
                                     +  spms_flag * (spms_edss_increase["(Intercept)"]
-                                     + spms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                                     + spms_edss_increase["GenderMALE"]   #*sex covariate
-                                     + spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate  
+                                     + spms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+                                     + spms_edss_increase["GenderMALE"]*sex   #*sex covariate
+                                     + spms_edss_increase["BaselineWebEDSS"]*edss_value ), #*edss_value covariate  
                    #  coef1 = (1 - spms_flag) * 
                    #   log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
                    #    spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
                      # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
                      hr = ((1 - spms_flag) * hr_edss_increase[current_treatment_code])+ spms_flag 
                    )
-                 ))
+                 ))}
 #               })   add_reactevt(name_evt = "edss_increase",
 #                                 input = {
 #                                   modify_item(list(edss_value = min(edss_value + 1, max(edss_values)),
@@ -836,27 +838,27 @@ evt_react_list <-
                                  })%>%
   add_reactevt(name_evt = "edss_decrease",
                input = {
-                 modify_item(list(edss.i = edss_value,
+                 modify_item(list(#edss.i = edss_value,
                                   edss_value = max(edss_value - 1, min(edss_values)),
                                   age = initial_age + round(curtime)))
                  
                  # Need to simulate the next time to EDSS decrease
-                 new_event(list(
+                 if (edss_value > 0) {new_event(list(
                    "edss_decrease" = curtime + draw_tte(
                      1, 
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
                      coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"]
-                      + rrms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
-                      + rrms_edss_decrease["GenderMALE"]   #*sex covariate
+                      + rrms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+                      + rrms_edss_decrease["GenderMALE"]*sex   #*sex covariate
                       + rrms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate
                                     + spms_flag * (spms_edss_decrease["(Intercept)"]
-                                    + spms_edss_decrease["AgeDuringEvent"]  # *age covariate mean centred
-                                    + spms_edss_decrease["GenderMALE"]   #*sex covariate
-                                    + spms_edss_decrease["BaselineWebEDSS"] ) #*edss_value covariate 
+                                    + spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
+                                    + spms_edss_decrease["GenderMALE"]*sex   #*sex covariate
+                                    + spms_edss_decrease["BaselineWebEDSS"]*edss_value ) #*edss_value covariate 
                    )
                      #coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
-                 ))
+                 ) )}
 #                 add_reactevt(name_evt = "edss_decrease",
 #                              input = {
 #                                modify_item(list(edss_value = max(edss_value - 1, min(edss_values)),
@@ -964,8 +966,8 @@ total_runtime <- system.time({
     ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("age", "sex", "spms_flag", "edss.i", "edss_value", "n_relapse", "current_treatment",
-                "treatment_line", "n_switch")           
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment",
+                "treatment_line", "n_switch") #"edss.i"          
   )
 })
 
