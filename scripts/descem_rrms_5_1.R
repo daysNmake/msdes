@@ -12,8 +12,10 @@
 # V5.1 added in the full number of treatments and updated data 
     # Added registry data but not working correctly 
 
+
 # TODO Figure out neater way to add each parameter
 # Modularise, optimise, and add RShiny interface
+# NMA results to be exported to a dataframe that can be read read into the model
 
 rm(list = ls())
 
@@ -50,7 +52,8 @@ treatment_names <- c("Natalizumab",
                      "IFNβ-1a SC 44μg" ,
                      "IFNβ-1a IM 30μg", 
                      "IFNβ-1b SC 250μg", 
-                     "Glatiramer Acetate 20-40mg" )
+                     "Glatiramer Acetate 20mg",
+                     "Glatiramer Acetate 40mg")
 
 n_treatments <- length(treatment_names)
 treatment_codes <- c(seq(1, n_treatments))
@@ -262,50 +265,52 @@ common_all_inputs <-add_item(
   hr_edss_increase = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = n_treatments)
     # Dummy values but final will come from the NMA
-    temp[treatment_codes["Natalizumab"]] <- exp(rnorm(1,
-                                       mean = log(0.8),
-                                       sd = 0.01))
+    temp[treatment_codes["Natalizumab"]] <- 1
+    
     temp[treatment_codes["Natalizumab biosimilar"]] <- exp(rnorm(1,
-                                                  mean = log(0.8),
-                                                  sd = 0.01))
+                                                  mean = log(0.43),
+                                                  sd = 0.34))
     temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
-                                      mean = log(0.7),
-                                      sd = 0.01))
-    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
-                                       mean = log(0.6),
-                                       sd = 0.01))
+                                      mean = log(0.39),
+                                      sd = 0.15))
+    temp[treatment_codes["Alemtuzumab"]] <- rnorm(1,
+                                       mean = -0.15,
+                                       sd = 0.2) #how do you draw a negative log HR?
     temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
-                                      mean = log(0.9),
-                                      sd = 0.01))
+                                      mean = log(0.33),
+                                      sd = 0.17))
     temp[treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-                                      mean = log(0.45),
-                                      sd = 0.01))
+                                      mean = log(0.92),
+                                      sd = 0.3))
     temp[treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
-                                           mean = log(0.4),
-                                           sd = 0.01))
+                                           mean = log(0.49), 
+                                           sd = 0.32))
     temp[treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
-                                                     mean = log(0.4),
-                                                     sd = 0.01))
+                                                     mean = log(0.1), 
+                                                     sd = 0.18))
     temp[treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
-                                           mean = log(0.35),
-                                           sd = 0.01))
+                                           mean = log(0.72), 
+                                           sd = 0.18))
     temp[treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
-                                           mean = log(0.3),
-                                           sd = 0.01))
+                                           mean = log(0.74), 
+                                           sd = 0.14))
     temp[treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                             mean = log(0.3),
-                                                             sd = 0.01))
+                                                mean = log(0.81), 
+                                                sd = 0.16))
     temp[treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
-                                           mean = log(0.25),
-                                           sd = 0.01))
+                                           mean = log(1.0),  
+                                           sd = 0.14))
     temp[treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
-                                           mean = log(0.2),
-                                           sd = 0.01))
-    temp[treatment_codes["Glatiramer Acetate 20-40mg"]] <- exp(rnorm(1,
-                                           mean = log(0.15),
-                                           sd = 0.01))
+                                           mean = log(0.82), 
+                                           sd = 0.15))
+    temp[treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
+                                           mean = log(0.79),
+                                           sd = 0.14))
+    temp[treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
+                                            mean = log(0.82),
+                                            sd = 0.15))
     temp
-  } else {c(0.8, 0.8, 0.7, 0.6, 0.9, 0.45, 0.4, 0.4, 0.35, 0.3, 0.3, 0.25, 0.2, 0.15)}
+  } else {c(1, 0.43, 0.39, -0.15, 0.33, 0.92, 0.49, 0.1, 0.72, 0.74, 0.81, 1.0, 0.82, 0.79, 0.82)}
   
 ) %>% add_item(
   baseline_rrms_edss_increase = if(psa_bool) {
@@ -438,52 +443,54 @@ common_all_inputs <-add_item(
   # Hazard ratios on annualised relapse rate
   hr_arr = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = n_treatments)
-    # Dummy values but final will come from the NMA
-    temp[treatment_codes["Natalizumab"]] <- exp(rnorm(1,
-                                       mean = log(0.8),
-                                       sd = 0.01))
+    #  values from the NMA put in by hand
+    temp[treatment_codes["Natalizumab"]] <- 1
+    
     temp[treatment_codes["Natalizumab biosimilar"]] <- exp(rnorm(1,
-                                                  mean = log(0.8),
-                                                  sd = 0.01))
+                                                                 mean = log(0.43),
+                                                                 sd = 0.34))
     temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
-                                      mean = log(0.7),
-                                      sd = 0.01))
-    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
-                                       mean = log(0.6),
-                                       sd = 0.01))
+                                                     mean = log(0.39),
+                                                     sd = 0.15))
+    temp[treatment_codes["Alemtuzumab"]] <- rnorm(1,
+                                                  mean = -0.15,
+                                                  sd = 0.2) #how do you draw a negative log HR?
     temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
-                                      mean = log(0.9),
-                                      sd = 0.01))
+                                                     mean = log(0.33),
+                                                     sd = 0.17))
     temp[treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-                                                    mean = log(0.45),
-                                                    sd = 0.01))
+                                                    mean = log(0.92),
+                                                    sd = 0.3))
     temp[treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
-                                                     mean = log(0.4),
-                                                     sd = 0.01))
+                                                     mean = log(0.49), 
+                                                     sd = 0.32))
     temp[treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
-                                                      mean = log(0.4),
-                                                      sd = 0.01))
+                                                      mean = log(0.1), 
+                                                      sd = 0.18))
     temp[treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
-                                                              mean = log(0.35),
-                                                              sd = 0.01))
+                                                              mean = log(0.72), 
+                                                              sd = 0.18))
     temp[treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
-                                                             mean = log(0.3),
-                                                             sd = 0.01))
+                                                          mean = log(0.74), 
+                                                          sd = 0.14))
     temp[treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                             mean = log(0.3),
-                                                             sd = 0.01))
+                                                          mean = log(0.81), 
+                                                          sd = 0.16))
     temp[treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
-                                                          mean = log(0.25),
-                                                          sd = 0.01))
+                                                          mean = log(1.0),  
+                                                          sd = 0.14))
     temp[treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
-                                                           mean = log(0.2),
-                                                           sd = 0.01))
-    temp[treatment_codes["Glatiramer Acetate 20-40mg"]] <- exp(rnorm(1,
-                                                                     mean = log(0.15),
-                                                                     sd = 0.01))
+                                                           mean = log(0.82), 
+                                                           sd = 0.15))
+    temp[treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
+                                                                  mean = log(0.79),
+                                                                  sd = 0.14))
+    temp[treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
+                                                                  mean = log(0.82),
+                                                                  sd = 0.15))
     temp
-  } else {c(0.8, 0.8, 0.7, 0.6, 0.9, 0.45, 0.4, 0.4, 0.35, 0.3, 0.3, 0.25, 0.2, 0.15)}
-
+  } else {c(1, 0.43, 0.39, -0.15, 0.33, 0.92, 0.49, 0.1, 0.72, 0.74, 0.81, 1.0, 0.82, 0.79, 0.82)}
+  
   
 ) %>% add_item(
   # All-cause mortality
@@ -685,14 +692,14 @@ init_event_list <-
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
-                + baseline_rrms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                + baseline_rrms_edss_increase["GenderMALE"]   #*sex covariate
-                + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
-                      + spms_flag * (spms_edss_increase["(Intercept)"]
-                      + spms_edss_increase["AgeDuringEvent"]  # *age covariate mean centred
-                      + spms_edss_increase["GenderMALE"]   #*sex covariate
-                      + spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
+              coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"] +
+                 baseline_rrms_edss_increase["AgeDuringEvent"] + # *age covariate mean centred
+                 baseline_rrms_edss_increase["GenderMALE"] +  #*sex covariate
+                 baseline_rrms_edss_increase["BaselineWebEDSS"] ) + #*edss_value covariate
+                       spms_flag * (spms_edss_increase["(Intercept)"] +
+                       spms_edss_increase["AgeDuringEvent"]  + # *age covariate mean centred
+                       spms_edss_increase["GenderMALE"] +  #*sex covariate
+                       spms_edss_increase["BaselineWebEDSS"] ), #*edss_value covariate    
            #   coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
            #     spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
              # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
