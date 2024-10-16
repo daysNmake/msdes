@@ -8,6 +8,7 @@ library(multinma)
 library(dplyr)
 
 
+
 #CDP3 Network
 
 # Load the raw CDP3 from the SLR
@@ -42,8 +43,8 @@ CDP3_data <- CDP3_data %>%
 
 
 # Extract the unique study names
-study_ids <- unlist(lapply(unique(CDP3_data$EndNote.ID), toString))
-study_names <- unlist(lapply(unique(CDP3_data$Study.Name), toString))
+CDP3_study_ids <- unlist(lapply(unique(CDP3_data$EndNote.ID), toString))
+CDP3_study_names <- unlist(lapply(unique(CDP3_data$Study.Name), toString))
 
 # Hazard ratio data
 CDP3_contrast <- as.data.frame(CDP3_data[, c("Study.Name", "EndNote.ID","Time.point.reported..Months.", "Treatment", "Reference", "Estimate", "Effect.Estimate.Type", "LCI", "UCI", "N")])
@@ -144,8 +145,8 @@ CDP3_event <- CDP3_event %>%
   
 # Treatment names in alphabetical order, but with Placebo at the start,
 # thus matching what mutlinma would use
- treatment_names <- sort(unique(c(CDP3_event$Treatment, CDP3_contrast$Treatment)))
-  treatment_names <- c("Placebo", treatment_names[-which(treatment_names == "Placebo")])
+CDP3_treatment_names <- sort(unique(c(CDP3_event$Treatment, CDP3_contrast$Treatment)))
+CDP3_treatment_names <- c("Placebo", CDP3_treatment_names[-which(CDP3_treatment_names == "Placebo")])
 
   
 # Remove studies from the events dataset that are in the contrast dataset
@@ -153,7 +154,7 @@ CDP3_event <- CDP3_event[-which(is.element(CDP3_event$EndNote.ID, CDP3_contrast$
 
 
 # Create network for events data
-mix_event_net <- set_agd_contrast(CDP3_event, 
+CDP3_mix_event_net <- set_agd_contrast(CDP3_event, 
                            study = Study.Name,
                            trt = Treatment,
                            y = diff, 
@@ -161,7 +162,7 @@ mix_event_net <- set_agd_contrast(CDP3_event,
                            sample_size = N)
 
 # Create network for hazard ratio data
-mix_contrast_net <- set_agd_contrast(CDP3_contrast, 
+CDP3_mix_contrast_net <- set_agd_contrast(CDP3_contrast, 
                                      study = Study.Name,
                                      trt = Treatment,
                                      y = diff, 
@@ -169,29 +170,60 @@ mix_contrast_net <- set_agd_contrast(CDP3_contrast,
                                      sample_size = N)
 
 # Combine the networks together
-mix_net <- combine_network(mix_event_net, mix_contrast_net)
+CDP3_mix_net <- combine_network(CDP3_mix_event_net, CDP3_mix_contrast_net)
 
 # Export a summary of the network
-mix_net
+CDP3_mix_net
 
 # Generate a network plot with nodes weighted by sample size
 # and edges by number of studies
-plot(mix_net, weight_edges = TRUE, weight_nodes = TRUE)
+plot(CDP3_mix_net, weight_edges = TRUE, weight_nodes = TRUE)
 
 
-# Fixed effects NMA
-mix_fit_FE <- nma(mix_net, 
+# Can look at estimates of basic log hazard ratios relative to placebo
+CDP3_mix_fit_FE <- nma(CDP3_mix_net, 
                   trt_effects = "fixed",
                   prior_intercept = normal(scale = 100),
                   prior_trt = normal(scale = 100))
 
-# Can look at estimates of basic log hazard ratios relative to placebo
+
+# Create dataframe with results summary
+CDP3_mix_fit_FE_summary <- summary(CDP3_mix_fit_FE)
+CDP3_mix_fit_FE_summary_df <- as.data.frame(CDP3_mix_fit_FE_summary)
+
+
+#Calculate HR and 95% CI in the exponential scale
+CDP3_mix_fit_FE_summary_df <- CDP3_mix_fit_FE_summary_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(CDP3_mix_fit_FE_summary_df$HR, 1:nrow(CDP3_mix_fit_FE_summary_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(CDP3_mix_fit_FE_summary_df$LCI, CDP3_mix_fit_FE_summary_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(CDP3_mix_fit_FE_summary_df), labels = CDP3_mix_fit_FE_summary_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(CDP3_mix_fit_FE_summary_df$LCI, 1:nrow(CDP3_mix_fit_FE_summary_df),  # Lower bound (LCI)
+       CDP3_mix_fit_FE_summary_df$UCI, 1:nrow(CDP3_mix_fit_FE_summary_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
 
 
 # Random effects NMA
 # Note that we're using a non-informative prior. This leads to poor convergence
 # May want to use informative prior
-mix_fit_RE <- nma(mix_net, 
+CDP3_mix_fit_RE <- nma(CDP3_mix_net, 
                   seed = 437219664,
                   trt_effects = "random",
                   prior_intercept = normal(scale = 100),
@@ -199,21 +231,86 @@ mix_fit_RE <- nma(mix_net,
                   prior_het = half_normal(scale = 5),
                   adapt_delta = 0.99)
 
+# Create dataframe with results summary
+CDP3_mix_fit_RE_summary <- summary(CDP3_mix_fit_RE)
+CDP3_mix_fit_RE_summary_df <- as.data.frame(CDP3_mix_fit_RE_summary)
+
+#Calculate HR and 95% CI in the exponential scale
+CDP3_mix_fit_RE_summary_df <- CDP3_mix_fit_RE_summary_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(CDP3_mix_fit_RE_summary_df$HR, 1:nrow(CDP3_mix_fit_RE_summary_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(CDP3_mix_fit_RE_summary_df$LCI, CDP3_mix_fit_RE_summary_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(CDP3_mix_fit_RE_summary_df), labels = CDP3_mix_fit_RE_summary_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(CDP3_mix_fit_RE_summary_df$LCI, 1:nrow(CDP3_mix_fit_RE_summary_df),  # Lower bound (LCI)
+       CDP3_mix_fit_RE_summary_df$UCI, 1:nrow(CDP3_mix_fit_RE_summary_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
+
 # Model comparison via DIC
 # Although noting random effects haven't converged there isn't much 
 # difference between the two models
-(mix_dic_FE <- dic(mix_fit_FE))
-(mix_dic_RE <- dic(mix_fit_RE))
-plot(mix_dic_FE, ref_line = 0)
+(CDP3_mix_dic_FE <- dic(CDP3_mix_fit_FE))
+(CDP3_mix_dic_RE <- dic(CDP3_mix_fit_RE))
+plot(CDP3_mix_dic_FE)
 
 
 # Treatment effects relative to natalizumab IV300
 # Values >= 0 favour natalizumab
-(mix_releff_FE <- relative_effects(mix_fit_FE, trt_ref = "Natalizumab IV300"))
+(CDP3_mix_releff_FE <- relative_effects(CDP3_mix_fit_FE, trt_ref = "Natalizumab IV300"))
 
-# Forest plot but on log rate ratio scale
-# Ideally want some way to plot on natural scale
-plot(mix_releff_FE, ref_line = 0)
+# Extract the summary of the relative effects analysis
+CDP3_mix_releff_summary <- CDP3_mix_releff_FE$summary
+
+#Convert to a dataframe
+CDP3_mix_releff_summary_df <- as.data.frame(CDP3_mix_releff_summary)
+
+#Calculate HR and 95% CI in the exponential scale
+CDP3_mix_releff_summary_df <- CDP3_mix_releff_summary_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(CDP3_mix_releff_summary_df$HR, 1:nrow(CDP3_mix_releff_summary_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(CDP3_mix_releff_summary_df$LCI, CDP3_mix_releff_summary_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(CDP3_mix_releff_summary_df), labels = CDP3_mix_releff_summary_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(CDP3_mix_releff_summary_df$LCI, 1:nrow(CDP3_mix_releff_summary_df),  # Lower bound (LCI)
+       CDP3_mix_releff_summary_df$UCI, 1:nrow(CDP3_mix_releff_summary_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
+
+
+
 
 
 ##################################################################################################
@@ -255,8 +352,8 @@ CDP6_data <- CDP6_data %>%
 
 
 # Extract the unique study names
-study_ids_2 <- unlist(lapply(unique(CDP6_data$EndNote.ID), toString))
-study_names_2 <- unlist(lapply(unique(CDP6_data$Study.Name), toString))
+CDP6_study_ids <- unlist(lapply(unique(CDP6_data$EndNote.ID), toString))
+cdp6_study_nameS <- unlist(lapply(unique(CDP6_data$Study.Name), toString))
 
 # Hazard ratio data
 CDP6_contrast <- as.data.frame(CDP6_data[, c("Study.Name", "EndNote.ID","Time.point.reported..Months.", "Treatment", "Reference", "Estimate", "Effect.Estimate.Type", "LCI", "UCI", "N")])
@@ -269,6 +366,12 @@ CDP6_contrast <- CDP6_contrast %>%
 CDP6_contrast <- CDP6_contrast %>%
   group_by(Study.Name) %>%
   filter(any(Estimate != "" & Estimate != "NR")) %>%
+  ungroup()
+
+# Remove studies with effect estimates different to HR
+CDP6_contrast <- CDP6_contrast %>%
+  group_by(Study.Name) %>%
+  filter(any(Effect.Estimate.Type == "HR")) %>%
   ungroup()
 
 #Ensure all relevant data data is numeric
@@ -286,18 +389,6 @@ CDP6_contrast$UCI <- as.numeric(CDP6_contrast$UCI)
 CDP6_contrast$diff <- log(as.numeric(CDP6_contrast$Estimate))
 CDP6_contrast$se_diff <- (log(as.numeric(CDP6_contrast$UCI)) - 
                             log(as.numeric(CDP6_contrast$LCI))) / (2 * 1.96)
-
-# Calculate a small positive standard error based on non-baseline arms
-small_positive_se <- CDP6_contrast %>%
-  filter(!is.na(se_diff)) %>%
-  summarise(min_se = min(se_diff[se_diff > 0], na.rm = TRUE)) %>%
-  pull(min_se) * 0.1  # Use 1% of the smallest positive SE
-
-# Assign this small positive SE to baseline arms where se_diff is NA
-CDP6_contrast <- CDP6_contrast %>%
-  mutate(
-    se_diff = ifelse(is.na(se_diff), small_positive_se, se_diff)
-  )
 
 
 # Raw dichotomous data
@@ -360,8 +451,8 @@ CDP6_event <- CDP6_event %>%
 
 # Treatment names in alphabetical order, but with Placebo at the start,
 # thus matching what mutlinma would use
-treatment_names_2 <- sort(unique(c(CDP6_event$Treatment, CDP6_contrast$Treatment)))
-treatment_names_2 <- c("Placebo", treatment_names[-which(treatment_names == "Placebo")])
+CDP6_treatment_names <- sort(unique(c(CDP6_event$Treatment, CDP6_contrast$Treatment)))
+CDP6_treatment_names <- c("Placebo", CDP6_treatment_names[-which(CDP6_treatment_names == "Placebo")])
 
 
 # Remove studies from the events dataset that are in the contrast dataset
@@ -369,7 +460,7 @@ CDP6_event <- CDP6_event[-which(is.element(CDP6_event$EndNote.ID, CDP6_contrast$
 
 
 # Create network for events data
-mix_event_net_2 <- set_agd_contrast(CDP6_event, 
+CDP6_mix_event_net <- set_agd_contrast(CDP6_event, 
                                   study = Study.Name,
                                   trt = Treatment,
                                   y = diff, 
@@ -377,7 +468,7 @@ mix_event_net_2 <- set_agd_contrast(CDP6_event,
                                   sample_size = N)
 
 # Create network for hazard ratio data
-mix_contrast_net_2 <- set_agd_contrast(CDP6_contrast, 
+CDP6_mix_contrast_net <- set_agd_contrast(CDP6_contrast, 
                                      study = Study.Name,
                                      trt = Treatment,
                                      y = diff, 
@@ -385,47 +476,114 @@ mix_contrast_net_2 <- set_agd_contrast(CDP6_contrast,
                                      sample_size = N)
 
 # Combine the networks together
-mix_net_2 <- combine_network(mix_event_net_2, mix_contrast_net_2)
+CDP6_mix_net <- combine_network(CDP6_mix_event_net, CDP6_mix_contrast_net)
 
 # Export a summary of the network
-mix_net_2
+CDP6_mix_net
 
 # Generate a network plot with nodes weighted by sample size
 # and edges by number of studies
-plot(mix_net_2, weight_edges = TRUE, weight_nodes = TRUE)
+plot(CDP6_mix_net, weight_edges = TRUE, weight_nodes = TRUE)
 
 # Fixed effects NMA
-mix_fit_FE_2 <- nma(mix_net_2, 
+CDP6_mix_fit_FE <- nma(CDP6_mix_net, 
                   trt_effects = "fixed",
                   prior_intercept = normal(scale = 100),
                   prior_trt = normal(scale = 100))
 
 # Can look at estimates of basic log hazard ratios relative to placebo
 
+# Create dataframe with results summary
+CDP6_mix_fit_FE_summary <- summary(CDP6_mix_fit_FE)
+CDP6_mix_fit_FE_summary_df <- as.data.frame(CDP6_mix_fit_FE_summary)
+
+#Calculate HR and 95% CI in the exponential scale
+CDP6_mix_fit_FE_summary_df <- CDP6_mix_fit_FE_summary_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(CDP6_mix_fit_FE_summary_df$HR, 1:nrow(CDP6_mix_fit_FE_summary_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(CDP6_mix_fit_FE_summary_df$LCI, CDP6_mix_fit_FE_summary_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(CDP6_mix_fit_FE_summary_df), labels = CDP6_mix_fit_FE_summary_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(CDP6_mix_fit_FE_summary_df$LCI, 1:nrow(CDP6_mix_fit_FE_summary_df),  # Lower bound (LCI)
+       CDP6_mix_fit_FE_summary_df$UCI, 1:nrow(CDP6_mix_fit_FE_summary_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
+
 
 # Random effects NMA
 # Note that we're using a non-informative prior. This leads to poor convergence
 # May want to use informative prior
-mix_fit_RE_2 <- nma(mix_net_2, 
+CDP6_mix_fit_RE <- nma(CDP6_mix_net, 
                   seed = 437219664,
                   trt_effects = "random",
                   prior_intercept = normal(scale = 100),
                   prior_trt = normal(scale = 100),
                   prior_het = half_normal(scale = 5),
-                  adapt_delta = 0.99)
+                  adapt_delta = 0.995)
 
-# Model comparison via DIC
-# Although noting random effects haven't converged there isn't much 
-# difference between the two models
-(mix_dic_FE_2 <- dic(mix_fit_FE_2))
-(mix_dic_RE_2 <- dic(mix_fit_RE_2))
-plot(mix_dic_FE_2, ref_line = 0)
 
+# Create dataframe with results summary
+CDP6_mix_fit_RE_summary <- summary(CDP6_mix_fit_RE)
+CDP6_mix_fit_RE_summary_df <- as.data.frame(CDP6_mix_fit_RE_summary)
+
+#Need to insert code for dataframe and plot
 
 # Treatment effects relative to natalizumab IV300
 # Values >= 0 favour natalizumab
-(mix_releff_FE_2 <- relative_effects(mix_fit_FE_2, trt_ref = "Natalizumab IV300"))
+(CDP6_mix_releff_FE <- relative_effects(CDP6_mix_fit_FE, trt_ref = "Natalizumab IV300"))
 
-# Forest plot but on log rate ratio scale
-# Ideally want some way to plot on natural scale
-plot(mix_releff_FE, ref_line = 0)
+# Extract the summary of the relative effects analysis
+CDP6_mix_releff_summary <- CDP6_mix_releff_FE$summary
+
+#Convert to a dataframe
+CDP6_mix_releff_summary_df <- as.data.frame(CDP6_mix_releff_summary)
+
+#Calculate HR and 95% CI in the exponential scale
+CDP6_mix_releff_summary_df <- CDP6_mix_releff_summary_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(CDP6_mix_releff_summary_df$HR, 1:nrow(CDP6_mix_releff_summary_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(CDP6_mix_releff_summary_df$LCI, CDP6_mix_releff_summary_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(CDP6_mix_releff_summary_df), labels = CDP6_mix_releff_summary_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(CDP6_mix_releff_summary_df$LCI, 1:nrow(CDP6_mix_releff_summary_df),  # Lower bound (LCI)
+       CDP6_mix_releff_summary_df$UCI, 1:nrow(CDP6_mix_releff_summary_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
+
+
+
+
+
+###################################################################################

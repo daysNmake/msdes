@@ -193,11 +193,45 @@ mix_fit_FE <- nma(mix_net,
                   prior_intercept = normal(scale = 100),
                   prior_trt = normal(scale = 100))
 
+# Create dataframe with results summary
+mix_fit_FE_summary <- summary(mix_fit_FE)
+mix_fit_FE_summary_df <- as.data.frame(mix_fit_FE_summary)
+intervention_df <- mix_fit_FE_summary_df[grep("^d", mix_fit_FE_summary_df$parameter), ]
+
+
+#Calculate HR and 95% CI in the exponential scale
+intervention_df <- intervention_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(intervention_df$HR, 1:nrow(intervention_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(intervention_df$LCI, intervention_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(intervention_df), labels = intervention_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(intervention_df$LCI, 1:nrow(intervention_df),  # Lower bound (LCI)
+       intervention_df$UCI, 1:nrow(intervention_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
+
 # Can look at estimates of basic log hazard ratios relative to placebo
 # Lower values indicate lower risk of relapse
 # As expected alemtuzumab has lowest risk although natalizumab is second (joint with
 # ocrelizumab)
-mix_fit_FE
+
 
 # Random effects NMA
 # Note that we're using a non-informative prior. This leads to poor convergence
@@ -221,6 +255,36 @@ plot(mix_dic_FE, ref_line = 0)
 # Treatment effects relative to natalizumab IV300
 # Values >= 0 favour natalizumab
 (mix_releff_FE <- relative_effects(mix_fit_FE, trt_ref = "Natalizumab IV300"))
+
+# Create a dataframe with results
+mix_releff_df <- as.data.frame(mix_releff_FE)
+
+mix_releff_df <- mix_releff_df %>%
+  mutate(
+    HR = exp(mean),          # Exponentiate the mean values
+    LCI = exp(`2.5%`),        # Exponentiate the 2.5% CI lower bound
+    UCI = exp(`97.5%`)        # Exponentiate the 97.5% CI upper bound
+  )
+
+par(mar = c(5, 14, 4, 2))
+plot(mix_releff_df$HR, 1:nrow(mix_releff_df),  # HR on x-axis, treatments on y-axis
+     xlim = range(c(mix_releff_df$LCI, mix_releff_df$UCI)),  # Set x-axis limits to include CIs
+     pch = 16,  # Use filled circles for points
+     yaxt = "n",  # Suppress default y-axis
+     xlab = "Hazard Ratio (HR)",  # X-axis label
+     ylab = "Treatments")  # Y-axis label
+
+# Add custom y-axis labels with treatment names
+axis(2, at = 1:nrow(mix_releff_df), labels = mix_releff_df$parameter, las = 1, cex.axis = 0.8)
+
+# Add error bars to represent the confidence intervals
+arrows(mix_releff_df$LCI, 1:nrow(mix_releff_df),  # Lower bound (LCI)
+       mix_releff_df$UCI, 1:nrow(mix_releff_df),  # Upper bound (UCI)
+       angle = 90, code = 3, length = 0.05)
+
+# Add a reference line at x = 1 (no effect)
+abline(v = 1, col = "red", lty = 2)  # Vertical dashed red line at HR = 1
+
 
 # Forest plot but on log rate ratio scale
 # Ideally want some way to plot on natural scale
