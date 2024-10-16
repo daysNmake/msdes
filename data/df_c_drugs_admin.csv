@@ -1,6 +1,8 @@
 Treatment,cost_annual_yr1,cost_annual_yr2,average_annual_cost
-Natalizumab,1062,1062,1062
-Natalizumab biosimilar,1062,1062,1062
+Natalizumab-IV,1062,1062,1062
+Natalizumab-SC,531,531,531
+Natalizumab biosimilar-IV,1062,1062,1062
+Natalizumab biosimilar-SC,531,531,531
 Fingolimod,551,0,275.5
 Alemtuzumab,2438,1487,1962.5
 Cladribine,0,0,0
