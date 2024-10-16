@@ -1,6 +1,8 @@
 Treatment,cost_annual_yr1,cost_annual_yr2,average_annual_cost
-Natalizumab,540,547,543.5
-Natalizumab biosimilar,540,547,543.5
+Natalizumab-IV,540,547,543.5
+Natalizumab-SC,540,547,543.5
+Natalizumab biosimilar-IV,540,547,543.5
+Natalizumab biosimilar-SC,540,547,543.5
 Fingolimod,821,169,495
 Alemtuzumab,443,274,358.5
 Cladribine ,584,215,399.5
