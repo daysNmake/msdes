@@ -48,7 +48,7 @@ tto_edss_increase_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalM
                                                   sheet = "Models", range = "N90:N92", 
                                                   col_names = FALSE,col_types = c("numeric")))
 tto_edss_increase_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                     sheet = "Models", range = "N102:N104", 
+                                                     sheet = "Models", range = "N102:P104", 
                                                   col_names = FALSE,col_types = c("numeric")))
 dimnames(tto_edss_increase_spms_mu) <- edss_model_names
 dimnames(tto_edss_increase_spms_sigma) <- c(edss_model_names, edss_model_names)
@@ -108,7 +108,7 @@ tto_sp_conversion_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurviva
                                               sheet = "Models", range = "N230:N232", 
                                               col_names = FALSE,col_types = c("numeric")))
 tto_sp_conversion_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                 sheet = "Models", range = "N242:P248", 
+                                                 sheet = "Models", range = "N242:P244", 
                                                  col_names = FALSE,col_types = c("numeric")))
 dimnames(tto_sp_conversion_harrms_mu) <- edss_model_names
 dimnames(tto_sp_conversion_harrms_sigma) <- c(edss_model_names, edss_model_names)
