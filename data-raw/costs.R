@@ -1,4 +1,10 @@
 ### Costs
+#######################################
+## DO NOT RUN SCRIPT
+## Costs updated manually from report
+######################################
+
+
 # Model inputs to extracted here from TA616 as dummy
 library(readxl)
 
