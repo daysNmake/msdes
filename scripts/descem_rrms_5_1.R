@@ -10,11 +10,14 @@
 
 # V5 fixed aging and death and modified matrix accessing for parameters to index on rows and columns
 # V5.1 added in the full number of treatments and updated data 
-    # Added registry data working correctly 
+    # Added registry data working correctly (updated to latest set of models as of 24th October)
     # Registry exponential models exclude age and sex co-variates due to sparse data 
     # limited relapses to 0 < edss < 9
     # CDP6 and ARR NMA
     # SPMS EDSS decrease removed
+    # Uncertainty
+      # Utilities drawn from a normal distibution
+      # costs drawn from a Gamma distribution
 
 
 # TODO Figure out neater way to add each parameter
@@ -28,6 +31,7 @@ rm(list = ls())
 
 library(descem)
 library(MASS)
+library(VGAM)
 library(dplyr)
 library(flexsurv)
 library(ggplot2)
@@ -42,8 +46,8 @@ source("R/draw_tte_new.R")
 
 set.seed(243523452)
 
-n_patients <- 100
-n_samples <- 100
+n_patients <- 2
+n_samples <- 1
 
 # Treatments at second line (expand to full set)
 treatment_names <- c("Natalizumab-IV",
@@ -81,7 +85,6 @@ names(higher_line_treatment_codes) <- higher_line_treatments
 event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "death")
 
 initial_age <- 20 
-rrms_average_age <- 4.57
 time_horizon <- 80 # Years so lifetime
 prop_female <- 0.50
 
@@ -103,8 +106,8 @@ tto_edss_increase_spms_sigma <- read.csv("data/m_tto_edss_increase_spms_sigma.cs
 
 tto_edss_decrease_rrms_mu <- t(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1))
 tto_edss_decrease_rrms_sigma <- read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1)
-#tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
-#tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
+tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
+tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
 
 tto_relapse_harrms_mu <- read.csv("data/v_tto_relapse_harrms_mu.csv", header = T, row.names = 1)
 tto_relapse_harrms_sigma<- read.csv("data/m_tto_relapse_harrms_sigma.csv", header = T, row.names = 1)
@@ -115,8 +118,9 @@ tto_sp_conversion_harrms_mu <- read.csv("data/v_tto_sp_conversion_harrms_mu.csv"
 tto_sp_conversion_harrms_sigma<- read.csv("data/m_tto_sp_conversion_harrms_sigma.csv", header = T, row.names = 1)
 
 
-# Initial distribution of EDSS (dummy but could come from a registry)
-initial_edss_distribution <- c(0.8, 0.1, rep(0.0125, 8))
+# Initial distribution of EDSS (AFFIRM baseline both arms)
+affirm_edss_distribution <- c(49, 273, 311, 193, 88, 24, 1, 1, 1, 1)#
+
 
 # Initial proportion with SPMS
 initial_spms_prop <- 0
@@ -125,7 +129,7 @@ initial_spms_prop <- 0
 df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
 
 ## base line relapse rate(final analysis) Placebo arm AFFIRM Table 2  Polman etal 2006 DOI: 10.1056/NEJMoa044397
-r_bl_rrms_rr <- as.double(c(0.78, (0.94-0.64)/3.92))
+# r_bl_rrms_rr <- as.double(c(0.78, (0.94-0.64)/3.92))
 
 
 ## Proportion of patients having relapse leading to hospitalisation ~DUMMY DATA~
@@ -188,7 +192,7 @@ common_all_inputs <-add_item(
   higher_line_treatments = higher_line_treatments,
   higher_line_treatment_codes = higher_line_treatment_codes,
   initial_age = initial_age,
-  rrms_average_age = rrms_average_age,
+  #rrms_average_age = rrms_average_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
   edss_values = edss_values,
@@ -196,7 +200,8 @@ common_all_inputs <-add_item(
   c_tx_admin = c_tx_admin, # make random
   c_tx_monitor = c_tx_monitor, # make random
   event_names = event_names,
-  r_bl_rrms_rr = r_bl_rrms_rr, # make random
+  #r_bl_rrms_rr = r_bl_rrms_rr, # make random
+  affirm_edss_distribution=affirm_edss_distribution,
   r_mortality = r_mortality, # make random
   smr = smr, # make random
   initial_spms_prop = initial_spms_prop,
@@ -248,7 +253,9 @@ common_all_inputs <-add_item(
   c_rrms_edss = if(psa_bool) {
     temp <- edss_med_costs[1,]
     for(j_edss in 1:length(temp)) {
-      temp[j_edss] <- pmax(rnorm(1, mean =  edss_med_costs[1,j_edss], sd =  edss_med_costs[2,j_edss]),0)
+      temp[j_edss] <- rgamma(1, ((edss_med_costs[1,j_edss])^2)/(edss_med_costs[2,j_edss]^2),
+                             edss_med_costs[1,j_edss]/(edss_med_costs[2,j_edss]^2))
+      #temp[j_edss] <- pmax(rnorm(1, mean =  edss_med_costs[1,j_edss], sd =  edss_med_costs[2,j_edss]),0)
     }
     temp
     
@@ -340,8 +347,8 @@ common_all_inputs <-add_item(
   baseline_rrms_edss_increase = if(psa_bool) {
 
     mvrnorm(n = 1, 
-            mu = tto_edss_increase_rrms_mu, 
-            Sigma = tto_edss_increase_rrms_sigma) 
+            mu = tto_edss_increase_harrms_mu, 
+            Sigma = tto_edss_increase_harrms_sigma) 
 
   } else {tto_edss_increase_rrms_mu }
   
@@ -441,28 +448,41 @@ common_all_inputs <-add_item(
   #  0.9 + 0.01 * edss_values
   #}
   
-#) %>% add_item(
-#  spms_edss_decrease = if(psa_bool) {
+) %>% add_item(
+  spms_edss_decrease = if(psa_bool) {
     
-#    mvrnorm(n = 1, 
-#            mu = tto_edss_decrease_rrms_mu, 
-#            Sigma = tto_edss_decrease_rrms_sigma) 
+   mvrnorm(n = 1, 
+            mu = tto_edss_decrease_spms_mu, 
+            Sigma = tto_edss_decrease_spms_sigma) 
     
-#  } else {tto_edss_decrease_rrms_mu }
+  } else {tto_edss_decrease_rrms_mu }
   
   )%>% add_item(
+    spms_progression = if(psa_bool) {
+                                  mvrnorm(n = 1, 
+                                  mu = t(tto_sp_conversion_harrms_mu), 
+                                  Sigma = tto_sp_conversion_harrms_sigma) 
+  
+  } else {tto_sp_conversion_harrms_mu}
   # Dummy rate of progression to SPMS
-  spms_progression =  if(psa_bool) {exp(rnorm(1,
-                                              mean = log(0.002),
-                                              sd = 0.0001))
-  } else {0.002}
+#if(psa_bool) {exp(rnorm(1,
+ #                      mean = log(0.002),
+  #                     sd = 0.0001))
+  #} else {0.002}
 ) %>% add_item(
-  # Baseline annualised relapse rate
+  # HARRMS relapse rate
   baseline_arr = if(psa_bool) {
-    exp(rnorm(1,
-              mean = log(0.8),
-              sd = 0.03))
-  } else {0.3}
+                                mvrnorm(n = 1, 
+                                mu = t(tto_relapse_harrms_mu), 
+                                Sigma = tto_relapse_harrms_sigma) 
+    
+  } else {tto_relapse_harrms_mu}
+  
+  #if(psa_bool) {
+   # exp(rnorm(1,
+    #          mean = log(0.8),
+     #         sd = 0.03))
+  #} else {0.3}
 ) %>% add_item(
   # Hazard ratios on annualised relapse rate
   hr_arr = if(psa_bool) {
@@ -678,14 +698,14 @@ common_all_inputs <-add_item(
 #Put objects here that do not change as we loop through treatments for a patient
 # This is called for each new patient so sample 1 from a distribution of choice
 # for heterogeneous characteristics
-common_pt_inputs <- add_item(sex = sample(size = 1, x = c(1, 0), # Random 
+common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"), # Random 
                                           prob = c(1 - prop_female, prop_female)) #1 is male 0 is female                            
 )
 
 # Objects that depend on treatment
 # Note that the current treatment is later initialised to trt
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = edss_values, # Random 
-                                                 prob = initial_edss_distribution),
+                                                 prob = rdiric(1, affirm_edss_distribution)),
                              #edss.i = edss_value,
                              n_relapse = 0,
                              spms_flag = sample(size = 1, x = c(0, 1), # Random
@@ -715,20 +735,24 @@ init_event_list <-
               dist = "exp", 
               # Baseline rate modified by HR of current treatment
               # Current treatment allows treatment switching (i.e., not the trt)
-              coef1 = log(baseline_arr),
+              coef1 = (1 - spms_flag) * (baseline_arr["(Intercept)"] +
+                                           baseline_arr["BaselineWebEDSS"]*edss_value  +
+                                           baseline_arr["DMTNatalizumab"]),
               hr = hr_arr[current_treatment_code]
               )
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
               coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"] +
-                 baseline_rrms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age) + #  covariate mean centred
-                 baseline_rrms_edss_increase["GenderMALE"]*sex +  # covariate
-                 baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value ) + # covariate
-                       spms_flag * (spms_edss_increase["(Intercept)"] +
-                       spms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  + # *age covariate mean centred
-                       spms_edss_increase["GenderMALE"]*sex +  # covariate
-                       spms_edss_increase["BaselineWebEDSS"]*edss_value ), # covariate    
+                 #baseline_rrms_edss_increase["AgeDuringEvent"] + 
+                 #baseline_rrms_edss_increase["GenderMALE"] +  
+                 baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value  + 
+                 baseline_rrms_edss_increase["DMTNatalizumab"]) + 
+                   
+                spms_flag *( spms_edss_increase["(Intercept)"] + 
+                              #spms_edss_increase["AgeDuringEvent"] +  
+                               #spms_edss_increase["GenderMALE"] + 
+                            spms_edss_increase["BaselineWebEDSS"]*edss_value ), # covariate    
            #   coef1 = (1 - spms_flag) * log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
            #     spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
              # remove effect of hr for SPMS patients by taking log(1)=0 in the expression: rexp(n_chosen, rate = exp(coef1 + log(hr)))
@@ -747,13 +771,14 @@ init_event_list <-
               # Baseline rate related to current EDSS
               # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
               coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"] +
-                rrms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age) +
-                rrms_edss_decrease["GenderMALE"]*sex +  
-                rrms_edss_decrease["BaselineWebEDSS"]*edss_value ) 
-                             #+ spms_flag * (spms_edss_decrease["(Intercept)"]
-                            #+ spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
-                             #+ spms_edss_decrease["GenderMALE"]*sex   #*sex covariate
-                             #+ spms_edss_decrease["BaselineWebEDSS"]*edss_value ) # covariate 
+                #rrms_edss_decrease["AgeDuringEvent"] +
+                #rrms_edss_decrease["GenderMALE"] +  
+                rrms_edss_decrease["BaselineWebEDSS"]*edss_value ) + 
+                
+                              spms_flag * (spms_edss_decrease["(Intercept)"] +
+                             #spms_edss_decrease["AgeDuringEvent"] +
+                             #spms_edss_decrease["GenderMALE"] +
+                              spms_edss_decrease["BaselineWebEDSS"]*edss_value )
             )
              # coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
             #edss_decrease <- draw_tte(
@@ -766,7 +791,9 @@ init_event_list <-
               1,
               dist = "exp",
               # Below is zero if already progressed to SPMS
-              coef1 = (1 - spms_flag) * log(spms_progression)
+              coef1 = (1 - spms_flag) * (spms_progression["(Intercept)"] +
+                                         spms_progression["BaselineWebEDSS"]*edss_value ) + 
+                                         spms_progression["DMTNatalizumab"]
             )
             source("R/draw_tte_new.R")
             death <- draw_tte_new(
@@ -814,7 +841,9 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = log(baseline_arr),
+                     coef1 = (1 - spms_flag) * (baseline_arr["(Intercept)"] +
+                                                  baseline_arr["BaselineWebEDSS"]*edss_value  +
+                                                  baseline_arr["DMTNatalizumab"]),
                        hr = hr_arr[current_treatment_code])
                  ))
                }) %>%
@@ -829,14 +858,16 @@ evt_react_list <-
                    "edss_increase" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"]
-                           + baseline_rrms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
-                           + baseline_rrms_edss_increase["GenderMALE"]*sex   #*sex covariate
-                           + baseline_rrms_edss_increase["BaselineWebEDSS"] ) #*edss_value covariate
-                                    +  spms_flag * (spms_edss_increase["(Intercept)"]
-                                     + spms_edss_increase["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
-                                     + spms_edss_increase["GenderMALE"]*sex   #*sex covariate
-                                     + spms_edss_increase["BaselineWebEDSS"]*edss_value ), #*edss_value covariate  
+                     coef1 = (1 - spms_flag) * (baseline_rrms_edss_increase["(Intercept)"] +
+                            #baseline_rrms_edss_increase["AgeDuringEvent"]  + 
+                            #baseline_rrms_edss_increase["GenderMALE"] +   
+                            baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value ) + 
+                            baseline_rrms_edss_increase["DMTNatalizumab"] +
+                       
+                                      spms_flag * (spms_edss_increase["(Intercept)"] +
+                                      #spms_edss_increase["AgeDuringEvent"] +  
+                                      #spms_edss_increase["GenderMALE"] +  
+                                      spms_edss_increase["BaselineWebEDSS"]*edss_value),  
                    #  coef1 = (1 - spms_flag) * 
                    #   log(baseline_rrms_edss_increase[edss.i == edss_values, edss_value == edss_values]) +
                    #    spms_flag * log(spms_edss_increase[edss.i == edss_values, edss_value == edss_values]),
@@ -874,13 +905,14 @@ evt_react_list <-
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
                      coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"] +
-                       rrms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age) +
-                       rrms_edss_decrease["GenderMALE"]*sex +  
-                       rrms_edss_decrease["BaselineWebEDSS"] ) 
-                                   # + spms_flag * (spms_edss_decrease["(Intercept)"]
-                                   # + spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age)  # *age covariate mean centred
-                                   # + spms_edss_decrease["GenderMALE"]*sex   #*sex covariate
-                                   # + spms_edss_decrease["BaselineWebEDSS"]*edss_value ) #*edss_value covariate 
+                       #rrms_edss_decrease["AgeDuringEvent"] + 
+                       #rrms_edss_decrease["GenderMALE"] +  
+                       rrms_edss_decrease["BaselineWebEDSS"]*edss_value )  + 
+                     
+                                   spms_flag * (spms_edss_decrease["(Intercept)"]  +
+                                   #spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age) + 
+                                   #spms_edss_decrease["GenderMALE"] +
+                                   spms_edss_decrease["BaselineWebEDSS"]*edss_value ) 
                    )
                      #coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
                  ) )}
@@ -978,6 +1010,7 @@ total_runtime <- system.time({
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    debug = TRUE,
     trt_list = treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
@@ -995,6 +1028,7 @@ total_runtime <- system.time({
                 "treatment_line", "n_switch") #"edss.i"          
   )
 })
+
 
 #save results
 #saveRDS(results, file ="results/descem5_1 100x100_draft_report 16_oct.RDS")
