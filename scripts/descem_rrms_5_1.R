@@ -46,8 +46,8 @@ source("R/draw_tte_new.R")
 
 set.seed(243523452)
 
-n_patients <- 2
-n_samples <- 1
+n_patients <- 10
+n_samples <- 10
 
 # Treatments at second line (expand to full set)
 treatment_names <- c("Natalizumab-IV",
@@ -106,13 +106,13 @@ tto_edss_increase_spms_sigma <- read.csv("data/m_tto_edss_increase_spms_sigma.cs
 
 tto_edss_decrease_rrms_mu <- t(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1))
 tto_edss_decrease_rrms_sigma <- read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1)
-tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
-tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
+#tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
+#tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
 
 tto_relapse_harrms_mu <- read.csv("data/v_tto_relapse_harrms_mu.csv", header = T, row.names = 1)
 tto_relapse_harrms_sigma<- read.csv("data/m_tto_relapse_harrms_sigma.csv", header = T, row.names = 1)
-tto_relapse_spms_mu <- read.csv("data/v_tto_relapse_spms_mu.csv", header = T, row.names = 1)
-tto_relapse_spms_sigma<- read.csv("data/m_tto_relapse_spms_sigma.csv", header = T, row.names = 1)
+#tto_relapse_spms_mu <- read.csv("data/v_tto_relapse_spms_mu.csv", header = T, row.names = 1)
+#tto_relapse_spms_sigma<- read.csv("data/m_tto_relapse_spms_sigma.csv", header = T, row.names = 1)
 
 tto_sp_conversion_harrms_mu <- read.csv("data/v_tto_sp_conversion_harrms_mu.csv", header = T, row.names = 1)
 tto_sp_conversion_harrms_sigma<- read.csv("data/m_tto_sp_conversion_harrms_sigma.csv", header = T, row.names = 1)
@@ -128,15 +128,19 @@ initial_spms_prop <- 0
 ## baseline population risk parameters: relapse rates and SMR
 df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
 
-## base line relapse rate(final analysis) Placebo arm AFFIRM Table 2  Polman etal 2006 DOI: 10.1056/NEJMoa044397
-# r_bl_rrms_rr <- as.double(c(0.78, (0.94-0.64)/3.92))
+## base line relapse rate(final analysis) Placebo arm(n=315) AFFIRM Table 2  Polman etal 2006 DOI: 10.1056/NEJMoa044397
+# r_bl_rrms_rr <- as.double(c(0.73, (0.87-0.62)/3.92))
 
 
 ## Proportion of patients having relapse leading to hospitalisation ~DUMMY DATA~
 relapse_hospital_prop <- 0.2
 
-# rates of Adverse events (Cladribine Alemtuzumab Fingolimod Natalizumab Daclizuma] from TA616, rest is ~DUMMY DATA~)
-prob_ae <- read.csv("data/df_adverse_events_probabilities_ta616.csv", header = T, row.names = 1)
+## rates of Adverse events (Cladribine Alemtuzumab Fingolimod Natalizumab Daclizuma] from TA616, rest is ~DUMMY DATA~)
+#prob_ae <- read.csv("data/df_adverse_events_probabilities_ta616.csv", header = T, row.names = 1)
+saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
+ae_names <- saes_data[,1]
+prob_ae <- saes_data[,3]
+names(prob_ae)<-ae_names
 r_ae <- -log(1-prob_ae)
 r_ae
 
@@ -170,8 +174,12 @@ c_relapse <- c_relapse[3:8,3:4] #choose inflated Hawton 2016 to 2023
 c_relapse <- c_relapse*2 # Annualise these 6 months costs
 
 ## Adverse Events costs TA616 # need to be weighted by key trial
-c_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
+#c_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
 
+## Adverse events MS-MTA report
+c_ae <- saes_data[,4]
+names(c_ae)<-ae_names
+  
 ## edss utilities columns 5&6 Orme etal 2007
 u_edss <- read.csv("data/df_u_edss_ta616.csv", header = T, row.names = 1)
 edss_utilities <- t(u_edss[1:10,5:6])
@@ -180,7 +188,11 @@ edss_utilities <- t(u_edss[1:10,5:6])
 u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
 
 ## Adverse Events disutilities TA616 # need to be weighted by key trial
-u_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
+#u_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
+
+## Adverse events MS-MTA report
+u_ae <- saes_data[,5]
+names(u_ae)<-ae_names
 
 
 # Global parameters of the model as they are common to all patients and treatments
@@ -449,13 +461,19 @@ common_all_inputs <-add_item(
   #}
   
 ) %>% add_item(
+  # SPMS EDSS Decrease Registry Exponential models (Set to RRMS till we have resolved issue with fast rates)
   spms_edss_decrease = if(psa_bool) {
     
    mvrnorm(n = 1, 
-            mu = tto_edss_decrease_spms_mu, 
-            Sigma = tto_edss_decrease_spms_sigma) 
+           mu = tto_edss_decrease_rrms_mu, 
+           #mu = tto_edss_decrease_spms_mu, 
+           Sigma = tto_edss_decrease_rrms_sigma
+           #Sigma = tto_edss_decrease_spms_sigma
+           ) 
     
-  } else {tto_edss_decrease_rrms_mu }
+  } else {tto_edss_decrease_rrms_mu
+          #tto_edss_decrease_spms_mu 
+          }
   
   )%>% add_item(
     spms_progression = if(psa_bool) {
@@ -471,7 +489,7 @@ common_all_inputs <-add_item(
   #} else {0.002}
 ) %>% add_item(
   # HARRMS relapse rate
-  baseline_arr = if(psa_bool) {
+  baseline_harrms_arr = if(psa_bool) {
                                 mvrnorm(n = 1, 
                                 mu = t(tto_relapse_harrms_mu), 
                                 Sigma = tto_relapse_harrms_sigma) 
@@ -483,6 +501,21 @@ common_all_inputs <-add_item(
     #          mean = log(0.8),
      #         sd = 0.03))
   #} else {0.3}
+  
+) %>% add_item(
+  # SPMS relapse rate (Set to RRMS till we have resolved issue with fast rates)
+  baseline_spms_arr = if(psa_bool) {
+    mvrnorm(n = 1, 
+            mu = t(tto_relapse_harrms_mu),
+            #mu = t(tto_relapse_spms_mu), 
+            Sigma = tto_relapse_harrms_sigma
+            #Sigma = tto_relapse_spms_sigma
+    ) 
+    
+  } else {tto_relapse_harrms_mu
+    #tto_relapse_spms_mu
+  }
+  
 ) %>% add_item(
   # Hazard ratios on annualised relapse rate
   hr_arr = if(psa_bool) {
@@ -602,20 +635,20 @@ common_all_inputs <-add_item(
       temp <- matrix(nrow = nrow(c_ae), ncol = 1,
                      dimnames = list(rownames(c_ae),NULL ))
       
-      temp["Infusion site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Infusion site reaction",1], 
-                                                     sd =  c_ae["Infusion site reaction",1]/5),0)
+      #temp["Infusion site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Infusion site reaction",1], 
+                                                     #sd =  c_ae["Infusion site reaction",1]/5),0)
       
-      temp["Injection site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Injection site reaction",1], 
-                                                      sd =  c_ae["Injection site reaction",1]/5),0)
+      #temp["Injection site reaction",1] <- pmax(rnorm(1, mean =  c_ae["Injection site reaction",1], 
+                                                      #sd =  c_ae["Injection site reaction",1]/5),0)
       
       temp["PML",1] <- pmax(rnorm(1, mean =  c_ae["PML",1], 
                                   sd =  c_ae["PML",1]/5),0)
       
-      temp["Severe infection",1] <- pmax(rnorm(1, mean =  c_ae["Severe infection",1], 
-                                               sd =  c_ae["Severe infection",1]/5),0)
+      #temp["Severe infection",1] <- pmax(rnorm(1, mean =  c_ae["Severe infection",1], 
+                                              # sd =  c_ae["Severe infection",1]/5),0)
       
-      temp["Macular oedema",1] <- pmax(rnorm(1, mean =  c_ae["Macular oedema",1], 
-                                             sd =  c_ae["Macular oedema",1]/5),0)
+      #temp["Macular oedema",1] <- pmax(rnorm(1, mean =  c_ae["Macular oedema",1], 
+                                             #sd =  c_ae["Macular oedema",1]/5),0)
       
       temp["Gastrointestinal",1] <- pmax(rnorm(1, mean =  c_ae["Gastrointestinal",1], 
                                                sd =  c_ae["Gastrointestinal",1]/5),0)
@@ -623,8 +656,8 @@ common_all_inputs <-add_item(
       temp["Hypersensitivity",1] <- pmax(rnorm(1, mean =  c_ae["Hypersensitivity",1], 
                                                sd =  c_ae["Hypersensitivity",1]/5),0)
       
-      temp["Autoimmune thyroid-related event",1] <- pmax(rnorm(1, mean =  c_ae["Autoimmune thyroid-related event",1], 
-                                                               sd =  c_ae["Autoimmune thyroid-related event",1]/5),0)
+     # temp["Autoimmune thyroid-related event",1] <- pmax(rnorm(1, mean =  c_ae["Autoimmune thyroid-related event",1], 
+                                                               #sd =  c_ae["Autoimmune thyroid-related event",1]/5),0)
       
       temp["Influenza-like symptoms",1] <- pmax(rnorm(1, mean =  c_ae["Influenza-like symptoms",1], 
                                                       sd =  c_ae["Influenza-like symptoms",1]/5),0)
@@ -735,10 +768,12 @@ init_event_list <-
               dist = "exp", 
               # Baseline rate modified by HR of current treatment
               # Current treatment allows treatment switching (i.e., not the trt)
-              coef1 = (1 - spms_flag) * (baseline_arr["(Intercept)"] +
-                                           baseline_arr["BaselineWebEDSS"]*edss_value  +
-                                           baseline_arr["DMTNatalizumab"]),
-              hr = hr_arr[current_treatment_code]
+              coef1 = (1 - spms_flag) * (baseline_harrms_arr["(Intercept)"] +
+                                           baseline_harrms_arr["BaselineWebEDSS"]*edss_value  +
+                                           baseline_harrms_arr["DMTNatalizumab"]) +
+                spms_flag * (baseline_spms_arr["(Intercept)"] +
+                               baseline_spms_arr["BaselineWebEDSS"]*edss_value),
+              hr = ((1 - spms_flag) * hr_arr[current_treatment_code]) + spms_flag
               )
             edss_increase <- draw_tte(
               1, 
@@ -773,12 +808,12 @@ init_event_list <-
               coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"] +
                 #rrms_edss_decrease["AgeDuringEvent"] +
                 #rrms_edss_decrease["GenderMALE"] +  
-                rrms_edss_decrease["BaselineWebEDSS"]*edss_value ) + 
+                rrms_edss_decrease["BaselineWebEDSS"]*edss_value ) #+ 
                 
-                              spms_flag * (spms_edss_decrease["(Intercept)"] +
+                             # spms_flag * (spms_edss_decrease["(Intercept)"] +
                              #spms_edss_decrease["AgeDuringEvent"] +
                              #spms_edss_decrease["GenderMALE"] +
-                              spms_edss_decrease["BaselineWebEDSS"]*edss_value )
+                             # spms_edss_decrease["BaselineWebEDSS"]*edss_value )
             )
              # coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
             #edss_decrease <- draw_tte(
@@ -794,6 +829,8 @@ init_event_list <-
               coef1 = (1 - spms_flag) * (spms_progression["(Intercept)"] +
                                          spms_progression["BaselineWebEDSS"]*edss_value ) + 
                                          spms_progression["DMTNatalizumab"]
+              
+              
             )
             source("R/draw_tte_new.R")
             death <- draw_tte_new(
@@ -841,10 +878,13 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = (1 - spms_flag) * (baseline_arr["(Intercept)"] +
-                                                  baseline_arr["BaselineWebEDSS"]*edss_value  +
-                                                  baseline_arr["DMTNatalizumab"]),
-                       hr = hr_arr[current_treatment_code])
+                     coef1 = (1 - spms_flag) * (baseline_harrms_arr["(Intercept)"] +
+                                                  baseline_harrms_arr["BaselineWebEDSS"]*edss_value  +
+                                                  baseline_harrms_arr["DMTNatalizumab"])+
+                       spms_flag * (baseline_spms_arr["(Intercept)"] +
+                                      baseline_spms_arr["BaselineWebEDSS"]*edss_value),
+                     hr = ((1 - spms_flag) * hr_arr[current_treatment_code]) + spms_flag
+                     )
                  ))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
@@ -863,7 +903,6 @@ evt_react_list <-
                             #baseline_rrms_edss_increase["GenderMALE"] +   
                             baseline_rrms_edss_increase["BaselineWebEDSS"]*edss_value ) + 
                             baseline_rrms_edss_increase["DMTNatalizumab"] +
-                       
                                       spms_flag * (spms_edss_increase["(Intercept)"] +
                                       #spms_edss_increase["AgeDuringEvent"] +  
                                       #spms_edss_increase["GenderMALE"] +  
@@ -907,12 +946,12 @@ evt_react_list <-
                      coef1 = (1 - spms_flag) * (rrms_edss_decrease["(Intercept)"] +
                        #rrms_edss_decrease["AgeDuringEvent"] + 
                        #rrms_edss_decrease["GenderMALE"] +  
-                       rrms_edss_decrease["BaselineWebEDSS"]*edss_value )  + 
+                       rrms_edss_decrease["BaselineWebEDSS"]*edss_value )  #+ 
                      
-                                   spms_flag * (spms_edss_decrease["(Intercept)"]  +
+                                   #spms_flag * (spms_edss_decrease["(Intercept)"]  +
                                    #spms_edss_decrease["AgeDuringEvent"]*(age - rrms_average_age) + 
                                    #spms_edss_decrease["GenderMALE"] +
-                                   spms_edss_decrease["BaselineWebEDSS"]*edss_value ) 
+                                  #spms_edss_decrease["BaselineWebEDSS"]*edss_value ) 
                    )
                      #coef1 = (1 - spms_flag) * log(rrms_edss_decrease[edss.i == edss_values, edss_value == edss_values]))
                  ) )}
