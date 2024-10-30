@@ -3,24 +3,25 @@
 # load libraries 
 library(readxl)
 
-##### Models excluding age and sex covariates used in the main analysis) ####
+##### Models excluding age and sex co-variate (used in the main analysis) ####
+### Updated output using flexsur '''
 # Ignored time to EDSS Decrease (SPMS)
 
 #covariate names
-edss_model_names <- read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                               range = "M6:M8", col_names = FALSE)
+edss_model_names_fsrv <- read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                               sheet = "Models with DMTs", range = "M6:M8", col_names = FALSE)
 
 # Natalizumab time to edss increase Highly active RRMS
-tto_edss_increase_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                    sheet = "Models", range = "N6:N8", 
+tto_edss_increase_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                    sheet = "Models with DMTs", range = "N6:N8", 
                                                     col_names = FALSE,col_types = c("numeric")))
 
-tto_edss_increase_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                       sheet = "Models", range = "N18:P20", 
+tto_edss_increase_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                       sheet = "Models with DMTs", range = "N18:P20", 
                                                        col_names = FALSE,col_types = c("numeric")))
 
-dimnames(tto_edss_increase_harrms_mu) <- edss_model_names
-dimnames(tto_edss_increase_harrms_sigma) <- c(edss_model_names, edss_model_names)
+dimnames(tto_edss_increase_harrms_mu) <- edss_model_names_fsrv
+dimnames(tto_edss_increase_harrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
 
 write.csv(tto_edss_increase_harrms_mu, file="data/v_tto_edss_increase_harrms_mu.csv")
 write.csv(tto_edss_increase_harrms_sigma, file="data/m_tto_edss_increase_harrms_sigma.csv")
@@ -28,15 +29,15 @@ write.csv(tto_edss_increase_harrms_sigma, file="data/m_tto_edss_increase_harrms_
 
 
 # Natalizumab time to edss increase ALL RRMS
-tto_edss_increase_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                  sheet = "Models", range = "N34:N36", 
+tto_edss_increase_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                  sheet = "Models with DMTs", range = "N34:N36", 
                                                   col_names = FALSE,col_types = c("numeric")))
-tto_edss_increase_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                     sheet = "Models", range = "N46:P48", 
+tto_edss_increase_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                     sheet = "Models with DMTs", range = "N46:P48", 
                                                      col_names = FALSE,col_types = c("numeric")))
 
-dimnames(tto_edss_increase_rrms_mu) <- edss_model_names
-dimnames(tto_edss_increase_rrms_sigma) <- c(edss_model_names, edss_model_names)
+dimnames(tto_edss_increase_rrms_mu) <- edss_model_names_fsrv
+dimnames(tto_edss_increase_rrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
 
 write.csv(tto_edss_increase_rrms_mu, file="data/v_tto_edss_increase_rrms_mu.csv")
 write.csv(tto_edss_increase_rrms_sigma, file="data/m_tto_edss_increase_rrms_sigma.csv")
@@ -44,14 +45,14 @@ write.csv(tto_edss_increase_rrms_sigma, file="data/m_tto_edss_increase_rrms_sigm
 
 
 # Time to EDSS Increase SPMS
-tto_edss_increase_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_increase_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                   sheet = "Models without DMTs", range = "B19:B20", 
                                                   col_names = FALSE,col_types = c("numeric")))
-tto_edss_increase_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_increase_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                      sheet = "Models without DMTs", range = "B24:C25", 
                                                   col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_edss_increase_spms_mu) <- edss_model_names[1:2,]
-dimnames(tto_edss_increase_spms_sigma) <- c(edss_model_names[1:2,], edss_model_names[1:2,])
+dimnames(tto_edss_increase_spms_mu) <- edss_model_names_fsrv[1:2,]
+dimnames(tto_edss_increase_spms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
 
 write.csv(tto_edss_increase_spms_mu, file="data/v_tto_edss_increase_spms_mu.csv")
 write.csv(tto_edss_increase_spms_sigma, file="data/m_tto_edss_increase_spms_sigma.csv")
@@ -60,78 +61,78 @@ write.csv(tto_edss_increase_spms_sigma, file="data/m_tto_edss_increase_spms_sigm
 
 
 # Time to edss decrease all RRMS
-tto_edss_decrease_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_decrease_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                   sheet = "Models without DMTs", range = "B6:B7", 
                                                   col_names = FALSE,col_types = c("numeric")))
-tto_edss_decrease_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_decrease_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                      sheet = "Models without DMTs", range = "B11:C12", 
                                                      col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_edss_decrease_rrms_mu) <- edss_model_names[1:2,]
-dimnames(tto_edss_decrease_rrms_sigma) <- c(edss_model_names[1:2,], edss_model_names[1:2,])
+dimnames(tto_edss_decrease_rrms_mu) <- edss_model_names_fsrv[1:2,]
+dimnames(tto_edss_decrease_rrms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
 
 write.csv(tto_edss_decrease_rrms_mu, file="data/v_tto_edss_decrease_rrms_mu.csv")
 write.csv(tto_edss_decrease_rrms_sigma, file="data/m_tto_edss_decrease_rrms_sigma.csv")
 
 
 # Time to EDSS decrease SPMS
-tto_edss_decrease_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_decrease_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                   sheet = "Models without DMTs", range = "B32:B33", 
                                                   col_names = FALSE,col_types = c("numeric")))
-tto_edss_decrease_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_edss_decrease_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                      sheet = "Models without DMTs", range = "B37:C38", 
                                                      col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_edss_decrease_spms_mu) <- edss_model_names[1:2,]
-dimnames(tto_edss_decrease_spms_sigma) <- c(edss_model_names[1:2,], edss_model_names[1:2,])
+dimnames(tto_edss_decrease_spms_mu) <- edss_model_names_fsrv[1:2,]
+dimnames(tto_edss_decrease_spms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
 
 write.csv(tto_edss_decrease_spms_mu, file="data/v_tto_edss_decrease_spms_mu.csv")
 write.csv(tto_edss_decrease_spms_sigma, file="data/m_tto_edss_decrease_spms_sigma.csv")
 
 
 # Natalizumab Time to relapse HARRMS
-tto_relapse_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                            sheet = "Models", range = "N174:N176", 
+tto_relapse_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                            sheet = "Models with DMTs", range = "N62:N64", 
                                             col_names = FALSE,col_types = c("numeric")))
-tto_relapse_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                               sheet = "Models", range = "N186:P188", 
+tto_relapse_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                               sheet = "Models with DMTs", range = "N74:P76", 
                                                col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_relapse_harrms_mu) <- edss_model_names
-dimnames(tto_relapse_harrms_sigma) <- c(edss_model_names, edss_model_names)
+dimnames(tto_relapse_harrms_mu) <- edss_model_names_fsrv
+dimnames(tto_relapse_harrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
 
 write.csv(tto_relapse_harrms_mu, file="data/v_tto_relapse_harrms_mu.csv")
 write.csv(tto_relapse_harrms_sigma, file="data/m_tto_relapse_harrms_sigma.csv")
 
 
 # Time to relapse SPMS
-tto_relapse_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_relapse_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                             sheet = "Models without DMTs", range = "B45:B46",
                                                   col_names = FALSE,col_types = c("numeric")))
-tto_relapse_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
+tto_relapse_spms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                                sheet = "Models without DMTs", range = "B50:C51", 
                                                      col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_relapse_spms_mu) <- edss_model_names[1:2,]
-dimnames(tto_relapse_spms_sigma) <- c(edss_model_names[1:2,], edss_model_names[1:2,])
+dimnames(tto_relapse_spms_mu) <- edss_model_names_fsrv[1:2,]
+dimnames(tto_relapse_spms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
 
 write.csv(tto_relapse_spms_mu, file="data/v_tto_relapse_spms_mu.csv")
 write.csv(tto_relapse_spms_sigma, file="data/m_tto_relapse_spms_sigma.csv")
 
-# Natalizumab Time to SP conversion HARRMS
-tto_sp_conversion_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                              sheet = "Models", range = "N230:N232", 
+# Natalizumab Time to SP conversion HARRMS 
+tto_sp_conversion_harrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                              sheet = "Models with DMTs", range = "N118:N120", 
                                               col_names = FALSE,col_types = c("numeric")))
-tto_sp_conversion_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels 21Oct2024.xlsx", 
-                                                 sheet = "Models", range = "N242:P244", 
+tto_sp_conversion_harrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                 sheet = "Models with DMTs", range = "N130:P132", 
                                                  col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_sp_conversion_harrms_mu) <- edss_model_names
-dimnames(tto_sp_conversion_harrms_sigma) <- c(edss_model_names, edss_model_names)
+dimnames(tto_sp_conversion_harrms_mu) <- edss_model_names_fsrv
+dimnames(tto_sp_conversion_harrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
 
 write.csv(tto_sp_conversion_harrms_mu, file="data/v_tto_sp_conversion_harrms_mu.csv")
 write.csv(tto_sp_conversion_harrms_sigma, file="data/m_tto_sp_conversion_harrms_sigma.csv")
 
 
 ############################################################################
-
-############################################################################
 ##### Models w/ age and sex covariates not in use in the main analysis) ####
+############################################################################
+
 #covariate names
 edss_model_names <- read_excel("data-raw/ExponentialSurvivalModels 15Oct2024 (2).xlsx", 
                                range = "A23:A26", col_names = FALSE)
