@@ -75,8 +75,8 @@ v_treatment_names <- c("Natalizumab-IV",
 n_treatments <- length(v_treatment_names)
 
 ## specify codes for the treatments
-treatment_codes <- c(seq(1, n_treatments))
-names(treatment_codes) <- v_treatment_names
+v_treatment_codes <- c(seq(1, n_treatments))
+names(v_treatment_codes) <- v_treatment_names
 
 ## Treatments that patients can move to at 3rd and higher line 
 v_higher_line_treatments <- c("Natalizumab-IV",
@@ -216,7 +216,7 @@ sd_psa <- 10
 # true mean should be used
 common_all_inputs <-add_item(
   v_treatment_names = v_treatment_names,
-  treatment_codes = treatment_codes,
+  v_treatment_codes = v_treatment_codes,
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
   initial_age = initial_age,
@@ -268,47 +268,47 @@ common_all_inputs <-add_item(
     temp <- matrix(nrow = 1, ncol = n_treatments)
     # CDP6 relative treatment effects log Hr from the NMA with Natalizumab as the reference
     # hard coded but should be imported directly from NMA outputted csv or rds files
-    temp[treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
-    temp[treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
-    temp[treatment_codes["Natalizumab biosimilar-IV"]] <- 1 #missing from NMA
-    temp[treatment_codes["Natalizumab biosimilar-SC"]] <- 1 #missing from NMA
-    temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
+    temp[v_treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1 #missing from NMA
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1 #missing from NMA
+    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
                                       mean = 0.89,
                                       sd = 0.22))
-    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
                                        mean = -0.33,
                                        sd = 0.46)) 
-    temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                       mean = 0.76,
                                       sd = 0.20))
-    temp[treatment_codes["Ponesimod"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
                                       mean = 0.89,
                                       sd = 0.22)) # to be informed by trt class NMA (for now assumed the same as Fingolimod)
-    temp[treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                            mean = -0.15, 
                                            sd = 0.43)) # o be informed by trt class NMA (for now assumed the same as Ocrelizumab)
-    temp[treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
                                                mean = -0.15, 
                                                   sd = 0.43))
-    temp[treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
                                            mean = 0.00, 
                                            sd = 0.33)) 
-    temp[treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
                                            mean = 0.36, 
                                            sd = 0.39))
-    temp[treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
                                                 mean = 0.36, 
                                                 sd = 0.39)) # assumed same as 44μg
-    temp[treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                            mean = 0.32,  
                                            sd = 0.34))
-    temp[treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
                                            mean = -0.49, 
                                            sd = 0.47))
-    temp[treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
                                            mean = 0.30,
                                            sd = 0.37))
-    temp[treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
                                             mean = 0.30,
                                             sd = 0.37)) # assumed same as 20 mg
     temp
@@ -394,51 +394,51 @@ common_all_inputs <-add_item(
   v_hr_arr = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = n_treatments)
     # hard coded but should be imported directly from NMA outputted csv or rds files
-    temp[treatment_codes["Natalizumab-IV"]] <- 1
-    temp[treatment_codes["Natalizumab-SC"]] <- 1
-    temp[treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Natalizumab-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab-SC"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
                                                              mean = 0.44,
                                                              sd = 0.34))
-    temp[treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
                                                               mean = 0.44,
                                                               sd = 0.34))
-    temp[treatment_codes["Fingolimod"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
                                                      mean = 0.39,
                                                      sd = 0.14))
-    temp[treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
                                                   mean = -0.15,
                                                   sd = 0.2)) 
-    temp[treatment_codes["Cladribine"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                                      mean = 0.33,
                                                      sd = 0.17))
-    temp[treatment_codes["Ponesimod"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
                                                     mean = 0.91,
                                                     sd = 0.29))
-    temp[treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                      mean = 0.47, 
                                                      sd = 0.31))
-    temp[treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
                                                       mean = 0.11, 
                                                       sd = 0.17))
-    temp[treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
                                                               mean = 0.72, 
                                                               sd = 0.18))
-    temp[treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
                                                           mean = 0.74, 
                                                           sd = 0.14))
-    temp[treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
                                                           mean = 0.81, 
                                                           sd = 0.16))
-    temp[treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                                           mean = 1.0,  
                                                           sd = 0.14))
-    temp[treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
                                                            mean = 0.82, 
                                                            sd = 0.14))
-    temp[treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
                                                                   mean = 0.79,
                                                                   sd = 0.13))
-    temp[treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
                                                                   mean = 0.82,
                                                                   sd = 0.15))
     temp
@@ -456,7 +456,7 @@ common_all_inputs <-add_item(
 
     v_discontinuation_rate = if(psa_bool) {
       temp <- matrix(nrow = 1, ncol = n_treatments)
-      for(treatment_code in treatment_codes) {
+      for(treatment_code in v_treatment_codes) {
         temp[treatment_code] <- exp(
           rnorm(1, 
                 # Arbitrarily setting the higher treatments (Clad/Alem) to have higher
@@ -688,7 +688,7 @@ evt_react_list <-
                  # This ensures that the current treatment is the initial treatment
                  # of this strategy.
                  modify_item(list(current_treatment = trt,
-                                  current_treatment_code = treatment_codes[trt],
+                                  current_treatment_code = v_treatment_codes[trt],
                                   #future death events do not exceed 100 years
                                   "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
                              ))
