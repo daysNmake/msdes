@@ -91,6 +91,11 @@ names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "serious_ae", "death")
 
+## Standard Deviation for probabilistic analysis when uncertainty not reported
+# assumed 1/10 of mean
+sd_psa <- 10
+
+
 ## Baseline population age sex and model time horizon
 initial_age <- 20 
 time_horizon <- 80 # Years so lifetime
@@ -100,11 +105,14 @@ prop_female <- 0.50
 v_edss_values <- c(0:9)
 names(v_edss_values) <- paste("EDSS", v_edss_values)
 
-## RRMS EDSS Natural History Palace etal
+## RRMS EDSS Natural History Palace et al
+## This is not used in the model as we instead use MS Registry
 #rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
 #colnames(rrms_edss_natural_history) <- row.names(rrms_edss_natural_history) <-paste("EDSS",v_edss_values)
 
 ## Natural History MS Registry
+## Time To events estimated by flexsurv
+## Vectors of coefficients and matrices of variance and covariance
 v_tto_edss_increase_harrms_mu <- t(read.csv("data/v_tto_edss_increase_harrms_mu.csv", header = T, row.names = 1))
 m_tto_edss_increase_harrms_sigma <- read.csv( file="data/m_tto_edss_increase_harrms_sigma.csv", header = T, row.names = 1)
 v_tto_edss_increase_rrms_mu <- t(read.csv("data/v_tto_edss_increase_rrms_mu.csv", header = T, row.names = 1))
@@ -127,8 +135,8 @@ m_tto_sp_conversion_harrms_sigma<- read.csv("data/m_tto_sp_conversion_harrms_sig
 
 
 ## baseline distribution of EDSS health states (AFFIRM baseline both arms)
-v_affirm_edss_distribution <- c(49, 273, 311, 193, 88, 24, 1, 1, 1, 1)#
-
+v_affirm_edss_distribution <- c(49, 273, 311, 193, 88, 24, 1, 1, 1, 1)
+names(v_affirm_edss_distribution) <- names(v_edss_values)
 
 ## baseline proportion of patients with SPMS
 initial_spms_prop <- 0
@@ -149,7 +157,9 @@ relapse_hospital_prop <- 0.2
 ## Incidence & weights of Serious Adverse events in AFFIRM
 saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
 sae_names <- saes_data[,1]
-v_weight_sae <- saes_data[,2] # These weights are used to calculate SAEs costs and utilities as sumproduct
+
+# These weights are used to calculate SAEs costs and utilities as sumproduct
+v_weight_sae <- saes_data[,2] 
 prob_sae <- saes_data[,2]
 names(prob_sae)<-sae_names
 v_r_sae <- -log(1-prob_sae)
@@ -169,7 +179,7 @@ df_m_edss_med_costs <- t(c_m_edss[1:10,7:8])
 #do we include non-direct medical costs? they were previously controversial
 
 ## MS specific standardised mortality rate Manouchehrinia 2016
-v_smr <- as.double(c(df_init_params["smr"], sqrt(437)*(df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
+v_smr <- as.double(c(df_init_params["smr"], sqrt(437) * (df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
@@ -183,7 +193,7 @@ df_c_tx_monitor <- df_c_tx_monitor[-1:-2,]
 ## Relapse Costs (Hawton 2016b and Karampampa 2012c)
 df_c_relapse <-read.csv("data/df_c_relapse.csv", header = T, row.names = 1)
 df_c_relapse <- df_c_relapse[3:8,3:4] #choose inflated Hawton 2016 to 2023
-df_c_relapse <- df_c_relapse*2 # Annualised these 6 months costs
+df_c_relapse <- df_c_relapse * 2 # Annualised these 6 months costs
 
 ## Adverse Events costs TA616 # need to be weighted by key trial
 #df_c_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
@@ -205,11 +215,6 @@ u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
 ## Adverse events dis-utilities MS-MTA report
 df_u_ae <- saes_data[,5]
 names(df_u_ae)<-sae_names
-
-## Standard Deviation for probabilistic analysis when uncertainty not reported
-# assumed 1/10 of mean
-sd_psa <- 10
-
 
 # Global parameters of the model as they are common to all patients and treatments
 # If not using PSA just setting to mean of samples. This isn't correct as the 
