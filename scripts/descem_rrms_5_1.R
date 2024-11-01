@@ -563,9 +563,9 @@ common_all_inputs <-add_item(
       # Rates are specified by SAEs for Natalizumab
         for (i_sae in 1:n_sae){
           temp[i_sae] <- exp(rnorm(1,
-                                 mean = log(temp[i_sae]),
-                                sd = temp[i_sae] / 10))
-          }
+                                   mean = log(temp[i_sae]),
+                                   sd = temp[i_sae] / 10))
+        }
           
      temp
     } else {v_r_sae}
@@ -587,12 +587,14 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values, # 
                                                  prob = rdiric(1, v_affirm_edss_distribution)),
                              #edss.i = edss_value,
                              n_relapse = 0,
-                             spms_flag = sample(size = 1, x = c(0, 1), # Random
+                             spms_flag = sample(size = 1, 
+                                                x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
-                             relapse_hospital_flag = sample(size = 1, x = c(0, 1), # Random
+                             relapse_hospital_flag = sample(size = 1, 
+                                                            x = c(0, 1), # Random
                                                             prob = c(1 - relapse_hospital_prop, relapse_hospital_prop)),
-                             current_treatment = "Natalizumab",
-                             current_treatment_code = 1,
+                             current_treatment = "Natalizumab", # This is later changed to trt
+                             current_treatment_code = 1, # This is later changed to code of trt
                              treatment_line = 2,
                              n_switch = 0,
                              age = initial_age
@@ -608,41 +610,43 @@ init_event_list <-
           evts = v_event_names,
           input={ 
             initialise <- 0
-            
             relapse <- draw_tte(
               1, 
               dist = "exp", 
-              # Current treatment code allows treatment switching (i.e., not the trt)
-              # MS registry time to relapse HA RRMS
+              # Current treatment code allows treatment switching 
+              # (i.e., not the trt which is only initial assignment)
+              # MS registry time to relapse HA RRMS log rate on natalizumab
               coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["(Intercept)"] +
-                                         v_baseline_harrms_arr["BaselineWebEDSS"]*(edss_value)  +
+                                         v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value)  +
                                          v_baseline_harrms_arr["DMTNatalizumab"]) +
-              # MS registry time to relapse SPMS
+              # MS registry time to relapse SPMS log rate
                       spms_flag * (v_baseline_spms_arr["rate"] +
-                                   v_baseline_spms_arr["BaselineWebEDSS"]*(edss_value)),
+                                   v_baseline_spms_arr["BaselineWebEDSS"] * (edss_value)),
               # Baseline rate modified by HR of current treatment
+              # No treatment effect if SPMS
               hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
               )
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
-              # MS registry time to edss increase HARRMS
+              # MS registry time to edss increase HARRMS log rate on natalizumab
               coef1 = (1 - spms_flag) * (v_baseline_harrms_edss_increase["rate"] +
-                                         v_baseline_harrms_edss_increase["BaselineWebEDSS"]*(edss_value)  + 
+                                         v_baseline_harrms_edss_increase["BaselineWebEDSS"] * (edss_value) + 
                                          v_baseline_harrms_edss_increase["DMTNatalizumab"]) + 
-              #MS registry time to edss increase SPMS
+              # MS registry time to edss increase SPMS log rate
                       spms_flag * (v_spms_edss_increase["rate"] + 
                                    v_spms_edss_increase["BaselineWebEDSS"]*(edss_value) ),    
               # Baseline rate modified by HR of current treatment
-              hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code])+ spms_flag 
+              # No treatment effect if SPMS
+              hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
             )
             edss_decrease <- draw_tte(
               1, 
               dist = "exp",
-              # MS registry time to edss decrease All RRMS patients
+              # MS registry time to edss decrease All RRMS patients log rate 
               coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
-                                        v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value)) + 
-                #MS registry time to edss increase SPMS
+                                        v_rrms_edss_decrease["BaselineWebEDSS"] * (edss_value)) + 
+                #MS registry time to edss increase SPMS log rate
                               spms_flag * (v_spms_edss_decrease["rate"] +
                               v_spms_edss_decrease["BaselineWebEDSS"]*(edss_value) )
             )
@@ -650,11 +654,11 @@ init_event_list <-
             progression <- draw_tte(
               1,
               dist = "exp",
-              # MS registry time to progression All RRMS patients to SPMS
+              # MS registry time to progression All RRMS patients to SPMS log rate on natalizumab
               # Below is zero if already progressed to SPMS
               coef1 = (1 - spms_flag) * (v_spms_progression["(Intercept)"] +
-                                         v_spms_progression["BaselineWebEDSS"]*(edss_value) ) + 
-                                         v_spms_progression["DMTNatalizumab"]
+                                         v_spms_progression["BaselineWebEDSS"] * (edss_value) + 
+                                         v_spms_progression["DMTNatalizumab"])
             )
             #source("R/draw_tte_new.R")
             death <- draw_tte_new(
