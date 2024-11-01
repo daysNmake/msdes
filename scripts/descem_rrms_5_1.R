@@ -105,6 +105,9 @@ prop_female <- 0.50
 v_edss_values <- c(0:9)
 names(v_edss_values) <- paste("EDSS", v_edss_values)
 
+# Number of EDSS categories
+n_edss_values <- length(v_edss_values)
+
 ## RRMS EDSS Natural History Palace et al
 ## This is not used in the model as we instead use MS Registry
 #rrms_edss_natural_history <- read.csv("data/df_r_nh_rrms_bc_ta616.csv", header = T, row.names = 1)
@@ -232,19 +235,19 @@ common_all_inputs <-add_item(
   df_c_tx = df_c_tx, # drug costs are not probabilistic
   v_event_names = v_event_names,
   #r_bl_rrms_rr = r_bl_rrms_rr, # make random
-  v_affirm_edss_distribution=v_affirm_edss_distribution,
+  v_affirm_edss_distribution = v_affirm_edss_distribution,
   m_r_mortality = m_r_mortality, # make random
   v_smr = v_smr, # make random
-  v_weight_sae=v_weight_sae,
+  v_weight_sae = v_weight_sae,
   initial_spms_prop = initial_spms_prop,
   relapse_hospital_prop = relapse_hospital_prop # make random
   
 ) %>% add_item(
-  # Utilities for RRMS Orme etal
+  # Utilities for RRMS Orme et al
   u_rrms_edss = if(psa_bool) {
     temp <- df_edss_utilities[1,]
-    for(j_edss in 1:length(temp)) {
-      temp[j_edss] <- rnorm(1, mean =  df_edss_utilities[1,j_edss], sd =  df_edss_utilities[2,j_edss])
+    for(j_edss in 1:n_edss_values) {
+      temp[j_edss] <- rnorm(1, mean =  df_edss_utilities[1, j_edss], sd =  df_edss_utilities[2, j_edss])
     }
     temp
     
@@ -256,7 +259,7 @@ common_all_inputs <-add_item(
   # EDSS Health state Medical costs for RRMS Tyas et al inflated 
   v_c_rrms_edss = if(psa_bool) {
     temp <- df_m_edss_med_costs[1,]
-    for(j_edss in 1:length(temp)) {
+    for(j_edss in 1:n_edss_values) {
       temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs[1,j_edss])^2)/(df_m_edss_med_costs[2,j_edss]^2),
                              df_m_edss_med_costs[1,j_edss]/(df_m_edss_med_costs[2,j_edss]^2))
       #temp[j_edss] <- pmax(rnorm(1, mean =  df_m_edss_med_costs[1,j_edss], sd =  df_m_edss_med_costs[2,j_edss]),0)
