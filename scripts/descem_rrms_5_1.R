@@ -161,16 +161,19 @@ relapse_hospital_prop <- 0.2
 saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
 sae_names <- saes_data[,1]
 
+# Number of serious adverse events in the model
+n_sae <- length(sae_names)
+
 # These weights are used to calculate SAEs costs and utilities as sumproduct
-v_weight_sae <- saes_data[,2] 
-prob_sae <- saes_data[,2]
+v_weight_sae <- saes_data[, 2] 
+prob_sae <- saes_data[, 2]
 names(prob_sae)<-sae_names
-v_r_sae <- -log(1-prob_sae)
+v_r_sae <- -log(1 - prob_sae)
 v_r_sae
 
 # #rates of mortality, "mx" columns of life tables
 m_r_mortality <- as.matrix(read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1))
-m_r_mortality <- m_r_mortality[,c(1, 2,8)]
+m_r_mortality <- m_r_mortality[,c(1, 2, 8)]
 m_r_mortality[,1] <- as.numeric(m_r_mortality[,1])
 dimnames(m_r_mortality) <-  list(NULL, c("time" ,"male", "female"))
 
@@ -245,7 +248,7 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Utilities for RRMS Orme et al
   u_rrms_edss = if(psa_bool) {
-    temp <- df_edss_utilities[1,]
+    temp <- df_edss_utilities[1, ]
     for(j_edss in 1:n_edss_values) {
       temp[j_edss] <- rnorm(1, mean =  df_edss_utilities[1, j_edss], sd =  df_edss_utilities[2, j_edss])
     }
@@ -258,10 +261,10 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # EDSS Health state Medical costs for RRMS Tyas et al inflated 
   v_c_rrms_edss = if(psa_bool) {
-    temp <- df_m_edss_med_costs[1,]
+    temp <- df_m_edss_med_costs[1, ]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs[1,j_edss])^2)/(df_m_edss_med_costs[2,j_edss]^2),
-                             df_m_edss_med_costs[1,j_edss]/(df_m_edss_med_costs[2,j_edss]^2))
+      temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs[1, j_edss])^2) / (df_m_edss_med_costs[2, j_edss]^2),
+                             df_m_edss_med_costs[1, j_edss] / (df_m_edss_med_costs[2, j_edss]^2))
       #temp[j_edss] <- pmax(rnorm(1, mean =  df_m_edss_med_costs[1,j_edss], sd =  df_m_edss_med_costs[2,j_edss]),0)
     }
     temp
@@ -326,27 +329,24 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # MS Registry time to EDSS increase HA RRMS patients
   v_baseline_harrms_edss_increase = if(psa_bool) {
-    
     mvrnorm(n = 1, 
             mu = v_tto_edss_increase_harrms_mu, 
             Sigma = m_tto_edss_increase_harrms_sigma) 
 
-  } else {v_tto_edss_increase_harrms_mu }
+  } else {v_tto_edss_increase_harrms_mu}
   
 ) %>% add_item(
   # MS Registry time to EDSS decrease All RRMS patients
   v_rrms_edss_decrease = if(psa_bool) {
-    
     mvrnorm(n = 1, 
             mu = v_tto_edss_decrease_rrms_mu, 
             Sigma = m_tto_edss_decrease_rrms_sigma) 
     
-  } else {v_tto_edss_decrease_rrms_mu }
+  } else {v_tto_edss_decrease_rrms_mu}
   
 ) %>% add_item(
   # MS Registry time to EDSS increase SPMS patients
   v_spms_edss_increase = if(psa_bool) {
-    
     mvrnorm(n = 1, 
             mu = v_tto_edss_increase_spms_mu, 
             Sigma = m_tto_edss_increase_spms_sigma) 
@@ -357,45 +357,38 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # MS Registry time to EDSS decrease SPMS patients
   v_spms_edss_decrease = if(psa_bool) {
+    mvrnorm(n = 1, 
+            mu = v_tto_edss_decrease_spms_mu, 
+            Sigma = m_tto_edss_decrease_spms_sigma) 
     
-   mvrnorm(n = 1, 
-           
-           mu = v_tto_edss_decrease_spms_mu, 
-           Sigma = m_tto_edss_decrease_spms_sigma
-           ) 
-    
-  } else {v_tto_edss_decrease_spms_mu 
-          }
+  } else {v_tto_edss_decrease_spms_mu}
   
   )%>% add_item(
     # MS Registry time to progression RRMS to SPMS 
     v_spms_progression = if(psa_bool) {
-                                  mvrnorm(n = 1, 
-                                  mu = t(v_tto_sp_conversion_harrms_mu), 
-                                  Sigma = m_tto_sp_conversion_harrms_sigma) 
-  
+      mvrnorm(n = 1, 
+              mu = t(v_tto_sp_conversion_harrms_mu), 
+              Sigma = m_tto_sp_conversion_harrms_sigma) 
+      
   } else {v_tto_sp_conversion_harrms_mu}
  
 ) %>% add_item(
   # MS Registry time to relapse HARRMS patients
   v_baseline_harrms_arr = if(psa_bool) {
-                                mvrnorm(n = 1, 
-                                mu = t(v_tto_relapse_harrms_mu), 
-                                Sigma = tto_relapse_harrms_sigma) 
+    mvrnorm(n = 1, 
+            mu = t(v_tto_relapse_harrms_mu), 
+            Sigma = tto_relapse_harrms_sigma) 
     
   } else {v_tto_relapse_harrms_mu}
   
 ) %>% add_item(
   # MS Registry time to relapse SPMS patients
   v_baseline_spms_arr = if(psa_bool) {
-    
     mvrnorm(n = 1, 
             mu = t(v_tto_relapse_spms_mu), 
-            Sigma = m_tto_relapse_spms_sigma
-    ) 
+            Sigma = m_tto_relapse_spms_sigma) 
     
-  } else {v_tto_relapse_spms_mu
-  }
+  } else {v_tto_relapse_spms_mu}
   
 ) %>% add_item(
   # Annualized relapse rate relative trt effects NMA with Natalizumab as the reference
@@ -454,13 +447,12 @@ common_all_inputs <-add_item(
             exp(0.47), exp(0.11), exp(0.72), exp(0.74), exp(0.81), exp(1.0), exp(0.82), 
             exp(0.79), exp(0.82))}
   
-  
 ) %>% add_item(
  
   # Treatment switch follows discontinuation rates
   # Dummy values assume the discontinuation doesn't depend on line of therapy
-  # (E.g., cladribine disctoninuation rate is same at 1st and 2nd line)
-  # This can be changed by adding line specific discontinuation rates
+  # (E.g., cladribine discontinuation rate is same at 1st and 2nd line)
+  # This could be changed by adding line specific discontinuation rates
 
     v_discontinuation_rate = if(psa_bool) {
       temp <- matrix(nrow = 1, ncol = n_treatments)
@@ -480,97 +472,99 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Treatment administration costs
   v_c_trt_admin = if(psa_bool) {
-    temp <- t(matrix(nrow = length(df_c_tx_admin), ncol = 1,
-                     dimnames = list(names(df_c_tx_admin), "administration_cost")))
-    for(i in 1:length(temp)) {
-      temp[i] <- rgamma(1, ((df_c_tx_admin[i])^2)/((df_c_tx_admin[i]/sd_psa)^2),
-                        df_c_tx_admin[i]/((df_c_tx_admin[i]/sd_psa)^2))
+    temp <- t(matrix(nrow = n_treatments, ncol = 1,
+                     dimnames = list(v_treatment_names, "administration_cost")))
+    for(i in 1:n_treatments) {
+      temp[i] <- rgamma(1, ((df_c_tx_admin[i])^2) / ((df_c_tx_admin[i] / sd_psa)^2),
+                        df_c_tx_admin[i] / ((df_c_tx_admin[i]/sd_psa)^2))
     }
     temp
     
   } else {
-    t(matrix(df_c_tx_admin, nrow = length(df_c_tx_admin), ncol = 1,
-             dimnames = list(names(df_c_tx_admin), "administration_cost")))
+    t(matrix(df_c_tx_admin, nrow = n_treatments, ncol = 1,
+             dimnames = list(v_treatment_names, "administration_cost")))
   }
   
 ) %>% add_item(
   # Treatment monitoring costs
   v_c_trt_monitor = if(psa_bool) {
-    temp <- t(matrix(nrow = length(df_c_tx_monitor), ncol = 1,
-                     dimnames = list(names(df_c_tx_monitor), "monitoring_cost")))
-    for(i in 1:length(temp)) {
-      temp[i] <- rgamma(1, ((df_c_tx_monitor[i])^2)/((df_c_tx_monitor[i]/sd_psa)^2),
-                        df_c_tx_monitor[i]/((df_c_tx_monitor[i]/sd_psa)^2))
+    temp <- t(matrix(nrow = n_treatments, ncol = 1,
+                     dimnames = list(v_treatment_names, "monitoring_cost")))
+    for(i in 1:n_treatments) {
+      temp[i] <- rgamma(1, ((df_c_tx_monitor[i])^2) / ((df_c_tx_monitor[i]/sd_psa)^2),
+                        df_c_tx_monitor[i] / ((df_c_tx_monitor[i]/sd_psa)^2))
     }
     temp
     
   } else {
-    t(matrix(nrow = length(df_c_tx_monitor), ncol = 1,
-             dimnames = list(names(df_c_tx_monitor), "monitoring_cost")))
+    t(matrix(nrow = n_treatments, ncol = 1,
+             dimnames = list(v_treatment_names, "monitoring_cost")))
   }
   
   ) %>% add_item(  
     # Relapse costs are treatment & severity agnostic
     
     v_c_relapsing = if(psa_bool) {
-      temp <- df_c_relapse[,1]
+      temp <- df_c_relapse[, 1]
       for(i in 1:length(temp)) {
         temp[i] <- pmax(rnorm(1, mean =  df_c_relapse[i,1], sd =  df_c_relapse[i,2]),0)
       }
       temp
       
     } else {
-      df_c_relapse[,1]
+      df_c_relapse[, 1]
     }
     
   ) %>% add_item(  
-    # Relapse dis-utilities are treatment & severity agnostic, in TA616 the same regard less of hospitalisation
+    # Relapse dis-utilities are treatment & severity agnostic, in TA616 the same regardless of hospitalisation
     u_relapsing = if(psa_bool) {
-      pmin(rnorm(1, mean =  u_relapse[1,1], sd =  u_relapse[1,2]),0)
+      pmin(rnorm(1, mean =  u_relapse[1, 1], sd =  u_relapse[1, 2]),0)
       
     } else {
-      u_relapse[1,1]
+      u_relapse[1, 1]
     }
     
   ) %>% add_item(
     # costs of serious adverse events
     v_c_adverse_events = if(psa_bool) {
-      temp <- t(matrix(nrow = length(df_c_ae), ncol = 1,
-                       dimnames = list(names(df_c_ae), "sae_cost")))
-      for(i in 1:length(temp)) {
-        temp[i] <- rgamma(1, ((df_c_ae[i])^2)/((df_c_ae[i]/sd_psa)^2),
-                          df_c_ae[i]/((df_c_ae[i]/sd_psa)^2))
+      temp <- t(matrix(nrow = n_sae, ncol = 1,
+                       dimnames = list(sae_names, "sae_cost")))
+      for(i_sae in 1:n_sae) {
+        temp[i_sae] <- rgamma(1, ((df_c_ae[i_sae])^2) / ((df_c_ae[i_sae]/sd_psa)^2),
+                          df_c_ae[i_sae] / ((df_c_ae[i_sae]/sd_psa)^2))
       }
       temp
       
     } else {
-      t(matrix(df_c_ae, nrow = length(df_c_ae), ncol = 1,
-               dimnames = list(names(df_c_ae), "sae_cost")))
+      t(matrix(df_c_ae, nrow = n_sae, ncol = 1,
+               dimnames = list(sae_names, "sae_cost")))
     }
     
   ) %>% add_item(
     # disutilities of serious adverse events
     v_u_adverse_events = if(psa_bool) {
-      temp <- t(matrix(nrow = length(df_u_ae), ncol = 1,
-                       dimnames = list(names(df_u_ae), "sae_disutility")))
-      for(i in 1:length(temp)) {
-        temp[i] <- pmin(rnorm(1, mean =  df_u_ae[i], sd =  -df_u_ae[i]/sd_psa),0)
+      temp <- t(matrix(nrow = n_sae, ncol = 1,
+                       dimnames = list(sae_names, "sae_disutility")))
+      for(i_sae in 1:n_sae) {
+        temp[i_sae] <- pmin(rnorm(1, 
+                                  mean =  df_u_ae[i_sae], 
+                                  sd =  -df_u_ae[i_sae] / sd_psa), 0)
       }
       temp
       
     } else {
-      t(matrix(df_u_ae, nrow = length(df_u_ae), ncol = 1,
-               dimnames = list(names(df_u_ae), "sae_disutility")))
+      t(matrix(df_u_ae, nrow = n_sae, ncol = 1,
+               dimnames = list(sae_names, "sae_disutility")))
     }
   )  %>% add_item(
     # rates of adverse events
     adverse_events_rates = if(psa_bool) {
       temp <- v_r_sae
       # Rates are specified by SAEs for Natalizumab
-        for (j in 1:length(temp)){
-          temp[j] <- exp(rnorm(1,
-                                 mean = log(temp[j]),
-                                sd = temp[j]/10))
+        for (i_sae in 1:n_sae){
+          temp[i_sae] <- exp(rnorm(1,
+                                 mean = log(temp[i_sae]),
+                                sd = temp[i_sae] / 10))
           }
           
      temp
