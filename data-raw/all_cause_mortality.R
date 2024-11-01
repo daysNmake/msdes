@@ -13,8 +13,8 @@ nltuk198020203 <- nltuk198020203[,-7]
 # colums 1-6 are male and 7-12 are female
 colnames(nltuk198020203) <- rep(c("age", "mx", "qx", "lx", "dx", "ex"), 2)
 all_cause_mortality <- data.frame(nltuk198020203)
-row.names(all_cause_mortality)<-all_cause_mortality[,1]
-r_all_cause_mortality <- -log(1-all_cause_mortality)
+row.names(all_cause_mortality) <- all_cause_mortality[,1]
+r_all_cause_mortality <- -log(1 - all_cause_mortality)
 r_all_cause_mortality
 head(r_all_cause_mortality)
 
