@@ -1,4 +1,3 @@
-
 # General
 
 The data-raw folder needs a process_all_data.R script that runs all the data preparation scripts.
