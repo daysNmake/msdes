@@ -616,7 +616,7 @@ init_event_list <-
               # Current treatment code allows treatment switching 
               # (i.e., not the trt which is only initial assignment)
               # MS registry time to relapse HA RRMS log rate on natalizumab
-              coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["(Intercept)"] +
+              coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["rate"] +
                                          v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value)  +
                                          v_baseline_harrms_arr["DMTNatalizumab"]) +
               # MS registry time to relapse SPMS log rate
@@ -656,7 +656,7 @@ init_event_list <-
               dist = "exp",
               # MS registry time to progression All RRMS patients to SPMS log rate on natalizumab
               # Below is zero if already progressed to SPMS
-              coef1 = (1 - spms_flag) * (v_spms_progression["(Intercept)"] +
+              coef1 = (1 - spms_flag) * (v_spms_progression["rate"] +
                                          v_spms_progression["BaselineWebEDSS"] * (edss_value) + 
                                          v_spms_progression["DMTNatalizumab"])
             )
@@ -714,7 +714,7 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["(Intercept)"] +
+                     coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["rate"] +
                                                   v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value + 1)  +
                                                   v_baseline_harrms_arr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_arr["rate"] +
@@ -757,9 +757,9 @@ evt_react_list <-
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrease if SPMS
                      coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
-                                                v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value+1) )  + 
+                                                v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value + 1) )  + 
                                    spms_flag * (v_spms_edss_decrease["rate"]  +
-                                                v_spms_edss_decrease["BaselineWebEDSS"]*(edss_value+1) ) 
+                                                v_spms_edss_decrease["BaselineWebEDSS"]*(edss_value + 1) ) 
                    )
                  ) )}
                }) %>%
