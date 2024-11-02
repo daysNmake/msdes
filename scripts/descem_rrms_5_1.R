@@ -665,12 +665,12 @@ init_event_list <-
               1,
               dist = "pwexp",
               # population mortality drawn using piece wise exponential
-              coef1 = c(log((1 - prop_female) * m_r_mortality[(initial_age+1):nrow(m_r_mortality), c("male")] +
-                              prop_female *  m_r_mortality[(initial_age+1):nrow(m_r_mortality), c("female")],
+              coef1 = c(log((1 - prop_female) * m_r_mortality[(initial_age + 1):nrow(m_r_mortality), c("male")] +
+                              prop_female *  m_r_mortality[(initial_age + 1):nrow(m_r_mortality), c("female")],
               )),
-              time = c(m_r_mortality[(initial_age+1):nrow(m_r_mortality)]) ,
+              time = c(m_r_mortality[(initial_age + 1):nrow(m_r_mortality)]) ,
               # MS specific mortality multiplier
-              hr=v_smr[1]
+              hr = v_smr[1]
             )
             serious_adverse_event <- draw_tte(
               1,
@@ -708,17 +708,17 @@ evt_react_list <-
                input = {
                  modify_item(list(n_relapse= n_relapse + 1,
                                   age = initial_age + round(curtime)))
-                 # Currenly no impact on costs or utilities of relapse
+                 # Currently no impact on costs or utilities of relapse
                  # Just need to simulate the next time to relapse
                  new_event(list(
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
                      coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["(Intercept)"] +
-                                                  v_baseline_harrms_arr["BaselineWebEDSS"]*(edss_value+1)  +
-                                                  v_baseline_harrms_arr["DMTNatalizumab"])+
+                                                  v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value + 1)  +
+                                                  v_baseline_harrms_arr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_arr["rate"] +
-                                      v_baseline_spms_arr["BaselineWebEDSS"]*(edss_value+1)),
+                                      v_baseline_spms_arr["BaselineWebEDSS"] * (edss_value + 1)),
                      hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
                      )
                  ))
@@ -735,11 +735,11 @@ evt_react_list <-
                      1, 
                      dist = "exp",
                      coef1 = (1 - spms_flag) * (v_baseline_harrms_edss_increase["rate"] +
-                            v_baseline_harrms_edss_increase["BaselineWebEDSS"]*(edss_value+1) ) + 
+                            v_baseline_harrms_edss_increase["BaselineWebEDSS"] * (edss_value + 1) ) + 
                             v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                                       spms_flag * (v_spms_edss_increase["rate"] +
-                                      v_spms_edss_increase["BaselineWebEDSS"]*(edss_value+1)),  
-                     hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code])+ spms_flag 
+                                      v_spms_edss_increase["BaselineWebEDSS"] * (edss_value + 1)),  
+                     hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
                    )
                    
                  ))}
@@ -755,7 +755,7 @@ evt_react_list <-
                    "edss_decrease" = curtime + draw_tte(
                      1, 
                      dist = "exp",
-                     # Below is zero if spms_flag is 1 since patients should have EDSS decrase if SPMS
+                     # Below is zero if spms_flag is 1 since patients should have EDSS decrease if SPMS
                      coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
                                                 v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value+1) )  + 
                                    spms_flag * (v_spms_edss_decrease["rate"]  +
@@ -799,7 +799,7 @@ evt_react_list <-
                                                                   size = 1),
                                   treatment_line = treatment_line + 1,
                                   v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate,
-                                  n_switch = n_switch +1,
+                                  n_switch = n_switch + 1,
                                   age = initial_age + round(curtime)))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
