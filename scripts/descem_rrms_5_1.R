@@ -790,7 +790,7 @@ evt_react_list <-
                  )
                ))
                ) %>%
-  # Currently assumes patients switch only twice so 4th line is final (As in protocol)
+  # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
                input = {
                  modify_item(list(current_treatment = sample(x = v_higher_line_treatments,
@@ -845,7 +845,7 @@ cost_instant <-
                cost = v_c_relapsing[4]) %>% 
   add_cost(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
-           cost = sum(v_c_adverse_events*v_weight_sae)) 
+           cost = sum(v_c_adverse_events * v_weight_sae)) 
 
 # Add instant utilities
 # Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
