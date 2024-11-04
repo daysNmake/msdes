@@ -90,6 +90,7 @@ names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "serious_ae", "death")
+#  "trt_yr", proposed new event to track annual costs
 
 ## Standard Deviation for probabilistic analysis when uncertainty not reported
 # assumed 1/10 of mean
@@ -99,7 +100,7 @@ sd_psa <- 10
 ## Baseline population age sex and model time horizon
 initial_age <- 20 
 time_horizon <- 80 # Years so lifetime
-prop_female <- 0.50
+prop_female <- 0.70 # AFFIRM (n=942) both arms of AFFIRM
 
 ## Define the possible EDSS values
 v_edss_values <- c(0:9)
@@ -138,24 +139,14 @@ m_tto_sp_conversion_harrms_sigma<- read.csv("data/m_tto_sp_conversion_harrms_sig
 
 
 ## baseline distribution of EDSS health states (AFFIRM baseline both arms)
-v_affirm_edss_distribution <- c(49, 273, 311, 193, 88, 24, 1, 1, 1, 1)
-names(v_affirm_edss_distribution) <- names(v_edss_values)
+v_n_patients_edss <- c(49, 273, 311, 193, 88, 24, 1, 1, 1, 1)
+names(v_n_patients_edss) <- names(v_edss_values)
 
 ## baseline proportion of patients with SPMS
 initial_spms_prop <- 0
 
-## baseline population risk parameters: relapse rates and Standardized Mortality Ratio
-df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
-
-## base line relapse rate(final analysis) Placebo arm(n=315) AFFIRM Table 2  Polman etal 2006 DOI: 10.1056/NEJMoa044397
-# r_bl_rrms_rr <- as.double(c(0.73, (0.87-0.62)/3.92))
-
-
 ## Proportion of patients having relapse leading to hospitalisation ~DUMMY DATA~
 relapse_hospital_prop <- 0.2
-
-## rates of Adverse events (Cladribine Alemtuzumab Fingolimod Natalizumab Daclizuma] from TA616, rest is ~DUMMY DATA~)
-#prob_ae <- read.csv("data/df_adverse_events_probabilities_ta616.csv", header = T, row.names = 1)
 
 ## Incidence & weights of Serious Adverse events in AFFIRM
 saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
@@ -168,7 +159,7 @@ n_sae <- length(sae_names)
 v_weight_sae <- saes_data[, 2] 
 prob_sae <- saes_data[, 2]
 names(prob_sae)<-sae_names
-v_r_sae <- -log(1 - prob_sae)
+v_r_sae <- -log(1 - prob_sae) /2 # two year follow up time
 v_r_sae
 
 # #rates of mortality, "mx" columns of life tables
@@ -181,13 +172,13 @@ dimnames(m_r_mortality) <-  list(NULL, c("time" ,"male", "female"))
 ## edss costs direct medical costs Tyas etal. 2005 inflated to 2022/2023 Edss6 is an average of edss6 and 6.5
 c_m_edss <- read.csv("data/df_c_directmedical_edss.csv", header = T, row.names = 1) 
 df_m_edss_med_costs <- t(c_m_edss[1:10,7:8])
-#add 398 with se of 1002 for an spms cost
-#do we include non-direct medical costs? they were previously controversial
 
 ## MS specific standardised mortality rate Manouchehrinia 2016
+df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
 v_smr <- as.double(c(df_init_params["smr"], sqrt(437) * (df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
+## These are direct medical costs we excluded the indirect medical costs  previously contreversial with ERGS
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
 df_c_tx <- df_c_tx[-1:-2,]
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
@@ -201,26 +192,23 @@ df_c_relapse <-read.csv("data/df_c_relapse.csv", header = T, row.names = 1)
 df_c_relapse <- df_c_relapse[3:8,3:4] #choose inflated Hawton 2016 to 2023
 df_c_relapse <- df_c_relapse * 2 # Annualised these 6 months costs
 
-## Adverse Events costs TA616 # need to be weighted by key trial
-#df_c_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
-
 ## Adverse events costs MS-MTA report
-df_c_ae <- saes_data[,4]
-names(df_c_ae)<-sae_names
+df_c_sae <- saes_data[,4]
+names(df_c_sae)<-sae_names
   
 ## edss utilities columns 5&6 Orme etal 2007
 u_edss <- read.csv("data/df_u_edss_ta616.csv", header = T, row.names = 1)
 df_edss_utilities <- t(u_edss[1:10,5:6])
 
 ## Relapse utilities
-u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
+df_u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
 
 ## Adverse Events disutilities TA616 # need to be weighted by key trial
-#df_u_ae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
+#df_u_sae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
 
 ## Adverse events dis-utilities MS-MTA report
-df_u_ae <- saes_data[,5]
-names(df_u_ae)<-sae_names
+df_u_sae <- saes_data[,5]
+names(df_u_sae)<-sae_names
 
 # Global parameters of the model as they are common to all patients and treatments
 # If not using PSA just setting to mean of samples. This isn't correct as the 
@@ -231,15 +219,13 @@ common_all_inputs <-add_item(
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
   initial_age = initial_age,
-  #rrms_average_age = rrms_average_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
   v_edss_values = v_edss_values,
   df_c_tx = df_c_tx, # drug costs are not probabilistic
   v_event_names = v_event_names,
-  #r_bl_rrms_rr = r_bl_rrms_rr, # make random
-  v_affirm_edss_distribution = v_affirm_edss_distribution,
-  m_r_mortality = m_r_mortality, # make random
+  v_n_patients_edss = v_n_patients_edss,
+  m_r_mortality = m_r_mortality,
   v_smr = v_smr, # make random
   v_weight_sae = v_weight_sae,
   initial_spms_prop = initial_spms_prop,
@@ -248,29 +234,28 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Utilities for RRMS Orme et al
   u_rrms_edss = if(psa_bool) {
-    temp <- df_edss_utilities[1, ]
+    temp <- df_edss_utilities["Orme_mean", ]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rnorm(1, mean =  df_edss_utilities[1, j_edss], sd =  df_edss_utilities[2, j_edss])
+      temp[j_edss] <- rnorm(1, mean =  df_edss_utilities["Orme_mean", j_edss], sd =  df_edss_utilities["Orme_sd", j_edss])
     }
     temp
     
   } else {
-    df_edss_utilities[1,]
+    df_edss_utilities["Orme_mean",]
   }
 
 ) %>% add_item(
   # EDSS Health state Medical costs for RRMS Tyas et al inflated 
   v_c_rrms_edss = if(psa_bool) {
-    temp <- df_m_edss_med_costs[1, ]
+    temp <- df_m_edss_med_costs["Tyas_inflated" , ]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs[1, j_edss])^2) / (df_m_edss_med_costs[2, j_edss]^2),
-                             df_m_edss_med_costs[1, j_edss] / (df_m_edss_med_costs[2, j_edss]^2))
-      #temp[j_edss] <- pmax(rnorm(1, mean =  df_m_edss_med_costs[1,j_edss], sd =  df_m_edss_med_costs[2,j_edss]),0)
+      temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs["Tyas_inflated", j_edss])^2) / (df_m_edss_med_costs["Tyas_se_inflated", j_edss]^2),
+                             df_m_edss_med_costs["Tyas_inflated", j_edss] / (df_m_edss_med_costs["Tyas_se_inflated", j_edss]^2))
     }
     temp
     
   } else {
-    df_m_edss_med_costs[1,]
+    df_m_edss_med_costs["Tyas_inflated",]
   }
 
 ) %>% add_item(
@@ -374,7 +359,7 @@ common_all_inputs <-add_item(
  
 ) %>% add_item(
   # MS Registry time to relapse HARRMS patients
-  v_baseline_harrms_arr = if(psa_bool) {
+  v_baseline_harrms_larr = if(psa_bool) {
     mvrnorm(n = 1, 
             mu = t(v_tto_relapse_harrms_mu), 
             Sigma = tto_relapse_harrms_sigma) 
@@ -383,7 +368,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(
   # MS Registry time to relapse SPMS patients
-  v_baseline_spms_arr = if(psa_bool) {
+  v_baseline_spms_larr = if(psa_bool) {
     mvrnorm(n = 1, 
             mu = t(v_tto_relapse_spms_mu), 
             Sigma = m_tto_relapse_spms_sigma) 
@@ -474,9 +459,9 @@ common_all_inputs <-add_item(
   v_c_trt_admin = if(psa_bool) {
     temp <- t(matrix(nrow = n_treatments, ncol = 1,
                      dimnames = list(v_treatment_names, "administration_cost")))
-    for(i in 1:n_treatments) {
-      temp[i] <- rgamma(1, ((df_c_tx_admin[i])^2) / ((df_c_tx_admin[i] / sd_psa)^2),
-                        df_c_tx_admin[i] / ((df_c_tx_admin[i]/sd_psa)^2))
+    for(i_trt in 1:n_treatments) {
+      temp[i_trt] <- rgamma(1, ((df_c_tx_admin[i_trt])^2) / ((df_c_tx_admin[i_trt] / sd_psa)^2),
+                        df_c_tx_admin[i_trt] / ((df_c_tx_admin[i_trt]/sd_psa)^2))
     }
     temp
     
@@ -490,9 +475,9 @@ common_all_inputs <-add_item(
   v_c_trt_monitor = if(psa_bool) {
     temp <- t(matrix(nrow = n_treatments, ncol = 1,
                      dimnames = list(v_treatment_names, "monitoring_cost")))
-    for(i in 1:n_treatments) {
-      temp[i] <- rgamma(1, ((df_c_tx_monitor[i])^2) / ((df_c_tx_monitor[i]/sd_psa)^2),
-                        df_c_tx_monitor[i] / ((df_c_tx_monitor[i]/sd_psa)^2))
+    for(i_trt in 1:n_treatments) {
+      temp[i_trt] <- rgamma(1, ((df_c_tx_monitor[i_trt])^2) / ((df_c_tx_monitor[i_trt]/sd_psa)^2),
+                        df_c_tx_monitor[i_trt] / ((df_c_tx_monitor[i_trt]/sd_psa)^2))
     }
     temp
     
@@ -505,60 +490,61 @@ common_all_inputs <-add_item(
     # Relapse costs are treatment & severity agnostic
     
     v_c_relapsing = if(psa_bool) {
-      temp <- df_c_relapse[, 1]
-      for(i in 1:length(temp)) {
-        temp[i] <- pmax(rnorm(1, mean =  df_c_relapse[i,1], sd =  df_c_relapse[i,2]),0)
+      temp <- df_c_relapse[, "Hawton_mean_inflated"]
+      for(i_cost in 1:length(temp)) {
+        temp[i_cost] <- pmax(rnorm(1, mean =  df_c_relapse[i_cost,"Hawton_mean_inflated"],
+                                   sd =  df_c_relapse[i_cost,"Hawton_sd_inflated"]),0)
       }
       temp
       
     } else {
-      df_c_relapse[, 1]
+      df_c_relapse[, "Hawton_mean_inflated"]
     }
     
   ) %>% add_item(  
     # Relapse dis-utilities are treatment & severity agnostic, in TA616 the same regardless of hospitalisation
     u_relapsing = if(psa_bool) {
-      pmin(rnorm(1, mean =  u_relapse[1, 1], sd =  u_relapse[1, 2]),0)
+      pmin(rnorm(1, mean =  df_u_relapse["Orme etal", "u_mean_relapse_hospital"], sd =  df_u_relapse["Orme etal", "u_sd_relapse_hospital"]),0)
       
     } else {
-      u_relapse[1, 1]
+      df_u_relapse[1, 1]
     }
     
   ) %>% add_item(
     # costs of serious adverse events
-    v_c_adverse_events = if(psa_bool) {
+    v_c_sae_events = if(psa_bool) {
       temp <- t(matrix(nrow = n_sae, ncol = 1,
                        dimnames = list(sae_names, "sae_cost")))
       for(i_sae in 1:n_sae) {
-        temp[i_sae] <- rgamma(1, ((df_c_ae[i_sae])^2) / ((df_c_ae[i_sae]/sd_psa)^2),
-                          df_c_ae[i_sae] / ((df_c_ae[i_sae]/sd_psa)^2))
+        temp[i_sae] <- rgamma(1, ((df_c_sae[i_sae])^2) / ((df_c_sae[i_sae]/sd_psa)^2),
+                          df_c_sae[i_sae] / ((df_c_sae[i_sae]/sd_psa)^2))
       }
       temp
       
     } else {
-      t(matrix(df_c_ae, nrow = n_sae, ncol = 1,
+      t(matrix(df_c_sae, nrow = n_sae, ncol = 1,
                dimnames = list(sae_names, "sae_cost")))
     }
     
   ) %>% add_item(
     # disutilities of serious adverse events
-    v_u_adverse_events = if(psa_bool) {
+    v_u_sae_events = if(psa_bool) {
       temp <- t(matrix(nrow = n_sae, ncol = 1,
                        dimnames = list(sae_names, "sae_disutility")))
       for(i_sae in 1:n_sae) {
         temp[i_sae] <- pmin(rnorm(1, 
-                                  mean =  df_u_ae[i_sae], 
-                                  sd =  -df_u_ae[i_sae] / sd_psa), 0)
+                                  mean =  df_u_sae[i_sae], 
+                                  sd =  -df_u_sae[i_sae] / sd_psa), 0)
       }
       temp
       
     } else {
-      t(matrix(df_u_ae, nrow = n_sae, ncol = 1,
+      t(matrix(df_u_sae, nrow = n_sae, ncol = 1,
                dimnames = list(sae_names, "sae_disutility")))
     }
   )  %>% add_item(
     # rates of adverse events
-    adverse_events_rates = if(psa_bool) {
+    sae_events_rates = if(psa_bool) {
       temp <- v_r_sae
       # Rates are specified by SAEs for Natalizumab
         for (i_sae in 1:n_sae){
@@ -584,8 +570,7 @@ common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"), # R
 # Objects that depend on treatment
 # Note that the current treatment is later initialised to trt
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values, # Random 
-                                                 prob = rdiric(1, v_affirm_edss_distribution)),
-                             #edss.i = edss_value,
+                                                 prob = rdiric(1, v_n_patients_edss)),
                              n_relapse = 0,
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
@@ -595,8 +580,9 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values, # 
                                                             prob = c(1 - relapse_hospital_prop, relapse_hospital_prop)),
                              current_treatment = "Natalizumab", # This is later changed to trt
                              current_treatment_code = 1, # This is later changed to code of trt
-                             treatment_line = 2,
-                             n_switch = 0,
+                             treatment_line = 2, # all patients starting on 2nd line treatment
+                             n_switch = 0, # treatment switch counter for sense checking
+                             #n_tot = 0, # proposed annual flag for treatment acquisition costs
                              age = initial_age
 )
 
@@ -616,12 +602,12 @@ init_event_list <-
               # Current treatment code allows treatment switching 
               # (i.e., not the trt which is only initial assignment)
               # MS registry time to relapse HA RRMS log rate on natalizumab
-              coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["rate"] +
-                                         v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value)  +
-                                         v_baseline_harrms_arr["DMTNatalizumab"]) +
+              coef1 = (1 - spms_flag) * (v_baseline_harrms_larr["rate"] +
+                                         v_baseline_harrms_larr["BaselineWebEDSS"] * (edss_value)  +
+                                         v_baseline_harrms_larr["DMTNatalizumab"]) +
               # MS registry time to relapse SPMS log rate
-                      spms_flag * (v_baseline_spms_arr["rate"] +
-                                   v_baseline_spms_arr["BaselineWebEDSS"] * (edss_value)),
+                      spms_flag * (v_baseline_spms_larr["rate"] +
+                                   v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
@@ -658,9 +644,9 @@ init_event_list <-
               # Below is zero if already progressed to SPMS
               coef1 = (1 - spms_flag) * (v_spms_progression["rate"] +
                                          v_spms_progression["BaselineWebEDSS"] * (edss_value) + 
-                                         v_spms_progression["DMTNatalizumab"])
+                                         v_spms_progression["DMTNatalizumab"]) + 
+                                          (spms_flag*-10)
             )
-            #source("R/draw_tte_new.R")
             death <- draw_tte_new(
               1,
               dist = "pwexp",
@@ -698,12 +684,30 @@ evt_react_list <-
                                   #future death events do not exceed 100 years
                                   "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
                              ))
+                ## proposed code to add annual cost events
+                # new_event(list(
+                #   "trt_yr" = curtime 
+                # ))
                }) %>%
   add_reactevt(name_evt = "age",
                input = {
                  modify_item(list(age = initial_age + round(curtime)
                                   ))
                }) %>%
+  ## proposed code to add annual cost events
+  # add_reactevt(name_evt = "trt_yr",
+  #             input = { 
+  #             modify_item(list(
+  #                              n_tot = n_tot + 1
+  #                              ))
+                        
+  #             if(n_tot < 3){
+  #               new_event(list(
+  #               "trt_yr" = curtime + 1
+  #                          ))
+  #             }
+  #             }
+  #             ) %>%
   add_reactevt(name_evt = "relapse",
                input = {
                  modify_item(list(n_relapse= n_relapse + 1,
@@ -714,19 +718,18 @@ evt_react_list <-
                    "relapse" = curtime + draw_tte(
                      1, 
                      dist = "exp", 
-                     coef1 = (1 - spms_flag) * (v_baseline_harrms_arr["rate"] +
-                                                  v_baseline_harrms_arr["BaselineWebEDSS"] * (edss_value + 1)  +
-                                                  v_baseline_harrms_arr["DMTNatalizumab"]) +
-                       spms_flag * (v_baseline_spms_arr["rate"] +
-                                      v_baseline_spms_arr["BaselineWebEDSS"] * (edss_value + 1)),
+                     coef1 = (1 - spms_flag) * (v_baseline_harrms_larr["rate"] +
+                                                  v_baseline_harrms_larr["BaselineWebEDSS"] * (edss_value + 1)  +
+                                                  v_baseline_harrms_larr["DMTNatalizumab"]) +
+                       spms_flag * (v_baseline_spms_larr["rate"] +
+                                      v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value + 1)),
                      hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
                      )
                  ))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
-                 modify_item(list(#edss.i = edss_value,
-                                  edss_value = min(edss_value + 1, max(v_edss_values)),
+                 modify_item(list(edss_value = min(edss_value + 1, max(v_edss_values)),
                                   age = initial_age + round(curtime)))
                  
                  # Need to simulate the next time to EDSS increase
@@ -746,8 +749,7 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_decrease",
                input = {
-                 modify_item(list(#edss.i = edss_value,
-                                  edss_value = max(edss_value - 1, min(v_edss_values)),
+                 modify_item(list(edss_value = max(edss_value - 1, min(v_edss_values)),
                                   age = initial_age + round(curtime)))
                  
                  # Need to simulate the next time to EDSS decrease
@@ -800,6 +802,7 @@ evt_react_list <-
                                   treatment_line = treatment_line + 1,
                                   v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate,
                                   n_switch = n_switch + 1,
+                                # n_tot = 0,   ## proposed code to add annual cost events
                                   age = initial_age + round(curtime)))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
@@ -810,6 +813,13 @@ evt_react_list <-
                      coef1 = log(v_discontinuation_rate[current_treatment_code])
                    )
                  ))
+              ## proposed code to add annual cost events   
+               #  if(n_tot < 3){
+                #   new_event(list(
+                 #    "trt_yr" = curtime + 1
+                  # ))
+                # }
+                 
                })
 
 # Add ongoing utilities
@@ -845,7 +855,7 @@ cost_instant <-
                cost = v_c_relapsing[4]) %>% 
   add_cost(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
-           cost = sum(v_c_adverse_events * v_weight_sae)) 
+           cost = sum(v_c_sae_events * v_weight_sae)) 
 
 # Add instant utilities
 # Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
@@ -854,7 +864,7 @@ util_instant <-   add_util(evt = "relapse" ,
                            util = u_relapsing) %>% 
                   add_util(evt = "serious_adverse_event" ,
                            trt = v_treatment_names,
-                           util = sum(v_u_adverse_events*v_weight_sae)) 
+                           util = sum(v_u_sae_events*v_weight_sae)) 
 
 
 # Run the simulation
@@ -993,7 +1003,7 @@ for(i in 1:n_treatments){
 IA[,"Extendedly dominated"] <- FALSE
 for(i in 2:n_treatments){
   if(IA[i,"Strictly dominated"]) {
-     IA[i,"Extendedly dominated"] <- TRUE
+    IA[i,"Extendedly dominated"] <- TRUE
   } else{
     c <-max(which(!IA[1:(i-1),"Strictly dominated"] |
                     !IA[1:(i-1),"Extendedly dominated"]))
