@@ -4,6 +4,36 @@ We follow the format of the DARTH framework.
 This model code is **not complete**
 An important todo is to modeularise the DESCEM scripts into functions
 
+## To extract data
+Data has been extracted in the data-raw folder and saved in the data folder with links to it specified in the model.
+
+Go to data-raw/Run all raw data scripts.R to run scripts below:
+
+data-raw/MS registry.R to extract registry data
+
+data-raw/serious_adverse_events.R to extract SAEs cost utilities and weights
+
+data-raw/all_cause_mortality.R to extract all cause_mortality life tables
+
+data-raw/costs.R to extract heath state and relapse costs, but treatment acquisition (df_c_drugs.csv) administration (df_c_drugs_admin.csv) and monitoring (df_c_monitoring.csv) costs are saved manually (to be automated) in the data folder
+
+data-raw/utilities.R to extract heath-state, relapse and carer utilities
+
+data-raw/relapse_severity.R to extract proportions and annual rates of relapse by severity
+
+#### data in model script to be moved out into data-raw scripts:
+ + baseline distribution of EDSS health state
+ + MS specific standardised mortality rate Jick 2014
+ 
+#### data to be added:
+ + Drug discontinuation rates
+ + JC virus PCR  £ 247
+ + Chicken pox shingles test £ 49.50
+ + Cervical Screening £85.00
+ + Tuberculin skin test  £ 60.00
+ + HBV test £59 
+ + Natalizumab-SC admin cost reduction factor
+
 ## To run the model
 Go to analysis/descem_rrms_5_1.R
 
