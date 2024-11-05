@@ -98,9 +98,9 @@ sd_psa <- 10
 
 
 ## Baseline population age sex and model time horizon
-initial_age <- 20 
+initial_age <- 36  # 36 ± 8 both arms of AFFIRM (N = 942)
 time_horizon <- 80 # Years so lifetime
-prop_female <- 0.70 # AFFIRM (n=942) both arms of AFFIRM
+prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
 
 ## Define the possible EDSS values
 v_edss_values <- c(0:9)
@@ -150,35 +150,35 @@ relapse_hospital_prop <- 0.2
 
 ## Incidence & weights of Serious Adverse events in AFFIRM
 saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
-sae_names <- saes_data[,1]
+sae_names <- saes_data[,"Serious.Adverse.events"]
 
 # Number of serious adverse events in the model
 n_sae <- length(sae_names)
 
-# These weights are used to calculate SAEs costs and utilities as sumproduct
-v_weight_sae <- saes_data[, 2] 
-prob_sae <- saes_data[, 2]
+# These weights are used to calculate SAEs costs and utilities as sum product
+v_weight_sae <- saes_data[, "Weight"] 
+prob_sae <- saes_data[, "Incidence"]
 names(prob_sae)<-sae_names
 v_r_sae <- -log(1 - prob_sae) /2 # two year follow up time
 v_r_sae
 
 # #rates of mortality, "mx" columns of life tables
 m_r_mortality <- as.matrix(read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1))
-m_r_mortality <- m_r_mortality[,c(1, 2, 8)]
-m_r_mortality[,1] <- as.numeric(m_r_mortality[,1])
+m_r_mortality <- m_r_mortality[,c("age", "mx", "mx.1")]
+m_r_mortality[,"age"] <- as.numeric(m_r_mortality[,"age"]) #check if this step is needed?
 dimnames(m_r_mortality) <-  list(NULL, c("time" ,"male", "female"))
 
 
-## edss costs direct medical costs Tyas etal. 2005 inflated to 2022/2023 Edss6 is an average of edss6 and 6.5
-c_m_edss <- read.csv("data/df_c_directmedical_edss.csv", header = T, row.names = 1) 
-df_m_edss_med_costs <- t(c_m_edss[1:10,7:8])
+## edss costs direct medical costs Tyas etal. 2005 inflated to 2022/2023 
+m_c_edss <- read.csv("data/m_c_edss.csv", header = T, row.names = 1) 
+m_c_edss_rrms <- m_c_edss[,c("rrms_mean","rrms_se")]
+m_c_edss_spms <- m_c_edss[,c("spms_mean","spms_se")]
 
-## MS specific standardised mortality rate Manouchehrinia 2016
-df_init_params <- read.csv("data/df_init_params.csv", header = T, row.names = 1)
-v_smr <- as.double(c(df_init_params["smr"], sqrt(437) * (df_init_params["smr_uci"]-df_init_params["smr_lci"])/3.92))
+## MS specific standardised mortality rate Jick 2014
+v_smr <- as.double(c(1.68, sqrt(437) * (2.05-1.38)/3.92))
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
-## These are direct medical costs we excluded the indirect medical costs  previously contreversial with ERGS
+## These are direct medical costs we excluded the indirect medical costs  previously controversial with ERGS
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
 df_c_tx <- df_c_tx[-1:-2,]
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
@@ -187,21 +187,24 @@ df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops 
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 df_c_tx_monitor <- df_c_tx_monitor[-1:-2,]
 
-## Relapse Costs (Hawton 2016b and Karampampa 2012c)
-df_c_relapse <-read.csv("data/df_c_relapse.csv", header = T, row.names = 1)
-df_c_relapse <- df_c_relapse[3:8,3:4] #choose inflated Hawton 2016 to 2023
-df_c_relapse <- df_c_relapse * 2 # Annualised these 6 months costs
+## Relapse Costs inflated Hawton 2016 to 2023
+m_c_relapse <-read.csv("data/m_c_relapse.csv", header = T, row.names = 1)
+m_c_relapse <- m_c_relapse * 2 # Annualised these 6 months costs
 
 ## Adverse events costs MS-MTA report
 df_c_sae <- saes_data[,4]
 names(df_c_sae)<-sae_names
   
-## edss utilities columns 5&6 Orme etal 2007
-u_edss <- read.csv("data/df_u_edss_ta616.csv", header = T, row.names = 1)
-df_edss_utilities <- t(u_edss[1:10,5:6])
+## RRMS & SPMS edss utilities Orme etal 2007
+u_edss <- read.csv("data/m_u_edss.csv", header = T, row.names = 1)
+m_u_edss_rrms <- u_edss[,c("rrms_mean","rrms_sd")]
+m_u_edss_spms <- u_edss[,c("spms_mean","spms_sd")]
 
 ## Relapse utilities
 df_u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
+
+## Carer disutilities # add to costs calculation
+m_u_carer <- read.csv("data/m_u_carer.csv", header = T, row.names = 1)
 
 ## Adverse Events disutilities TA616 # need to be weighted by key trial
 #df_u_sae <-read.csv("data/df_c_disutilities_ta616.csv", header = T, row.names =1)
@@ -234,28 +237,55 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Utilities for RRMS Orme et al
   u_rrms_edss = if(psa_bool) {
-    temp <- df_edss_utilities["Orme_mean", ]
+    temp <- m_u_edss_rrms[, "rrms_mean"]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rnorm(1, mean =  df_edss_utilities["Orme_mean", j_edss], sd =  df_edss_utilities["Orme_sd", j_edss])
+      temp[j_edss] <- rnorm(1, mean =  m_u_edss_rrms[j_edss, "rrms_mean"], sd =  m_u_edss_rrms[j_edss, "rrms_sd"])
     }
     temp
     
   } else {
-    df_edss_utilities["Orme_mean",]
+    m_u_edss_rrms[,"rrms_mean"]
+  }
+  
+) %>% add_item(
+  # Utilities for SPMS Orme et al
+  u_spms_edss = if(psa_bool) {
+    temp <- m_u_edss_spms[, "spms_mean"]
+    for(j_edss in 1:n_edss_values) {
+      temp[j_edss] <- rnorm(1, mean =  m_u_edss_spms[j_edss, "spms_mean"], sd =  m_u_edss_spms[j_edss, "spms_sd"])
+    }
+    temp
+    
+  } else {
+    m_u_edss_spms[,"spms_mean"]
   }
 
 ) %>% add_item(
   # EDSS Health state Medical costs for RRMS Tyas et al inflated 
   v_c_rrms_edss = if(psa_bool) {
-    temp <- df_m_edss_med_costs["Tyas_inflated" , ]
+    temp <- m_c_edss_rrms[,"rrms_mean" ]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rgamma(1, ((df_m_edss_med_costs["Tyas_inflated", j_edss])^2) / (df_m_edss_med_costs["Tyas_se_inflated", j_edss]^2),
-                             df_m_edss_med_costs["Tyas_inflated", j_edss] / (df_m_edss_med_costs["Tyas_se_inflated", j_edss]^2))
+      temp[j_edss] <- rgamma(1, ((m_c_edss_rrms[j_edss,"rrms_mean"])^2) / (m_c_edss_rrms[j_edss, "rrms_se"]^2),
+                             m_c_edss_rrms[j_edss, "rrms_mean"] / (m_c_edss_rrms[j_edss, "rrms_se"]^2))
     }
     temp
     
   } else {
-    df_m_edss_med_costs["Tyas_inflated",]
+    m_c_edss_rrms[,"rrms_mean"]
+  }
+  
+) %>% add_item(
+  # EDSS Health state Medical costs for RRMS Tyas et al inflated 
+  v_c_spms_edss = if(psa_bool) {
+    temp <- m_c_edss_spms[,"spms_mean" ]
+    for(j_edss in 1:n_edss_values) {
+      temp[j_edss] <- rgamma(1, ((m_c_edss_spms[j_edss,"spms_mean"])^2) / (m_c_edss_spms[j_edss, "spms_se"]^2),
+                             m_c_edss_spms[j_edss, "spms_mean"] / (m_c_edss_spms[j_edss, "spms_se"]^2))
+    }
+    temp
+    
+  } else {
+    m_c_edss_spms[,"spms_mean"]
   }
 
 ) %>% add_item(
@@ -490,15 +520,15 @@ common_all_inputs <-add_item(
     # Relapse costs are treatment & severity agnostic
     
     v_c_relapsing = if(psa_bool) {
-      temp <- df_c_relapse[, "Hawton_mean_inflated"]
+      temp <- m_c_relapse[, "mean"]
       for(i_cost in 1:length(temp)) {
-        temp[i_cost] <- pmax(rnorm(1, mean =  df_c_relapse[i_cost,"Hawton_mean_inflated"],
-                                   sd =  df_c_relapse[i_cost,"Hawton_sd_inflated"]),0)
+        temp[i_cost] <- rgamma(1, ((m_c_relapse[i_cost,"mean"])^2) / ((m_c_relapse[i_cost,"sd"]/sd_psa)^2),
+               m_c_relapse[i_cost,"mean"] / ((m_c_relapse[i_cost,"sd"]/sd_psa)^2))
       }
       temp
       
     } else {
-      df_c_relapse[, "Hawton_mean_inflated"]
+      m_c_relapse[, "mean"]
     }
     
   ) %>% add_item(  
@@ -827,7 +857,7 @@ evt_react_list <-
 util_ongoing <- add_util(evt = v_event_names,
                          trt = v_treatment_names,
                          util = (1 - spms_flag) * u_rrms_edss[edss_value == v_edss_values] +
-                           spms_flag * u_rrms_edss[edss_value == v_edss_values]
+                           spms_flag * u_spms_edss[edss_value == v_edss_values]
 )
 
 # Add ongoing costs
@@ -838,7 +868,7 @@ cost_ongoing <- add_cost(evt = v_event_names,
                            v_c_rrms_edss[edss_value == v_edss_values] #+
                              #treatment_costs[current_treatment = trt] treatment costs should be instantaneous not ongoing
                          ) +
-                           spms_flag * v_c_rrms_edss[edss_value == v_edss_values]
+                           spms_flag * v_c_spms_edss[edss_value == v_edss_values]
 )
 
 ##Add instant costs
@@ -852,7 +882,8 @@ cost_instant <-
              v_c_trt_monitor[current_treatment_code]) %>% 
   add_cost(evt = "relapse" ,
                trt = v_treatment_names,
-               cost = v_c_relapsing[4]) %>% 
+               cost = (relapse_hospital_flag * v_c_relapsing[6])+
+                      ((1-relapse_hospital_flag) * v_c_relapsing[4]) ) %>% 
   add_cost(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
            cost = sum(v_c_sae_events * v_weight_sae)) 
