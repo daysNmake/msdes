@@ -90,7 +90,7 @@ names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "serious_ae", "death")
-#  "trt_yr", proposed new event to track annual costs
+#  "annual_treatment", proposed new event to track annual costs
 
 ## Standard Deviation for probabilistic analysis when uncertainty not reported
 # assumed 1/10 of mean
@@ -156,11 +156,10 @@ sae_names <- saes_data[,"Serious.Adverse.events"]
 # Number of serious adverse events in the model
 n_sae <- length(sae_names)
 
-# These weights are used to calculate SAEs costs and utilities as sum product
-# 
+# The weights are used to calculate SAEs costs and utilities as sum product
+# These %s of all serious adverse events that are of interest. That is % of each SAE divided by the sum of all the %s of SAEs from AFFIRM + RWE. 
 v_weight_sae <- saes_data[, "Weight"] 
-prob_sae <- saes_data[, "Incidence"]
-names(prob_sae)<-sae_names
+
 # 19% on Natalizumab would have experienced SAEs, follow-up time 2 years, AFFIRM (Polman 2006)
 r_sae <- -log(1 - 0.19) /2 # two year follow up time
 r_sae
@@ -490,33 +489,35 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   # Treatment administration costs
   v_c_trt_admin = if(psa_bool) {
-    temp <- t(matrix(nrow = n_treatments, ncol = 1,
-                     dimnames = list(v_treatment_names, "administration_cost")))
-    for(i_trt in 1:n_treatments) {
-      temp[i_trt] <- rgamma(1, ((df_c_tx_admin[i_trt])^2) / ((df_c_tx_admin[i_trt] / sd_psa)^2),
-                        df_c_tx_admin[i_trt] / ((df_c_tx_admin[i_trt]/sd_psa)^2))
-    }
+    temp <- matrix(nrow = nrow(df_c_tx_admin), ncol = n_treatments,
+                     dimnames = list(row.names(df_c_tx_admin), v_treatment_names))
+    for (j_cost in 1:nrow(df_c_tx_admin)) {
+        for(i_trt in 1:n_treatments) {
+      temp[j_cost,i_trt] <- rgamma(1, ((df_c_tx_admin[j_cost,i_trt])^2) / ((df_c_tx_admin[j_cost,i_trt] / sd_psa)^2),
+                        df_c_tx_admin[j_cost,i_trt] / ((df_c_tx_admin[j_cost,i_trt]/sd_psa)^2))
+        }}
     temp
     
   } else {
-    t(matrix(df_c_tx_admin, nrow = n_treatments, ncol = 1,
-             dimnames = list(v_treatment_names, "administration_cost")))
+    matrix(df_c_tx_admin, nrow = nrow(df_c_tx_admin), ncol = n_treatments,
+           dimnames = list(row.names(df_c_tx_admin), v_treatment_names))
   }
   
 ) %>% add_item(
   # Treatment monitoring costs
   v_c_trt_monitor = if(psa_bool) {
-    temp <- t(matrix(nrow = n_treatments, ncol = 1,
-                     dimnames = list(v_treatment_names, "monitoring_cost")))
-    for(i_trt in 1:n_treatments) {
-      temp[i_trt] <- rgamma(1, ((df_c_tx_monitor[i_trt])^2) / ((df_c_tx_monitor[i_trt]/sd_psa)^2),
-                        df_c_tx_monitor[i_trt] / ((df_c_tx_monitor[i_trt]/sd_psa)^2))
-    }
+    temp <- matrix(nrow = nrow(df_c_tx_monitor), ncol = n_treatments,
+                     dimnames = list(row.names(df_c_tx_monitor), v_treatment_names))
+    for (j_cost in 1:nrow(df_c_tx_monitor)) {
+        for(i_trt in 1:n_treatments) {
+      temp[j_cost,i_trt] <- rgamma(1, ((df_c_tx_monitor[j_cost,i_trt])^2) / ((df_c_tx_monitor[j_cost,i_trt]/sd_psa)^2),
+                        df_c_tx_monitor[j_cost,i_trt] / ((df_c_tx_monitor[j_cost,i_trt]/sd_psa)^2))
+    }}
     temp
     
   } else {
-    t(matrix(nrow = n_treatments, ncol = 1,
-             dimnames = list(v_treatment_names, "monitoring_cost")))
+    matrix(nrow = nrow(df_c_tx_monitor), ncol = n_treatments,
+           dimnames = list(row.names(df_c_tx_monitor), v_treatment_names))
   }
   
   ) %>% add_item(  
@@ -610,7 +611,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values, # 
                              current_treatment_code = 1, # This is later changed to code of trt
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
-                             #n_tot = 0, # proposed annual flag for treatment acquisition costs
+                             years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
                              age = initial_age
 )
 
@@ -713,9 +714,9 @@ evt_react_list <-
                                   "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
                              ))
                 ## proposed code to add annual cost events
-                # new_event(list(
-                #   "trt_yr" = curtime 
-                # ))
+                new_event(list(
+                   "annual_treatment" = curtime 
+                 ))
                }) %>%
   add_reactevt(name_evt = "age",
                input = {
@@ -723,19 +724,20 @@ evt_react_list <-
                                   ))
                }) %>%
   ## proposed code to add annual cost events
-  # add_reactevt(name_evt = "trt_yr",
-  #             input = { 
-  #             modify_item(list(
-  #                              n_tot = n_tot + 1
-  #                              ))
+   add_reactevt(name_evt = "annual_treatment",
+               input = { 
+               modify_item(list(
+                               years_on_treatment  = years_on_treatment  + 1,
+                               age = initial_age + round(curtime)
+                                ))
                         
-  #             if(n_tot < 3){
-  #               new_event(list(
-  #               "trt_yr" = curtime + 1
-  #                          ))
-  #             }
-  #             }
-  #             ) %>%
+               if(years_on_treatment < 2){
+                 new_event(list(
+                 "annual_treatment" = curtime + 1
+                            ))
+               }
+               }
+               ) %>%
   add_reactevt(name_evt = "relapse",
                input = {
                  modify_item(list(n_relapse= n_relapse + 1,
@@ -832,7 +834,7 @@ evt_react_list <-
                                   treatment_line = treatment_line + 1,
                                   v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate,
                                   n_switch = n_switch + 1,
-                                # n_tot = 0,   ## proposed code to add annual cost events
+                                  years_on_treatment  = 0,   
                                   age = initial_age + round(curtime)))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
@@ -844,11 +846,11 @@ evt_react_list <-
                    )
                  ))
               ## proposed code to add annual cost events   
-               #  if(n_tot < 3){
-                #   new_event(list(
-                 #    "trt_yr" = curtime + 1
-                  # ))
-                # }
+                 if(years_on_treatment < 2){
+                  new_event(list(
+                     "annual_treatment" = curtime + 1
+                   ))
+                 }
                  
                })
 
@@ -871,11 +873,17 @@ cost_ongoing <- add_cost(evt = v_event_names,
 
 # Treatment Costs right now using an average but need to figure out how to manipulate the costs according to year 1 or 2+ of treatment
 cost_instant <-
-  add_cost(evt = c("initial", "treatment_switch") ,
+  add_cost(evt = c("annual_treatment") ,
            trt = v_treatment_names,
-           cost = df_c_tx[current_treatment_code] +
-             v_c_trt_admin[current_treatment_code] +
-             v_c_trt_monitor[current_treatment_code]) %>% 
+           cost = if(years_on_treatment <= 1) {
+             df_c_tx["cost_annual_yr1",current_treatment_code] +
+             v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
+             v_c_trt_monitor["cost_annual_yr1",current_treatment_code]} else{
+               df_c_tx["cost_annual_yr2",current_treatment_code] +
+                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]
+             }
+           ) %>% 
   add_cost(evt = "relapse" ,
                trt = v_treatment_names,
                cost = (relapse_hospital_flag * v_c_relapsing[6])+
@@ -916,7 +924,7 @@ total_runtime <- system.time({
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment_code",
-                "treatment_line", "n_switch")           
+                "treatment_line", "n_switch", "years_on_treatment")           
   )
 })
 
