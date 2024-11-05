@@ -161,8 +161,9 @@ n_sae <- length(sae_names)
 v_weight_sae <- saes_data[, "Weight"] 
 prob_sae <- saes_data[, "Incidence"]
 names(prob_sae)<-sae_names
-v_r_sae <- -log(1 - prob_sae) /2 # two year follow up time
-v_r_sae
+# 19% on Natalizumab would have experienced SAEs, follow-up time 2 years, AFFIRM (Polman 2006)
+r_sae <- -log(1 - 0.19) /2 # two year follow up time
+r_sae
 
 # #rates of mortality, "mx" columns of life tables
 m_r_mortality <- as.matrix(read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1))
@@ -576,17 +577,12 @@ common_all_inputs <-add_item(
     }
   )  %>% add_item(
     # rates of adverse events
-    sae_events_rates = if(psa_bool) {
-      temp <- v_r_sae
-      # Rates are specified by SAEs for Natalizumab
-        for (i_sae in 1:n_sae){
-          temp[i_sae] <- exp(rnorm(1,
-                                   mean = log(temp[i_sae]),
-                                   sd = temp[i_sae] / 10))
-        }
-          
+    sae_events_rate = if(psa_bool) {
+      # SAEs rate is specific to Natalizumab
+      temp <- exp(rnorm(1, mean = log(r_sae), sd = r_sae/ sd_psa))
+      
      temp
-    } else {v_r_sae}
+    } else {r_sae}
     
   )  
 
@@ -695,7 +691,7 @@ init_event_list <-
               dist = "exp",
               # SAE rates same for all treatments
               # change to include HR from safety NMA
-              coef1 = log(mean(v_r_sae))
+              coef1 = log(mean(r_sae))
             )
             treatment_switch <- draw_tte(
               1,
@@ -822,7 +818,7 @@ evt_react_list <-
                    dist = "exp",
                    # SAE rates same for all treatments
                    # change to include HR from safety NMA
-                   coef1 = log(mean(v_r_sae))
+                   coef1 = log(mean(r_sae))
                  )
                ))
                }) %>%
