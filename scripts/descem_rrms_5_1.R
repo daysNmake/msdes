@@ -145,8 +145,9 @@ names(v_n_patients_edss) <- names(v_edss_values)
 ## baseline proportion of patients with SPMS
 initial_spms_prop <- 0
 
-## Proportion of patients having relapse leading to hospitalisation ~DUMMY DATA~
-relapse_hospital_prop <- 0.2
+## Proportion of patients having relapse leading to hospital_admission Hawton et al 2026
+v_p_relapse_severity <- read.csv(file="data/v_p_relapse_severity.csv", header = T, row.names =1)
+p_relapse_hospital<- v_p_relapse_severity[,"hospital_admission"]
 
 ## Incidence & weights of Serious Adverse events in AFFIRM
 saes_data <-read.csv(file="data/df_saes_data.csv", header = T, row.names =1)
@@ -156,6 +157,7 @@ sae_names <- saes_data[,"Serious.Adverse.events"]
 n_sae <- length(sae_names)
 
 # These weights are used to calculate SAEs costs and utilities as sum product
+# 
 v_weight_sae <- saes_data[, "Weight"] 
 prob_sae <- saes_data[, "Incidence"]
 names(prob_sae)<-sae_names
@@ -174,18 +176,18 @@ m_c_edss <- read.csv("data/m_c_edss.csv", header = T, row.names = 1)
 m_c_edss_rrms <- m_c_edss[,c("rrms_mean","rrms_se")]
 m_c_edss_spms <- m_c_edss[,c("spms_mean","spms_se")]
 
-## MS specific standardised mortality rate Jick 2014
-v_smr <- as.double(c(1.68, sqrt(437) * (2.05-1.38)/3.92))
+## Excess all cause mortality for MS patients HR 1.68 95% CI: 1.38-2.05 Jick 2014 (sd calculated below)
+v_smr <- as.double(c(1.68, (2.05-1.38)/3.92))
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
 ## These are direct medical costs we excluded the indirect medical costs  previously controversial with ERGS
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
-df_c_tx <- df_c_tx[-1:-2,]
+
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
-df_c_tx_admin <- df_c_tx_admin[-1:-2,]
 df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
+
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
-df_c_tx_monitor <- df_c_tx_monitor[-1:-2,]
+
 
 ## Relapse Costs inflated Hawton 2016 to 2023
 m_c_relapse <-read.csv("data/m_c_relapse.csv", header = T, row.names = 1)
@@ -232,7 +234,7 @@ common_all_inputs <-add_item(
   v_smr = v_smr, # make random
   v_weight_sae = v_weight_sae,
   initial_spms_prop = initial_spms_prop,
-  relapse_hospital_prop = relapse_hospital_prop # make random
+  p_relapse_hospital = p_relapse_hospital # make random
   
 ) %>% add_item(
   # Utilities for RRMS Orme et al
@@ -607,7 +609,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values, # 
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
                              relapse_hospital_flag = sample(size = 1, 
                                                             x = c(0, 1), # Random
-                                                            prob = c(1 - relapse_hospital_prop, relapse_hospital_prop)),
+                                                            prob = c(1 - p_relapse_hospital,p_relapse_hospital)),
                              current_treatment = "Natalizumab", # This is later changed to trt
                              current_treatment_code = 1, # This is later changed to code of trt
                              treatment_line = 2, # all patients starting on 2nd line treatment
@@ -662,9 +664,8 @@ init_event_list <-
               # MS registry time to edss decrease All RRMS patients log rate 
               coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
                                         v_rrms_edss_decrease["BaselineWebEDSS"] * (edss_value)) + 
-                #MS registry time to edss increase SPMS log rate
-                              spms_flag * (v_spms_edss_decrease["rate"] +
-                              v_spms_edss_decrease["BaselineWebEDSS"]*(edss_value) )
+                #we are setting a very high event time to edss decrease for SPMS patients
+                             (spms_flag * -10)
             )
 
             progression <- draw_tte(
@@ -675,7 +676,8 @@ init_event_list <-
               coef1 = (1 - spms_flag) * (v_spms_progression["rate"] +
                                          v_spms_progression["BaselineWebEDSS"] * (edss_value) + 
                                          v_spms_progression["DMTNatalizumab"]) + 
-                                          (spms_flag*-10)
+                #we are setting a very high event time to progression for SPMS patients
+                                          (spms_flag * -10)
             )
             death <- draw_tte_new(
               1,
@@ -749,10 +751,10 @@ evt_react_list <-
                      1, 
                      dist = "exp", 
                      coef1 = (1 - spms_flag) * (v_baseline_harrms_larr["rate"] +
-                                                  v_baseline_harrms_larr["BaselineWebEDSS"] * (edss_value + 1)  +
+                                                  v_baseline_harrms_larr["BaselineWebEDSS"] * (edss_value)  +
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
-                                      v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value + 1)),
+                                      v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
                      hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
                      )
                  ))
@@ -768,10 +770,10 @@ evt_react_list <-
                      1, 
                      dist = "exp",
                      coef1 = (1 - spms_flag) * (v_baseline_harrms_edss_increase["rate"] +
-                            v_baseline_harrms_edss_increase["BaselineWebEDSS"] * (edss_value + 1) ) + 
+                            v_baseline_harrms_edss_increase["BaselineWebEDSS"] * (edss_value) ) + 
                             v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                                       spms_flag * (v_spms_edss_increase["rate"] +
-                                      v_spms_edss_increase["BaselineWebEDSS"] * (edss_value + 1)),  
+                                      v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
                      hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
                    )
                    
@@ -789,9 +791,9 @@ evt_react_list <-
                      dist = "exp",
                      # Below is zero if spms_flag is 1 since patients should have EDSS decrease if SPMS
                      coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
-                                                v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value + 1) )  + 
-                                   spms_flag * (v_spms_edss_decrease["rate"]  +
-                                                v_spms_edss_decrease["BaselineWebEDSS"]*(edss_value + 1) ) 
+                                                v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value) )  + 
+                       #we are setting a very high event time to edss decrease for SPMS patients
+                                   (spms_flag * -10 )
                    )
                  ) )}
                }) %>%
@@ -805,12 +807,14 @@ evt_react_list <-
                # Death only occurs once.
                # Set current time to Inf so simulation ends.
                input = {
-                 modify_item(list(curtime = Inf #,
-                                  #age = initial_age + round(curtime)
+                 modify_item(list(curtime = Inf ,
+                                  age = initial_age + round(curtime)
                                   )) 
                }) %>%
   add_reactevt(name_evt = "serious_adverse_event",
-               #input = {               }
+               input = {  
+                 modify_item(list(age = initial_age + round(curtime)))           
+               
                # Sample next discontinuation event. T
                new_event(list(
                  "serious_adverse_event" = curtime + draw_tte(
@@ -821,7 +825,7 @@ evt_react_list <-
                    coef1 = log(mean(v_r_sae))
                  )
                ))
-               ) %>%
+               }) %>%
   # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
                input = {
@@ -864,12 +868,8 @@ util_ongoing <- add_util(evt = v_event_names,
 # Can also add instaneous costs with cost_instant (For example cost of managing relapse)
 cost_ongoing <- add_cost(evt = v_event_names,
                          trt = v_treatment_names,
-                         cost = (1 - spms_flag) * (
-                           v_c_rrms_edss[edss_value == v_edss_values] #+
-                             #treatment_costs[current_treatment = trt] treatment costs should be instantaneous not ongoing
-                         ) +
-                           spms_flag * v_c_spms_edss[edss_value == v_edss_values]
-)
+                         cost = (1 - spms_flag) * (v_c_rrms_edss[edss_value == v_edss_values]) +
+                           spms_flag * v_c_spms_edss[edss_value == v_edss_values])
 
 ##Add instant costs
 
@@ -919,8 +919,8 @@ total_runtime <- system.time({
     ncores = 6,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment",
-                "treatment_line", "n_switch") #"edss.i"          
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment_code",
+                "treatment_line", "n_switch")           
   )
 })
 
