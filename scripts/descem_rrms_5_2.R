@@ -10,7 +10,7 @@
 # unintended behavior, patient time to events are initialized at the patient-arm level
 # errors when no PSA
 # Event "age" has been defined in the list of add_reactevt, but currently not used
-# Modular approach to be implements
+# Modular approach to be implemented
 
 rm(list = ls())
 
