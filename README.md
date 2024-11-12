@@ -22,10 +22,7 @@ data-raw/utilities.R to extract heath-state, relapse and carer utilities
 data-raw/relapse_severity.R to extract proportions and annual rates of relapse by severity
 
 #### hard-coded data in model script to be moved out into data-raw scripts:
- + baseline distribution of EDSS health state
- + MS specific standardised mortality rate Jick 2014
- + SAEs rate Natalizumab, AFFIRM
- + ARR, CDP NMA data
+ + None
  
 #### data to be added:
  + Drug discontinuation rates
