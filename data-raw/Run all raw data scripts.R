@@ -7,3 +7,4 @@ source("data-raw/costs.R") # extract heath state and relapse costs
 # treatment acquisition (df_c_drugs.csv) administration (df_c_drugs_admin.csv) and monitoring (df_c_monitoring.csv) costs are in the data folder
 source("data-raw/utilities.R") # extract heath-state, relapse and carer utilities
 source("data-raw/relapse_severity.R") # extract proportions and annual rates of relapse by severity
+source("data-raw/other inputs.R") # baseline distribution of EDSS health states, baseline rate of SAEs, baseline discontinuation probabilities
