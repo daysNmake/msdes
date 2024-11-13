@@ -369,13 +369,13 @@ common_all_inputs <-add_item(
                                             mean = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"],
                                             sd = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {matrix(c(1, 1, 1, 1, m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"], 
-            m_hr_rrms_cdp6_re["Alemtuzumab IV12","mean"], m_hr_rrms_cdp6_re["Cladribine O3.5","mean"], 
-            m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"], m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], 
-            m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","mean"], 
-            m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], 
-            m_hr_rrms_cdp6_re["Interferon beta 1a IM30","mean"], m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","mean"],
-            m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"], m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"]) ,
+  } else {matrix(c(1, 1, 1, 1, exp(m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"]), 
+            exp(m_hr_rrms_cdp6_re["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_re["Cladribine O3.5","mean"]), 
+            exp(m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"]), 
+            exp(m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","mean"]), 
+            exp(m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"]), 
+            exp(m_hr_rrms_cdp6_re["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","mean"]),
+            exp(m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"])) ,
            nrow = 1, ncol = n_treatments)
     }
   
@@ -496,14 +496,14 @@ common_all_inputs <-add_item(
                                                    mean = m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"],
                                                    sd = m_hr_rrms_arr_fe["Glatiramer acetate SC40","sd"]))
     temp
-  } else {matrix(c(1, 1, m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"], 
-            m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"], m_hr_rrms_arr_fe["Fingolimod O0.5","mean"], 
-            m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"],  m_hr_rrms_arr_fe["Cladribine O3.5","mean"], 
-            m_hr_rrms_arr_fe["Ponesimod O20","mean"],     m_hr_rrms_arr_fe["Ofatumumab SC20","mean"], 
-            m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"], m_hr_rrms_arr_fe["Peginterferon beta 1a SC125","mean"], 
-            m_hr_rrms_arr_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_arr_fe["Interferon beta 1a SC22","mean"], 
-            m_hr_rrms_arr_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_arr_fe["Interferon beta 1b IM 250","mean"], 
-            m_hr_rrms_arr_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"]
+  } else {matrix(c(1, 1, exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
+             exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), exp(m_hr_rrms_arr_fe["Fingolimod O0.5","mean"]), 
+            exp(m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"]),  exp(m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
+            exp(m_hr_rrms_arr_fe["Ponesimod O20","mean"]),     exp(m_hr_rrms_arr_fe["Ofatumumab SC20","mean"]), 
+            exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_arr_fe["Peginterferon beta 1a SC125","mean"]), 
+            exp(m_hr_rrms_arr_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_arr_fe["Interferon beta 1a SC22","mean"]), 
+            exp(m_hr_rrms_arr_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_arr_fe["Interferon beta 1b IM 250","mean"]), 
+            exp(m_hr_rrms_arr_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"])
             ), nrow = 1, ncol = n_treatments)}
   
 ) %>% add_item(
@@ -579,14 +579,14 @@ common_all_inputs <-add_item(
                                               mean = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"],
                                               sd = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {matrix(c(1, 1, m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"], 
-            m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"], m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"], 
-            m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"], m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"], 
-            m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"], m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
-            m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], m_hr_rrms_discontinuation_fe["Peginterferon beta 1a SC125","mean"], 
-            m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"], 
-            m_hr_rrms_discontinuation_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_discontinuation_fe["Interferon beta 1b IM 250","mean"],
-            m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"]) ,
+  } else {matrix(c(1, 1, exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_discontinuation_fe["Peginterferon beta 1a SC125","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), 
+            exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_discontinuation_fe["Interferon beta 1b IM 250","mean"]),
+            exp(m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"])) ,
            nrow = 1, ncol = n_treatments)
   }
 ) %>% add_item(
@@ -738,13 +738,13 @@ common_all_inputs <-add_item(
                                                   mean = m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"],
                                                   sd = m_hr_rrms_saes_fe["Glatiramer acetate SC40","sd"])) # assumed same as 20 mg
       temp
-    } else {matrix(c(1, 1, 1, 1, m_hr_rrms_saes_fe["Fingolimod O0.5","mean"], 
-              m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"], 1, 
-              m_hr_rrms_saes_fe["Ponesimod O20","mean"], m_hr_rrms_saes_fe["Ofatumumab SC20","mean"], 
-              m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"], m_hr_rrms_saes_fe["Peginterferon beta 1a SC125","mean"], 
-              m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"], 
-              m_hr_rrms_saes_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_saes_fe["Interferon beta 1b IM 250","mean"],
-              m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"]) ,
+    } else {matrix(c(1, 1, 1, 1, exp(m_hr_rrms_saes_fe["Fingolimod O0.5","mean"]), 
+                     exp(m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"]), 1, 
+                     exp(m_hr_rrms_saes_fe["Ponesimod O20","mean"]), exp(m_hr_rrms_saes_fe["Ofatumumab SC20","mean"]), 
+                     exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_saes_fe["Peginterferon beta 1a SC125","mean"]), 
+                     exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), 
+                     exp(m_hr_rrms_saes_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_saes_fe["Interferon beta 1b IM 250","mean"]),
+                     exp(m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"])) ,
               nrow = 1, ncol = n_treatments)
       }
   )  
@@ -873,8 +873,10 @@ evt_react_list <-
                input = {
                  # This ensures that the current treatment is the initial treatment
                  # of this strategy.
-                 modify_item(list(current_treatment = trt,
-                                  current_treatment_code = v_treatment_codes[trt],
+                 current_treatment = trt
+                 current_treatment_code = v_treatment_codes[trt]
+                 modify_item(list(current_treatment = current_treatment,
+                                  current_treatment_code = current_treatment_code,
                                   #future death events do not exceed 100 years
                                   "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
                              ))
@@ -885,15 +887,18 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "age",
                input = {
-                 modify_item(list(age = initial_age + round(curtime)
+                 age = initial_age + round(curtime)
+                 modify_item(list(age = age
                                   ))
                }) %>%
   ## proposed code to add annual cost events
    add_reactevt(name_evt = "annual_treatment",
                input = { 
+                 years_on_treatment = years_on_treatment  + 1
+                 age = initial_age + round(curtime)
                modify_item(list(
-                               years_on_treatment  = years_on_treatment  + 1,
-                               age = initial_age + round(curtime)
+                               years_on_treatment = years_on_treatment,
+                               age = age
                                 ))
                         
                if(years_on_treatment < 2){
@@ -905,8 +910,10 @@ evt_react_list <-
                ) %>%
   add_reactevt(name_evt = "relapse",
                input = {
-                 modify_item(list(n_relapse= n_relapse + 1,
-                                  age = initial_age + round(curtime)))
+                 n_relapse= n_relapse + 1
+                 age = initial_age + round(curtime)
+                 modify_item(list(n_relapse= n_relapse,
+                                  age = age))
                  # Currently no impact on costs or utilities of relapse
                  # Just need to simulate the next time to relapse
                  new_event(list(
@@ -924,8 +931,10 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
-                 modify_item(list(edss_value = min(edss_value + 1, max(v_edss_values)),
-                                  age = initial_age + round(curtime)))
+                 edss_value = min(edss_value + 1, max(v_edss_values))
+                 age = initial_age + round(curtime)
+                 modify_item(list(edss_value = edss_value,
+                                  age = age))
                  
                  # Need to simulate the next time to EDSS increase
                  if (edss_value < 9) {new_event(list(
@@ -944,8 +953,10 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_decrease",
                input = {
-                 modify_item(list(edss_value = max(edss_value - 1, min(v_edss_values)),
-                                  age = initial_age + round(curtime)))
+                 edss_value = max(edss_value - 1, min(v_edss_values))
+                 age = initial_age + round(curtime)
+                 modify_item(list(edss_value = edss_value,
+                                  age = age))
                  
                  # Need to simulate the next time to EDSS decrease
                  if (edss_value > 0) {new_event(list(
@@ -963,20 +974,23 @@ evt_react_list <-
   add_reactevt(name_evt = "progression",
                # Progression can only occur once so just change the SPMS status
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(spms_flag = 1,
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                }) %>%
   add_reactevt(name_evt = "death",
                # Death only occurs once.
                # Set current time to Inf so simulation ends.
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(curtime = Inf ,
-                                  age = initial_age + round(curtime)
+                                  age = age
                                   )) 
                }) %>%
   add_reactevt(name_evt = "serious_adverse_event",
                input = {  
-                 modify_item(list(age = initial_age + round(curtime)))           
+                 age = initial_age + round(curtime)
+                 modify_item(list(age = age))           
                
                # Sample next discontinuation event. T
                new_event(list(
@@ -993,15 +1007,19 @@ evt_react_list <-
   # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
                input = {
+                 treatment_line = treatment_line + 1
+                 v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate
+                 n_switch = n_switch + 1
+                 age = initial_age + round(curtime)
                  modify_item(list(current_treatment = sample(x = v_higher_line_treatments,
                                                              size = 1),
                                   current_treatment_code = sample(x = v_higher_line_treatment_codes,
                                                                   size = 1),
-                                  treatment_line = treatment_line + 1,
-                                  v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate,
-                                  n_switch = n_switch + 1,
-                                  years_on_treatment  = 0,   
-                                  age = initial_age + round(curtime)))
+                                  treatment_line = treatment_line,
+                                  v_discontinuation_rate = v_discontinuation_rate,
+                                  n_switch = n_switch,
+                                  years_on_treatment = 0,   
+                                  age = age))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
                  new_event(list(
@@ -1075,7 +1093,7 @@ total_runtime <- system.time({
   results <- RunSim(
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
