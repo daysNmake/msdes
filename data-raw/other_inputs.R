@@ -13,13 +13,26 @@ write.csv(m_n_patients_edss, file="data/m_n_patients_edss.csv")
 
 
 ## 19% on Natalizumab would have experienced SAEs, follow-up time 2 years, AFFIRM (Polman 2006)
-r_sae <- -log(1 - 0.19) /2 # two year follow up time
-write.csv(r_sae, file="data/r_sae.csv")
+arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300")
+n_arm<- c(312,627) 
+r_arm<- c(75,119) 
+p_arm<-r_arm/n_arm
+v_arm <- (p_arm*(1-p_arm))/(n_arm+r_arm)
+f_arm <- c(3.846153846, 6.060606061)
+parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
+
+m_saes <- matrix(c(r_arm, n_arm, f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
+                            dimnames=list(arm_names,parameters_names) )
+m_saes
+write.csv(m_saes, file="data/m_saes.csv")
+
+#r_sae <- -log(1 - 0.19) /2 # two year follow up time
+#write.csv(r_sae, file="data/r_sae.csv")
 
 ## Excess all cause mortality for MS patients HR 1.68 95% CI: 1.38-2.05 Jick 2014 (sd calculated below)
 v_smr <- as.double(c(1.68, (2.05-1.38)/3.92))
 names(v_smr) <- c("hr", "sd")
-write.csv(v_smr, file="data/vv_smr.csv")
+write.csv(v_smr, file="data/v_smr.csv")
 
 ## baseline discontinuation AFFIRM and Antilope
 arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300", 
@@ -28,11 +41,11 @@ n_arm<- c(312,627,131,103)
 r_arm<- c(12,38,8,3) 
 p_arm<-r_arm/n_arm
 v_arm <- (p_arm*(1-p_arm))/(n_arm+r_arm)
-parameters_names<- c("alpha","beta","mean", "sd")
+f_arm <- c(3.846153846, 6.060606061, 6.106870229, 2.912621359)
+parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
 
-m_discontinuation <- matrix(c(r_arm, n_arm,p_arm, sqrt(v_arm)), byrow=FALSE, ncol =4, 
+m_discontinuation <- matrix(c(r_arm, n_arm, f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
             dimnames=list(arm_names,parameters_names) )
 m_discontinuation
-rbeta(100,m_discontinuation["AFFIRM Natalizumab IV300","alpha"], m_discontinuation["AFFIRM Natalizumab IV300","beta"])
 write.csv(m_discontinuation, file="data/m_discontinuation.csv")
 
