@@ -23,14 +23,15 @@ data-raw/relapse_severity.R to extract proportions and annual rates of relapse b
 
 #### Issues identified during validation to be addressed:
   + 1 random substreams of numbers to ensure patients would share the same random seed for each specific variable
-    + I was not able to implement random substreams, alternatively could we set the same seed at every random step?
-    + Setting the same seed for every draw_tte() works but slows down the simulations
-    + I saved the ipd for 100patients x 1 sim, twice and compared, they were identical
-  + 1.a setting the seed per arm
+    + time consuming and complicated to implement random substreams
+  + 1.a setting the seed per arm for every draw_tte() 
+    + not doing this as will eliminate psa
   + 2 modify_item is not sequential
+    + implemented
   + 3 round() may round up or down depending on odd or even numbers
   + 4 unintended behavior, patient time to events are initialized at the patient-arm level
   + 5 errors when no PSA
+    + corrected
   + 6 Event "age" has been defined in the list of add_reactevt, but currently not used
   + 7 Modular approach to be implemented
 
@@ -44,6 +45,7 @@ data-raw/relapse_severity.R to extract proportions and annual rates of relapse b
  + Tuberculin skin test  £ 60.00
  + HBV test £59 
  + Natalizumab-SC admin cost reduction factor
+ + clinician input on costs
 
 
 ## To run the model
@@ -88,12 +90,10 @@ Go to analysis/descem_rrms_5_1.R
 
 #### Sense checking / Pending
  + What is the best way to to check costs and QALYs are being incurred as expected?
- + check scale of followup time for discont/saes is in weeks, months or years?
- + check if the NMA results are on the log scale?
  + check if log rates specified correctly in draw_tte()
  + check if hr in draw_tte() picking up the correct treatments?
- + Is Teriflunomide  in scope, it's SAEs NMA but we have not costed it?
- + What are we doing about stemcell transplantation?
+  +check that chunks are working as expected. Alternatively you could check that the treatments with the most relapses are also those least favoured by the NMA ARR results in the report. 
+
 
 ## To run the NMA
 Go to analysis/nma and run the associated script
