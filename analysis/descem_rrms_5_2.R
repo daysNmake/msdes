@@ -369,13 +369,14 @@ common_all_inputs <-add_item(
                                             mean = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"],
                                             sd = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {c(1, 1, 1, 1, m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"], 
+  } else {matrix(c(1, 1, 1, 1, m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"], 
             m_hr_rrms_cdp6_re["Alemtuzumab IV12","mean"], m_hr_rrms_cdp6_re["Cladribine O3.5","mean"], 
             m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"], m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], 
             m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","mean"], 
             m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], 
             m_hr_rrms_cdp6_re["Interferon beta 1a IM30","mean"], m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","mean"],
-            m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"], m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"])
+            m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"], m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"]) ,
+           nrow = 1, ncol = n_treatments)
     }
   
 ) %>% add_item(
@@ -422,7 +423,7 @@ common_all_inputs <-add_item(
               mu = t(v_tto_sp_conversion_harrms_mu), 
               Sigma = m_tto_sp_conversion_harrms_sigma) 
       
-  } else {v_tto_sp_conversion_harrms_mu}
+  } else {setNames(v_tto_sp_conversion_harrms_mu[,1],rownames(v_tto_sp_conversion_harrms_mu))}
  
 ) %>% add_item(
   # MS Registry time to relapse HARRMS patients
@@ -431,7 +432,7 @@ common_all_inputs <-add_item(
             mu = t(v_tto_relapse_harrms_mu), 
             Sigma = tto_relapse_harrms_sigma) 
     
-  } else {v_tto_relapse_harrms_mu}
+  } else {setNames(v_tto_relapse_harrms_mu[,1],rownames(v_tto_relapse_harrms_mu))}
   
 ) %>% add_item(
   # MS Registry time to relapse SPMS patients
@@ -440,7 +441,7 @@ common_all_inputs <-add_item(
             mu = t(v_tto_relapse_spms_mu), 
             Sigma = m_tto_relapse_spms_sigma) 
     
-  } else {v_tto_relapse_spms_mu}
+  } else {setNames(v_tto_relapse_spms_mu[,1], rownames(v_tto_relapse_spms_mu))}
   
 ) %>% add_item(
   # Annualized relapse rate relative trt effects NMA with Natalizumab as the reference
@@ -495,7 +496,7 @@ common_all_inputs <-add_item(
                                                    mean = m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"],
                                                    sd = m_hr_rrms_arr_fe["Glatiramer acetate SC40","sd"]))
     temp
-  } else {c(1, 1, m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"], 
+  } else {matrix(c(1, 1, m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"], 
             m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"], m_hr_rrms_arr_fe["Fingolimod O0.5","mean"], 
             m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"],  m_hr_rrms_arr_fe["Cladribine O3.5","mean"], 
             m_hr_rrms_arr_fe["Ponesimod O20","mean"],     m_hr_rrms_arr_fe["Ofatumumab SC20","mean"], 
@@ -503,7 +504,7 @@ common_all_inputs <-add_item(
             m_hr_rrms_arr_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_arr_fe["Interferon beta 1a SC22","mean"], 
             m_hr_rrms_arr_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_arr_fe["Interferon beta 1b IM 250","mean"], 
             m_hr_rrms_arr_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"]
-            )}
+            ), nrow = 1, ncol = n_treatments)}
   
 ) %>% add_item(
  
@@ -525,20 +526,6 @@ common_all_inputs <-add_item(
                     m_discontinuation["AFFIRM Natalizumab IV300","beta"]))
            )/m_discontinuation["AFFIRM Natalizumab IV300","follow_up"]
       }
-#      temp <- matrix(nrow = 1, ncol = n_treatments)
-#      for(treatment_code in v_treatment_codes) {
-#        temp[treatment_code] <- exp(
-#          rnorm(1, 
-                # Arbitrarily setting the higher treatments (Clad/Alem) to have higher
-                # discontinuation than lower treatments (nat/nat bio, fing)
-#                mean = log(0.05 + 0.005 * treatment_code),
-#                sd = 0.001)
-#        )
-#      }
-#      temp
-#    }
-#    else {0.05 + 0.005 * 1:length(v_treatment_names)}
-    
 )%>% add_item(
   # Hazard ratios for treatment discontinuation due to SAEs
   v_hr_discontinuation = if(psa_bool) {
@@ -592,14 +579,15 @@ common_all_inputs <-add_item(
                                               mean = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"],
                                               sd = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {c(1, 1, m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"], 
+  } else {matrix(c(1, 1, m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"], 
             m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"], m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"], 
             m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"], m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"], 
             m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"], m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
             m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], m_hr_rrms_discontinuation_fe["Peginterferon beta 1a SC125","mean"], 
             m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"], 
             m_hr_rrms_discontinuation_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_discontinuation_fe["Interferon beta 1b IM 250","mean"],
-            m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"])
+            m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"]) ,
+           nrow = 1, ncol = n_treatments)
   }
 ) %>% add_item(
   # Treatment administration costs
@@ -631,7 +619,7 @@ common_all_inputs <-add_item(
     temp
     
   } else {
-    matrix(nrow = nrow(df_c_tx_monitor), ncol = n_treatments,
+    matrix(df_c_tx_monitor, nrow = nrow(df_c_tx_monitor), ncol = n_treatments,
            dimnames = list(row.names(df_c_tx_monitor), v_treatment_names))
   }
   
@@ -750,14 +738,15 @@ common_all_inputs <-add_item(
                                                   mean = m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"],
                                                   sd = m_hr_rrms_saes_fe["Glatiramer acetate SC40","sd"])) # assumed same as 20 mg
       temp
-    } else {c(1, 1, 1, 1, m_hr_rrms_saes_fe["Fingolimod O0.5","mean"], 
+    } else {matrix(c(1, 1, 1, 1, m_hr_rrms_saes_fe["Fingolimod O0.5","mean"], 
               m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"], 1, 
               m_hr_rrms_saes_fe["Ponesimod O20","mean"], m_hr_rrms_saes_fe["Ofatumumab SC20","mean"], 
               m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"], m_hr_rrms_saes_fe["Peginterferon beta 1a SC125","mean"], 
               m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"], m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"], 
               m_hr_rrms_saes_fe["Interferon beta 1a IM30","mean"], m_hr_rrms_saes_fe["Interferon beta 1b IM 250","mean"],
-              m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"])
-    }
+              m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"], m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"]) ,
+              nrow = 1, ncol = n_treatments)
+      }
   )  
 
 
@@ -1086,7 +1075,7 @@ total_runtime <- system.time({
   results <- RunSim(
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
