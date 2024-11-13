@@ -25,7 +25,6 @@ data-raw/relapse_severity.R to extract proportions and annual rates of relapse b
  + None
  
 #### data to be added:
- + Drug discontinuation rates
  + JC virus PCR  £ 247
  + Chicken pox shingles test £ 49.50
  + Cervical Screening £85.00
