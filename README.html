@@ -361,8 +361,9 @@ DARTH framework. This model code is <strong>not complete</strong> An
 important todo is to modeularise the DESCEM scripts into functions</p>
 <div id="to-extract-data" class="section level2">
 <h2>To extract data</h2>
-<p>Data has been extracted in the data-raw folder and saved in the data
-folder with links to it specified in the model.</p>
+<p>DO NOT RUN; the data has already been extracted in the data-raw
+folder and saved in the data folder with links to it specified in the
+model.</p>
 <p>Go to data-raw/Run all raw data scripts.R to run scripts below:</p>
 <p>data-raw/MS registry.R to extract registry data</p>
 <p>data-raw/serious_adverse_events.R to extract SAEs cost utilities and
@@ -377,20 +378,40 @@ saved manually (to be automated) in the data folder</p>
 utilities</p>
 <p>data-raw/relapse_severity.R to extract proportions and annual rates
 of relapse by severity</p>
+<div id="issues-identified-during-validation-to-be-addressed" class="section level4">
+<h4>Issues identified during validation to be addressed:</h4>
+<ul>
+<li>1 random substreams of numbers to ensure patients would share the
+same random seed for each specific variable
+<ul>
+<li>I was not able to implement random substreams, alternatively could
+we set the same seed at every random step?</li>
+<li>Setting the same seed for every draw_tte() works but slows down the
+simulations</li>
+<li>I saved the ipd for 100patients x 1 sim, twice and compared, they
+were identical</li>
+</ul></li>
+<li>1.a setting the seed per arm</li>
+<li>2 modify_item is not sequential</li>
+<li>3 round() may round up or down depending on odd or even numbers</li>
+<li>4 unintended behavior, patient time to events are initialized at the
+patient-arm level</li>
+<li>5 errors when no PSA</li>
+<li>6 Event “age” has been defined in the list of add_reactevt, but
+currently not used</li>
+<li>7 Modular approach to be implemented</li>
+</ul>
+</div>
 <div id="hard-coded-data-in-model-script-to-be-moved-out-into-data-raw-scripts" class="section level4">
 <h4>hard-coded data in model script to be moved out into data-raw
 scripts:</h4>
 <ul>
-<li>baseline distribution of EDSS health state</li>
-<li>MS specific standardised mortality rate Jick 2014</li>
-<li>SAEs rate Natalizumab, AFFIRM</li>
-<li>ARR, CDP NMA data</li>
+<li>None</li>
 </ul>
 </div>
 <div id="data-to-be-added" class="section level4">
 <h4>data to be added:</h4>
 <ul>
-<li>Drug discontinuation rates</li>
 <li>JC virus PCR £ 247</li>
 <li>Chicken pox shingles test £ 49.50</li>
 <li>Cervical Screening £85.00</li>
@@ -459,6 +480,8 @@ specific standardised mortality ratio</li>
 states (RRMS or SPMS)</li>
 <li>instant annual treatment costs (events: annual_treatment ) currently
 set for 3 years</li>
+<li>instant relapse costs (events: relapse )</li>
+<li>instant SAE costs (events: serious_adverse_event)</li>
 </ul>
 </div>
 <div id="utilities" class="section level4">
@@ -466,6 +489,9 @@ set for 3 years</li>
 <ul>
 <li>Ongoing health state utilities (events: all) associated with
 severity states (RRMS or SPMS)</li>
+<li>instant relapse utilities (events: relapse )</li>
+<li>instant SAE utilities (events: serious_adverse_event)</li>
+<li>TO BE ADDED Ongoing carer disutilities (events: all)</li>
 </ul>
 </div>
 <div id="warnings" class="section level4">
@@ -479,11 +505,19 @@ We’ll need to resolve these once we have final rates (and not dummy
 values) from the MS registry and NMAs.</li>
 </ul>
 </div>
-<div id="sense-checking" class="section level4">
-<h4>Sense checking</h4>
+<div id="sense-checking-pending" class="section level4">
+<h4>Sense checking / Pending</h4>
 <ul>
 <li>What is the best way to to check costs and QALYs are being incurred
 as expected?</li>
+<li>check scale of followup time for discont/saes is in weeks, months or
+years?</li>
+<li>check if the NMA results are on the log scale?</li>
+<li>check if log rates specified correctly in draw_tte()</li>
+<li>check if hr in draw_tte() picking up the correct treatments?</li>
+<li>Is Teriflunomide in scope, it’s SAEs NMA but we have not costed
+it?</li>
+<li>What are we doing about stemcell transplantation?</li>
 </ul>
 </div>
 </div>
