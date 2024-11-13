@@ -855,7 +855,7 @@ init_event_list <-
               dist = "exp",
               # SAE rates same for all treatments
               # change to include HR from safety NMA
-              coef1 = sae_events_rate,
+              coef1 = log(sae_events_rate),
               hr=v_hr_saes
             )
             treatment_switch <- draw_tte(
@@ -999,7 +999,7 @@ evt_react_list <-
                    dist = "exp",
                    # SAE rates same for all treatments
                    # change to include HR from safety NMA
-                   coef1 = sae_events_rate,
+                   coef1 = log(sae_events_rate),
                    hr=v_hr_saes
                  )
                ))
