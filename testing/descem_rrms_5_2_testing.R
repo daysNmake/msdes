@@ -5,6 +5,7 @@
 
 ### TESTING ISSUES IDENTIFIED BY JSA##
 # setting the same seed for every draw_tte() works but slows down the simulations#
+# I saved the ipd for 100patients x 1 sim, twice and compared, they were identical#
 
 ## Issues identified during validation to be addressed:
 #1 random substreams of numbers to ensure patients would share the same random seed for each specific variable
@@ -1126,6 +1127,7 @@ total_runtime <- system.time({
 #saveRDS(results, file ="results/descem5_1 100x100_draft_report 16_oct.RDS")
 # Simulated patients for first simulation
 psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
+openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_setseed2_v5_2_testing.xlsx")
 # compare patient characteristics of dead patients
 #dead <- psa_ipd[psa_ipd$evtname == "death"]
 
