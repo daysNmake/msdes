@@ -907,15 +907,17 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "age",
                input = {
-                 modify_item(list(age = initial_age + round(curtime)
+                 age = initial_age + round(curtime)
+                 modify_item(list(age = age
                                   ))
                }) %>%
   ## proposed code to add annual cost events
    add_reactevt(name_evt = "annual_treatment",
                input = { 
+                 age = initial_age + round(curtime)
                modify_item(list(
                                years_on_treatment  = years_on_treatment  + 1,
-                               age = initial_age + round(curtime)
+                               age = age
                                 ))
                         
                if(years_on_treatment < 2){
@@ -927,8 +929,9 @@ evt_react_list <-
                ) %>%
   add_reactevt(name_evt = "relapse",
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(n_relapse= n_relapse + 1,
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                  # Currently no impact on costs or utilities of relapse
                  # Just need to simulate the next time to relapse
                  new_event(list(
@@ -947,8 +950,9 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(edss_value = min(edss_value + 1, max(v_edss_values)),
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                  
                  # Need to simulate the next time to EDSS increase
                  if (edss_value < 9) {new_event(list(
@@ -968,8 +972,9 @@ evt_react_list <-
                }) %>%
   add_reactevt(name_evt = "edss_decrease",
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(edss_value = max(edss_value - 1, min(v_edss_values)),
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                  
                  # Need to simulate the next time to EDSS decrease
                  if (edss_value > 0) {new_event(list(
@@ -988,20 +993,23 @@ evt_react_list <-
   add_reactevt(name_evt = "progression",
                # Progression can only occur once so just change the SPMS status
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(spms_flag = 1,
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                }) %>%
   add_reactevt(name_evt = "death",
                # Death only occurs once.
                # Set current time to Inf so simulation ends.
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(curtime = Inf ,
-                                  age = initial_age + round(curtime)
+                                  age = age
                                   )) 
                }) %>%
   add_reactevt(name_evt = "serious_adverse_event",
                input = {  
-                 modify_item(list(age = initial_age + round(curtime)))           
+                 age = initial_age + round(curtime)
+                 modify_item(list(age = age))           
                
                # Sample next discontinuation event. T
                new_event(list(
@@ -1019,6 +1027,7 @@ evt_react_list <-
   # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
                input = {
+                 age = initial_age + round(curtime)
                  modify_item(list(current_treatment = sample(x = v_higher_line_treatments,
                                                              size = 1),
                                   current_treatment_code = sample(x = v_higher_line_treatment_codes,
@@ -1027,7 +1036,7 @@ evt_react_list <-
                                   v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate,
                                   n_switch = n_switch + 1,
                                   years_on_treatment  = 0,   
-                                  age = initial_age + round(curtime)))
+                                  age = age))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
                  new_event(list(
