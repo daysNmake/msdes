@@ -17,11 +17,11 @@ arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300")
 n_arm<- c(312,627) 
 r_arm<- c(75,119) 
 p_arm<-r_arm/n_arm
-v_arm <- (p_arm*(1-p_arm))/(n_arm+r_arm)
+v_arm <- (p_arm*(1-p_arm))/n_arm
 f_arm <- c(3.846153846, 6.060606061)
 parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
 
-m_saes <- matrix(c(r_arm, n_arm, f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
+m_saes <- matrix(c(r_arm, (n_arm-r_arm), f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
                             dimnames=list(arm_names,parameters_names) )
 m_saes
 write.csv(m_saes, file="data/m_saes.csv")
@@ -40,11 +40,11 @@ arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300",
 n_arm<- c(312,627,131,103) 
 r_arm<- c(12,38,8,3) 
 p_arm<-r_arm/n_arm
-v_arm <- (p_arm*(1-p_arm))/(n_arm+r_arm)
+v_arm <- (p_arm*(1-p_arm))/n_arm
 f_arm <- c(3.846153846, 6.060606061, 6.106870229, 2.912621359)
 parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
 
-m_discontinuation <- matrix(c(r_arm, n_arm, f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
+m_discontinuation <- matrix(c(r_arm, (n_arm-r_arm), f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
             dimnames=list(arm_names,parameters_names) )
 m_discontinuation
 write.csv(m_discontinuation, file="data/m_discontinuation.csv")
