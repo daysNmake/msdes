@@ -18,7 +18,7 @@ n_arm<- c(312,627)
 r_arm<- c(75,119) 
 p_arm<-r_arm/n_arm
 v_arm <- (p_arm*(1-p_arm))/n_arm
-f_arm <- c(3.846153846, 6.060606061)
+f_arm <- c(2,2) #years
 parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
 
 m_saes <- matrix(c(r_arm, (n_arm-r_arm), f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
@@ -41,7 +41,7 @@ n_arm<- c(312,627,131,103)
 r_arm<- c(12,38,8,3) 
 p_arm<-r_arm/n_arm
 v_arm <- (p_arm*(1-p_arm))/n_arm
-f_arm <- c(3.846153846, 6.060606061, 6.106870229, 2.912621359)
+f_arm <- c(2, 2, 0.5, 0.5) #years
 parameters_names<- c("alpha","beta","follow_up" ,"mean", "sd")
 
 m_discontinuation <- matrix(c(r_arm, (n_arm-r_arm), f_arm, p_arm, sqrt(v_arm)), byrow=FALSE, ncol =5, 
