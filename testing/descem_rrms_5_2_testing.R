@@ -895,8 +895,10 @@ evt_react_list <-
                input = {
                  # This ensures that the current treatment is the initial treatment
                  # of this strategy.
-                 modify_item(list(current_treatment = trt,
-                                  current_treatment_code = v_treatment_codes[trt],
+                 current_treatment = trt
+                 current_treatment_code = v_treatment_codes[trt]
+                 modify_item(list(current_treatment = current_treatment,
+                                  current_treatment_code = current_treatment_code,
                                   #future death events do not exceed 100 years
                                   "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
                              ))
@@ -1136,7 +1138,7 @@ total_runtime <- system.time({
 #saveRDS(results, file ="results/descem5_1 100x100_draft_report 16_oct.RDS")
 # Simulated patients for first simulation
 psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
-openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_setseed2_v5_2_testing.xlsx")
+openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_setseed_modifyitem_age_v5_2_testing.xlsx")
 # compare patient characteristics of dead patients
 #dead <- psa_ipd[psa_ipd$evtname == "death"]
 
