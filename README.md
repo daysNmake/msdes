@@ -39,14 +39,7 @@ data-raw/relapse_severity.R to extract proportions and annual rates of relapse b
  + None
  
 #### data to be added:
- + JC virus PCR  £ 247
- + Chicken pox shingles test £ 49.50
- + Cervical Screening £85.00
- + Tuberculin skin test  £ 60.00
- + HBV test £59 
- + Natalizumab-SC admin cost reduction factor
- + clinician input on costs
-
+ + Natalizumab-SC admin cost reduction factor in doubt after clinicans input (could do it as a scenario)
 
 ## To run the model
 Go to analysis/descem_rrms_5_1.R
