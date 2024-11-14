@@ -770,7 +770,7 @@ common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"),
 # Note that the current treatment is later initialised to trt
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,  
                                                  # rrms larger sample size, option to use harrms
-                                                 prob = rdiric(1, m_n_patients_edss["rrms",])),
+                                                 prob = rdiric(1, m_n_patients_edss["harrms",])),
                              n_relapse = 0,
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
@@ -1177,7 +1177,8 @@ for(treatment_name in v_treatment_names) {
       # With statement is neater but much slower
       temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
         results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        results$output_psa[[i_sample]]$merged_df$evttime == 0
+        results$output_psa[[i_sample]]$merged_df$evttime == 0 &
+        results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
       
       total_costs_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
