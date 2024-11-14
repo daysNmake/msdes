@@ -267,11 +267,13 @@ common_all_inputs <-add_item(
   p_relapse_hospital = p_relapse_hospital # make random
   
 ) %>% add_item(
-  # Utilities for RRMS Orme et al
+  # Utilities for RRMS Orme et al adding in carergiver disutilities Acaster et al.
   u_rrms_edss = if(psa_bool) {
     temp <- m_u_edss_rrms[, "rrms_mean"]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rnorm(1, mean =  m_u_edss_rrms[j_edss, "rrms_mean"], sd =  m_u_edss_rrms[j_edss, "rrms_sd"])
+      temp[j_edss] <- log(rlnorm(1, mean =  (m_u_edss_rrms[j_edss, "rrms_mean"]+ m_u_carer[j_edss, "Mean"]),
+                                 #did not factor in uncertainty around care giver disutilities to avoid extreme values
+                                 sd =  m_u_edss_rrms[j_edss, "rrms_sd"]))
     }
     temp
     
@@ -280,18 +282,19 @@ common_all_inputs <-add_item(
   }
   
 ) %>% add_item(
-  # Utilities for SPMS Orme et al
+  # Utilities for SPMS Orme et al adding in carergiver disutilities Acaster et al.
   u_spms_edss = if(psa_bool) {
     temp <- m_u_edss_spms[, "spms_mean"]
     for(j_edss in 1:n_edss_values) {
-      temp[j_edss] <- rnorm(1, mean =  m_u_edss_spms[j_edss, "spms_mean"], sd =  m_u_edss_spms[j_edss, "spms_sd"])
+      temp[j_edss] <- log(rlnorm(1, mean =  (m_u_edss_spms[j_edss, "spms_mean"] + m_u_carer[j_edss, "Mean"]),
+                                 # did not factor in uncertainty around care giver disutilities to avoid extreme values
+                                 sd =  m_u_edss_spms[j_edss, "spms_sd"]))
     }
     temp
     
   } else {
-    m_u_edss_spms[,"spms_mean"]
+    (m_u_edss_spms[,"spms_mean"] + m_u_carer[j_edss, "Mean"])
   }
-
 ) %>% add_item(
   # EDSS Health state Medical costs for RRMS Tyas et al inflated 
   v_c_rrms_edss = if(psa_bool) {
