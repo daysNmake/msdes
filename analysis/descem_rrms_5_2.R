@@ -909,11 +909,11 @@ evt_react_list <-
                                age = age
                                 ))
                         
-               if(years_on_treatment < 20){
+               #if(years_on_treatment < 10){
                  new_event(list(
                  "annual_treatment" = curtime + 1
                             ))
-               }
+               #}
                }
                ) %>%
   add_reactevt(name_evt = "relapse",
@@ -1038,12 +1038,13 @@ evt_react_list <-
                      hr= v_hr_discontinuation[current_treatment_code]
                    )
                  ))
-              ## proposed code to add annual cost events   
-                 if(years_on_treatment < 20){
-                  new_event(list(
-                     "annual_treatment" = curtime + 1
-                   ))
-                 }
+              ## proposed code to add annual cost events 
+                 #disabled this because it might be creating a second parallel treatment event
+                 #if(years_on_treatment < 20){
+                 # new_event(list(
+                 #    "annual_treatment" = curtime + 1
+                 #  ))
+                 #}
                  
                })
 
@@ -1076,18 +1077,18 @@ cost_instant <-
                df_c_tx["cost_annual_yr2",current_treatment_code] +
                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]
-             } else if(years_on_treatment >= 3){
+             } else if(years_on_treatment == 3){
                (df_c_tx["cost_annual_yr2",current_treatment_code] +
                   v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                   v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code]
-#             } else if(years_on_treatment == 4){
-#               (df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
-#             } else if(years_on_treatment >=5){
-#               (df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
+             } else if(years_on_treatment == 4){
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
+             } else {
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
              }
            ) %>% 
   add_cost(evt = "relapse" ,
@@ -1136,9 +1137,12 @@ total_runtime <- system.time({
 
 
 #save results
-#saveRDS(results, file ="results/descem5_1 100x100_draft_report 16_oct.RDS")
+#saveRDS(results, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/descem5_2 100x100_14_nov.RDS")
 # Simulated patients for first simulation
 psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
+#saveRDS(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_descem5_2 100x100_14_nov.RDS")
+
+#openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_100x100_v5_2.xlsx")
 # compare patient characteristics of dead patients
 #dead <- psa_ipd[psa_ipd$evtname == "death"]
 
