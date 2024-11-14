@@ -102,7 +102,7 @@ sd_psa <- 10
 
 ## Baseline population age sex and model time horizon
 initial_age <- 36  # 36 ± 8 both arms of AFFIRM (N = 942)
-time_horizon <- 80 # Years so lifetime
+time_horizon <- 100-initial_age # Years so lifetime
 prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
 
 ## Define the possible EDSS values
@@ -191,6 +191,11 @@ df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops 
 colnames(df_c_tx_admin)<-v_treatment_names
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 colnames(df_c_tx_monitor)<-v_treatment_names
+
+## Annual treatment scheduled
+df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
+colnames(df_c_tx_load)<-v_treatment_names
+rownames(df_c_tx_load)<- c(seq(1,5,1))
 
 ## Relapse Costs inflated Hawton 2016 to 2023
 m_c_relapse <-read.csv("data/m_c_relapse.csv", header = T, row.names = 1)
@@ -904,7 +909,7 @@ evt_react_list <-
                                age = age
                                 ))
                         
-               if(years_on_treatment < 2){
+               if(years_on_treatment < 20){
                  new_event(list(
                  "annual_treatment" = curtime + 1
                             ))
@@ -1034,7 +1039,7 @@ evt_react_list <-
                    )
                  ))
               ## proposed code to add annual cost events   
-                 if(years_on_treatment < 2){
+                 if(years_on_treatment < 20){
                   new_event(list(
                      "annual_treatment" = curtime + 1
                    ))
@@ -1064,12 +1069,25 @@ cost_instant <-
   add_cost(evt = c("annual_treatment") ,
            trt = v_treatment_names,
            cost = if(years_on_treatment <= 1) {
-             df_c_tx["cost_annual_yr1",current_treatment_code] +
+             (df_c_tx["cost_annual_yr1",current_treatment_code] +
              v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
-             v_c_trt_monitor["cost_annual_yr1",current_treatment_code]} else{
-               df_c_tx["cost_annual_yr2",current_treatment_code] +
+             v_c_trt_monitor["cost_annual_yr1",current_treatment_code]) * df_c_tx_load[1,current_treatment_code]
+             } else if(years_on_treatment == 2){
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]
+                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[2,current_treatment_code]
+             } else if(years_on_treatment == 3){
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code]
+             } else if(years_on_treatment == 4){
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
+             } else if(years_on_treatment >=5){
+               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
              }
            ) %>% 
   add_cost(evt = "relapse" ,
