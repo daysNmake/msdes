@@ -52,8 +52,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 100
-n_samples <- 1
+n_patients <- 1000
+n_samples <- 1000
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -225,17 +225,13 @@ m_discontinuation <- as.matrix(read.csv("data/m_discontinuation.csv", header = T
 
 ## NMA data
 # CDP3 NMA
-hr_rrms_cdp3_re <- read.csv("data/Releff_RRMS_CDP3_RE.csv",
+hr_rrms_cdp3_fe <- read.csv("data/Releff_RRMS_CDP3_FE.csv",
                             header = TRUE, row.names=1)
-m_hr_rrms_cdp3_re  <- hr_rrms_cdp3_re[,c("mean", "sd")]
+m_hr_rrms_cdp3_fe  <- hr_rrms_cdp3_fe[,c("mean", "sd")]
 # CDP6 NMA
-hr_rrms_cdp6_re <- read.csv("data/Releff_RRMS_CDP6_RE.csv",
+hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_3_FE.csv",
                             header = TRUE, row.names=1)
-m_hr_rrms_cdp6_re  <- hr_rrms_cdp6_re[,c("mean", "sd")] 
-# CDP3&CDP6 NMA
-hr_rrms_cdp3_cdp6_re <- read.csv("data/Releff_AES_CDP6+CDP3_RE.csv",
-                            header = TRUE, row.names=1)
-m_hr_rrms_cdp3_cdp6_re  <- hr_rrms_cdp3_cdp6_re[,c("mean", "sd")]
+m_hr_rrms_cdp6_fe  <- hr_rrms_cdp6_fe[,c("mean", "sd")] 
 # ARR NMA
 hr_rrms_arr_fe <- read.csv("data/Releff_RRMS_ARR_FE.csv",
                            header = TRUE, row.names=1)
@@ -332,58 +328,58 @@ common_all_inputs <-add_item(
   # Hazard ratios reducing risk of EDSS increase
   v_hr_edss_increase = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = n_treatments)
-    # CDP6 relative treatment effects log Hr from the NMA with Natalizumab as the reference
+    # CDP3relative treatment effects log Hr from the NMA with Natalizumab as the reference
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
     temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1 #missing from NMA
     temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1 #missing from NMA
     temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
-                                      mean = m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"],
-                                      sd = m_hr_rrms_cdp6_re["Fingolimod O0.5","sd"]))
+                                      mean = m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"],
+                                      sd = m_hr_rrms_cdp6_fe["Fingolimod O0.5","sd"]))
     temp[v_treatment_codes["Alemtuzumab"]] <- exp(rnorm(1,
-                                       mean = m_hr_rrms_cdp6_re["Alemtuzumab IV12","mean"],
-                                       sd = m_hr_rrms_cdp6_re["Alemtuzumab IV12","sd"])) 
+                                       mean = m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"],
+                                       sd = m_hr_rrms_cdp6_fe["Alemtuzumab IV12","sd"])) 
     temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
-                                      mean = m_hr_rrms_cdp6_re["Cladribine O3.5","mean"],
-                                      sd = m_hr_rrms_cdp6_re["Cladribine O3.5","sd"]))
+                                      mean = m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"],
+                                      sd = m_hr_rrms_cdp6_fe["Cladribine O3.5","sd"]))
     temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-                                      mean = m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"],
-                                      sd = m_hr_rrms_cdp6_re["Fingolimod O0.5","sd"])) # to be informed by trt class NMA (for now assumed the same as Fingolimod)
+                                      mean = m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"],
+                                      sd = m_hr_rrms_cdp6_fe["Fingolimod O0.5","sd"])) # to be informed by trt class NMA (for now assumed the same as Fingolimod)
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Ocrelizumab IV600","sd"])) # o be informed by trt class NMA (for now assumed the same as Ocrelizumab)
+                                           mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"])) # o be informed by trt class NMA (for now assumed the same as Ocrelizumab)
     temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Ocrelizumab IV600","sd"]))
+                                           mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"]))
     temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","sd"])) 
+                                           mean = m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","sd"])) 
     temp[v_treatment_codes["IFNβ-1a SC 44μg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Interferon beta 1a SC44","sd"]))
+                                           mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"]))
     temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Interferon beta 1a SC44","sd"])) # assumed same as 44μg
+                                           mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","sd"])) # assumed same as 44μg
     temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Interferon beta 1a IM30","mean"],  
-                                           sd = m_hr_rrms_cdp6_re["Interferon beta 1a IM30","sd"]))
+                                           mean = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"],  
+                                           sd = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","sd"]))
     temp[v_treatment_codes["IFNβ-1b SC 250μg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","mean"], 
-                                           sd = m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","sd"]))
+                                           mean = m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"], 
+                                           sd = m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","sd"]))
     temp[v_treatment_codes["Glatiramer Acetate 20mg"]] <- exp(rnorm(1,
-                                           mean = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"],
-                                           sd = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","sd"]))
+                                           mean = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"],
+                                           sd = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","sd"]))
     temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
-                                            mean = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"],
-                                            sd = m_hr_rrms_cdp6_re["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
+                                            mean = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"],
+                                            sd = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {matrix(c(1, 1, 1, 1, exp(m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"]), 
-            exp(m_hr_rrms_cdp6_re["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_re["Cladribine O3.5","mean"]), 
-            exp(m_hr_rrms_cdp6_re["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"]), 
-            exp(m_hr_rrms_cdp6_re["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_re["Peginterferon beta 1a SC125","mean"]), 
-            exp(m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_re["Interferon beta 1a SC44","mean"]), 
-            exp(m_hr_rrms_cdp6_re["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_re["Interferon beta 1b IM 250","mean"]),
-            exp(m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_re["Glatiramer acetate SC20","mean"])) ,
+  } else {matrix(c(1, 1, 1, 1, exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), 
+            exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
+            exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
+            exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
+            exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"]), 
+            exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
+            exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"])) ,
            nrow = 1, ncol = n_treatments)
     }
   
