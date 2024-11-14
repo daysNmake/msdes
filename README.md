@@ -75,7 +75,7 @@ Go to analysis/descem_rrms_5_1.R
  + Ongoing health state utilities (events: all) associated with severity states (RRMS or SPMS)
  + instant relapse utilities (events: relapse )
  + instant SAE utilities (events: serious_adverse_event)
- + TO BE ADDED Ongoing carer disutilities (events: all)
+ + carer disutilities (events: all)
 
 #### Warnings
  +	Ask how serious an issue it is that we're using named vectors. These massively improve readability and reduce errors so we're not keen to remove the names.
