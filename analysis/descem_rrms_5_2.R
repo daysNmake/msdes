@@ -225,27 +225,27 @@ m_discontinuation <- as.matrix(read.csv("data/m_discontinuation.csv", header = T
 
 ## NMA data
 # CDP3 NMA
-hr_rrms_cdp3_re <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_RRMS_CDP3_RE.csv",
+hr_rrms_cdp3_re <- read.csv("data/Releff_RRMS_CDP3_RE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp3_re  <- hr_rrms_cdp3_re[,c("mean", "sd")]
 # CDP6 NMA
-hr_rrms_cdp6_re <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_RRMS_CDP6_RE.csv",
+hr_rrms_cdp6_re <- read.csv("data/Releff_RRMS_CDP6_RE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp6_re  <- hr_rrms_cdp6_re[,c("mean", "sd")] 
 # CDP3&CDP6 NMA
-hr_rrms_cdp3_cdp6_re <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_AES_CDP6+CDP3_RE.csv",
+hr_rrms_cdp3_cdp6_re <- read.csv("data/Releff_AES_CDP6+CDP3_RE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp3_cdp6_re  <- hr_rrms_cdp3_cdp6_re[,c("mean", "sd")]
 # ARR NMA
-hr_rrms_arr_fe <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_RRMS_ARR_FE.csv",
+hr_rrms_arr_fe <- read.csv("data/Releff_RRMS_ARR_FE.csv",
                            header = TRUE, row.names=1)
 m_hr_rrms_arr_fe  <- hr_rrms_arr_fe[,c("mean", "sd")] 
 # Serious Adverse Events NMA
-hr_rrms_saes_fe <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_RRMS_SeriousAEs_FE.csv",
+hr_rrms_saes_fe <- read.csv("data/Releff_RRMS_SeriousAEs_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_saes_fe  <- as.matrix(hr_rrms_saes_fe[,c("mean", "sd")] )
 # Discontinuation NMA
-hr_rrms_discontinuation_fe <- read.csv("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_CLIN/Synthesis/MS-MTA/results/nma/Releff_RRMS_Discontinuation_FE.csv",
+hr_rrms_discontinuation_fe <- read.csv("data/Releff_RRMS_Discontinuation_FE.csv",
                                        header = TRUE, row.names=1)
 m_hr_rrms_discontinuation_fe <- as.matrix(hr_rrms_discontinuation_fe[,c("mean", "sd")]) 
 
@@ -1069,25 +1069,25 @@ cost_instant <-
   add_cost(evt = c("annual_treatment") ,
            trt = v_treatment_names,
            cost = if(years_on_treatment <= 1) {
-             (df_c_tx["cost_annual_yr1",current_treatment_code] +
+             df_c_tx["cost_annual_yr1",current_treatment_code] +
              v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
-             v_c_trt_monitor["cost_annual_yr1",current_treatment_code]) * df_c_tx_load[1,current_treatment_code]
+             v_c_trt_monitor["cost_annual_yr1",current_treatment_code]
              } else if(years_on_treatment == 2){
-               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+               df_c_tx["cost_annual_yr2",current_treatment_code] +
                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[2,current_treatment_code]
-             } else if(years_on_treatment == 3){
+                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]
+             } else if(years_on_treatment >= 3){
                (df_c_tx["cost_annual_yr2",current_treatment_code] +
                   v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                   v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code]
-             } else if(years_on_treatment == 4){
-               (df_c_tx["cost_annual_yr2",current_treatment_code] +
-                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
-             } else if(years_on_treatment >=5){
-               (df_c_tx["cost_annual_yr2",current_treatment_code] +
-                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
+#             } else if(years_on_treatment == 4){
+#               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+#                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+#                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
+#             } else if(years_on_treatment >=5){
+#               (df_c_tx["cost_annual_yr2",current_treatment_code] +
+#                  v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
+#                  v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
              }
            ) %>% 
   add_cost(evt = "relapse" ,
@@ -1126,7 +1126,7 @@ total_runtime <- system.time({
     cost_ongoing_list = cost_ongoing,
     util_instant_list = util_instant,
     cost_instant_list = cost_instant,
-    ncores = 6,                               # number of cores to use, recommended not to use all
+    ncores = 8,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment_code",
