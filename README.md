@@ -85,7 +85,8 @@ Go to analysis/descem_rrms_5_1.R
  + What is the best way to to check costs and QALYs are being incurred as expected?
  + check if log rates specified correctly in draw_tte()
  + check if hr in draw_tte() picking up the correct treatments?
-  +check that chunks are working as expected. Alternatively you could check that the treatments with the most relapses are also those least favoured by the NMA ARR results in the report. 
+  +check that chunks are working as expected. Alternatively you could check that the treatments with the most relapses are also those least favoured by the NMA ARR results in the report.
+  + looks fine
 
 
 ## To run the NMA
