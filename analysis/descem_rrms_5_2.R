@@ -1162,8 +1162,8 @@ psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 
 # Summarise the results
 #results<-readRDS(file ="results/descem5_1 100x100_draft_report 16_oct.RDS") 
-# Get the total costs and QALYs for each patient
-total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
+# Get the total costs and QALYs , number of relapses and final edss value for each patient
+total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -1173,22 +1173,32 @@ for(treatment_name in v_treatment_names) {
       # With statement is neater but much slower
       temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
         results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        results$output_psa[[i_sample]]$merged_df$evttime == 0 &
-        results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
+        #results$output_psa[[i_sample]]$merged_df$evttime == 0 & # conditioning on event time 0 misses the number of relapses and final edss value
+        #results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
+        results$output_psa[[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
       
       total_costs_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
       
       total_qalys_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$total_qalys[temp_index]
+      
+      n_relapse_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$n_relapse[temp_index]
+      
+      final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$edss_value[temp_index]
+      
     } # End loop over patients
     # Summarise for just this sample
     
   }
 }
 
-#saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_draft_report 16_oct.RDS")
-#saveRDS(total_costs_ipd, file ="results/total_costs_ipd_draft_report 16_oct.RDS")
+#saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_15_nov.RDS")
+#saveRDS(total_costs_ipd, file ="results/total_costs_ipd_15_nov.RDS")
+#saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_15_nov.RDS")
+#saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_15_nov.RDS")
 
 # Take mean over patients to remove individual variation
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
