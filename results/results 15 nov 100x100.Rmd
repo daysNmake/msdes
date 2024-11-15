@@ -1,0 +1,196 @@
+---
+title: "MS MTA Results"
+author: "A Sadek"
+date: "2024-11-15"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## About 
+
+This the 100 patients x 100 simulations of V5.2 of the model, run time 7873.85s
+
+
+
+```{r echo=FALSE}
+
+#load packages
+library(descem)
+library(MASS)
+library(dplyr)
+library(flexsurv)
+library(ggplot2)
+library(kableExtra)
+library(purrr)
+library(tidyr)
+library(BCEA)
+
+## Read in data if not loaded 
+total_qalys_ipd <- readRDS("too large for git/total_qalys_ipd_15_nov.RDS")
+total_costs_ipd <- readRDS("too large for git/total_costs_ipd_15_nov.RDS")
+n_relapse_ipd <- readRDS("too large for git/n_relapse_ipd_15_nov.RDS")
+final_edss_value_ipd <- readRDS("too large for git/final_edss_value_ipd_15_nov.RDS")
+
+
+```
+
+
+## Analysis
+
+
+````{r echo=FLASE}
+#summarise costs and qalys, should add in the upper and lower quartiles
+total_costs <- apply(total_costs_ipd, c(1, 2), mean)
+total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
+
+# Create a BCEA object
+des_bcea <- bcea(eff = total_qalys,
+                 cost = total_costs,
+                 ref = 1,
+                 interventions = v_treatment_names)
+
+````
+
+## CE Plane
+
+Willingness to pay 20,000
+
+````{r echo=FALSE}
+
+
+# Plot the CE plane
+library(ggplot2)
+ceplane.plot(des_bcea, wtp = 20000,
+             graph = "ggplot2",
+             icer = list(color = c("red", "green", "blue", "orange", "yellow",
+                                   "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
+                                   "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
+             point = list(color = c("red", "green", "blue", "orange", "yellow",
+                                    "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
+                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred")))
+
+
+````
+
+Willingness to pay 30,000
+
+````{r echo=FALSE}
+# Create a BCEA object
+des_bcea <- bcea(eff = total_qalys,
+                 cost = total_costs,
+                 ref = 1,
+                 interventions = v_treatment_names)
+
+# Plot the CE plane
+library(ggplot2)
+ceplane.plot(des_bcea, wtp = 30000,
+             graph = "ggplot2",
+             icer = list(color = c("red", "green", "blue", "orange", "yellow",
+                                   "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
+                                   "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
+             point = list(color = c("red", "green", "blue", "orange", "yellow",
+                                    "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
+                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred"))
+             #ylim(-5,5)
+             )
+
+
+````
+
+## CEAC
+
+
+````{r echo=FALSE}
+#plot a CEAC
+des_multi_ce <- multi.ce(des_bcea)
+ceac.plot(des_multi_ce, graph = "ggplot2",
+          line = list(color = c("red", "green", "blue", "orange", "yellow",
+                                "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
+                                "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
+          pos = c(0, 0.50))
+````
+
+## Incremental Net Benefit
+
+Willingness to Pay £30,000
+
+```{r echo=FALSE}
+
+lambda <- 20000
+net_benefit <- lambda * total_qalys - total_costs
+mean_net_benefit <- apply(net_benefit, 2, mean) 
+INB_vs1 <- mean_net_benefit - mean_net_benefit[1]
+INB_table <- as.data.frame(t(rbind(v_treatment_names,mean_net_benefit, INB_vs1)))
+INB_table <-INB_table[order(INB_table[,"INB_vs1"]),]
+print(INB_table)
+```
+
+willingness to pay 30,000
+
+````{r echo=FALSE}
+lambda <- 30000
+net_benefit <- lambda * total_qalys - total_costs
+mean_net_benefit <- apply(net_benefit, 2, mean) 
+INB_vs1 <- mean_net_benefit - mean_net_benefit[1]
+INB_table <- as.data.frame(t(rbind(v_treatment_names,mean_net_benefit, INB_vs1)))
+INB_table <-INB_table[order(INB_table[,"INB_vs1"]),]
+print(INB_table)
+````
+
+## Incremental Analysis
+
+````{r echo=FALSE}
+IA_names <- c("Costs", "Effects", "Strictly dominated", "ICER", "Extendedly dominated")
+IA <- as.data.frame(matrix(nrow=n_treatments, ncol=length(IA_names)))
+colnames(IA) <- IA_names
+rownames(IA) <- v_treatment_names
+IA[,"Costs"] <-  apply(total_costs, 2, mean)
+IA[,"Effects"] <-  apply(total_qalys, 2, mean)
+IA <- IA[order(IA[,"Costs"]),]
+
+for(i in 1:n_treatments){
+  IA[i,"Strictly dominated"] <- IA[i,"Effects"] < max(IA[1:(i-1),"Effects"])
+}
+
+IA[,"Extendedly dominated"] <- FALSE
+for(i in 2:n_treatments){
+  if(IA[i,"Strictly dominated"]) {
+    IA[i,"Extendedly dominated"] <- TRUE
+  } else{
+    c <-max(which(!IA[1:(i-1),"Strictly dominated"] |
+                    !IA[1:(i-1),"Extendedly dominated"]))
+    IA[i,"ICER"] <- (IA[i,"Costs"] - IA[c,"Costs"]) / (IA[i,"Effects"] - IA[c,"Effects"])
+  }
+}
+
+print(IA)
+````
+
+## EVPI
+
+````{r echo=FALSE}
+summary(des_bcea, wtp=20000)
+summary(des_bcea, wtp=30000)
+evi.plot(des_bcea)
+
+````
+
+## EVPPI
+
+have to find a way to extract the parameter values used in the descem simulation
+
+````{r echo=FALSE}
+
+
+````
+
+
+## looking at the vaidation of number of relapses and the and distribution of edss values
+
+````{r echo=FALSE}
+n_relapse_ipd <- apply(n_relapse_ipd, c(1, 2), mean)
+final_edss_value_ipd<- apply(final_edss_value_ipd, c(1, 2), mean)
+````
