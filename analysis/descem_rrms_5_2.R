@@ -52,8 +52,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 1000
-n_samples <- 1000
+n_patients <- 100
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -92,8 +92,7 @@ v_higher_line_treatment_codes <- c(1, 2, 3, 4, 6, 7)
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
 ## Model event states
-v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "serious_ae", "death")
-#  "annual_treatment", proposed new event to track annual costs
+v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death")
 
 ## Standard Deviation for probabilistic analysis when uncertainty not reported
 # assumed 1/10 of mean
@@ -1140,7 +1139,8 @@ psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 
 #openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_100x100_v5_2.xlsx")
 # compare patient characteristics of dead patients
-#dead <- psa_ipd[psa_ipd$evtname == "death"]
+dead <- psa_ipd[psa_ipd$evtname == "death"]
+openxlsx::write.xlsx(dead, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/dead_ipd_100x100_nov16.xlsx")
 
 # Plot the times to event
 # Include a vertical line for the median event time.
@@ -1219,7 +1219,9 @@ ceplane.plot(des_bcea, wtp = 30000,
                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
              point = list(color = c("red", "green", "blue", "orange", "yellow",
                                     "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
-                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred")))
+                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred"))
+             ,xlim=c(-5,5)
+             )
 
 #plot a CEAC
 des_multi_ce <- multi.ce(des_bcea)
