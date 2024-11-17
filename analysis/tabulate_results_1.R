@@ -1,7 +1,7 @@
 # Script to analyse results
 
 # Generate mean and 95% CrI for PSA samples
-summarise_psa <- function(x, n_digits = 3) {
+summarise_psa <- function(x, n_digits = 2) {
   return(paste0(format(mean(x), digits = n_digits, nsmall = n_digits),
                 " (",
                 format(quantile(x, probs = 0.025), digits = n_digits, nsmall = n_digits),
