@@ -59,8 +59,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 5
-n_samples <- 5
+n_patients <- 100
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -1138,9 +1138,6 @@ total_runtime <- system.time({
   )
 })
 
-
-
-save(results, file = "results/HT/results_debug_100x100_16Nov24")
 
 #save results
 #saveRDS(results, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/descem5_2 100x100_14_nov.RDS")
