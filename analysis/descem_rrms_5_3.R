@@ -269,7 +269,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(
   # Utilities for RRMS Orme et al adding in carergiver disutilities Acaster et al.
-  u_rrms_edss = if(psa_bool) {
+  v_u_rrms_edss = if(psa_bool) {
     temp <- m_u_edss_rrms[, "rrms_mean"]
     for(j_edss in 1:n_edss_values) {
       temp[j_edss] <- log(rlnorm(1, mean =  (m_u_edss_rrms[j_edss, "rrms_mean"]+ m_u_carer[j_edss, "Mean"]),
@@ -284,7 +284,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(
   # Utilities for SPMS Orme et al adding in carergiver disutilities Acaster et al.
-  u_spms_edss = if(psa_bool) {
+  v_u_spms_edss = if(psa_bool) {
     temp <- m_u_edss_spms[, "spms_mean"]
     for(j_edss in 1:n_edss_values) {
       temp[j_edss] <- log(rlnorm(1, mean =  (m_u_edss_spms[j_edss, "spms_mean"] + m_u_carer[j_edss, "Mean"]),
@@ -516,7 +516,7 @@ common_all_inputs <-add_item(
   # the discontinuation doesn't depend on line of therapy
   # (E.g., cladribine discontinuation rate is same at 1st and 2nd line)
   # This could be changed by adding line specific discontinuation rates
-  v_discontinuation_rate = if(psa_bool) {
+  discontinuation_rate = if(psa_bool) {
     
     # rates of discontination due to adverse events
     #  rate is specific to Natalizumab arm of affirm
@@ -630,7 +630,7 @@ common_all_inputs <-add_item(
 ) %>% add_item(  
   # Relapse costs are treatment & severity agnostic
   
-  v_c_relapsing = if(psa_bool) {
+  v_c_relapse = if(psa_bool) {
     temp <- m_c_relapse[, "mean"]
     for(i_cost in 1:length(temp)) {
       temp[i_cost] <- rgamma(1, ((m_c_relapse[i_cost,"mean"])^2) / ((m_c_relapse[i_cost,"sd"]/sd_psa)^2),
@@ -644,7 +644,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(  
   # Relapse dis-utilities are treatment & severity agnostic, in TA616 the same regardless of hospitalisation
-  u_relapsing = if(psa_bool) {
+  u_relapse = if(psa_bool) {
     pmin(rnorm(1, mean =  df_u_relapse["Orme etal", "u_mean_relapse_hospital"], sd =  df_u_relapse["Orme etal", "u_sd_relapse_hospital"]),0)
     
   } else {
@@ -866,7 +866,7 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates can vary by current treatment (Dummy data)
-              coef1 = log(v_discontinuation_rate),
+              coef1 = log(discontinuation_rate),
               hr= v_hr_discontinuation[current_treatment_code]
             )
           })
@@ -1012,7 +1012,7 @@ evt_react_list <-
   add_reactevt(name_evt = "treatment_switch",
                input = {
                  treatment_line = treatment_line + 1
-                 v_discontinuation_rate = (treatment_line < 4) *  v_discontinuation_rate
+                 discontinuation_rate = (treatment_line < 4) *  discontinuation_rate
                  n_switch = n_switch + 1
                  age = initial_age + round(curtime)
                  modify_item(list(current_treatment = sample(x = v_higher_line_treatments,
@@ -1020,7 +1020,7 @@ evt_react_list <-
                                   current_treatment_code = sample(x = v_higher_line_treatment_codes,
                                                                   size = 1),
                                   treatment_line = treatment_line,
-                                  v_discontinuation_rate = v_discontinuation_rate,
+                                  discontinuation_rate = discontinuation_rate,
                                   n_switch = n_switch,
                                   years_on_treatment = 0,   
                                   age = age))
@@ -1030,7 +1030,7 @@ evt_react_list <-
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = log(v_discontinuation_rate),
+                     coef1 = log(discontinuation_rate),
                      hr= v_hr_discontinuation[current_treatment_code]
                    )
                  ))
@@ -1048,8 +1048,8 @@ evt_react_list <-
 # Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
 util_ongoing <- add_util(evt = v_event_names,
                          trt = v_treatment_names,
-                         util = (1 - spms_flag) * u_rrms_edss[edss_value == v_edss_values] +
-                           spms_flag * u_spms_edss[edss_value == v_edss_values]
+                         util = (1 - spms_flag) * v_u_rrms_edss[edss_value == v_edss_values] +
+                           spms_flag * v_u_spms_edss[edss_value == v_edss_values]
 )
 
 # Add ongoing costs
@@ -1089,8 +1089,8 @@ cost_instant <-
   ) %>% 
   add_cost(evt = "relapse" ,
            trt = v_treatment_names,
-           cost = (relapse_hospital_flag * v_c_relapsing[6])+
-             ((1-relapse_hospital_flag) * v_c_relapsing[4]) ) %>% 
+           cost = (relapse_hospital_flag * v_c_relapse[6])+
+             ((1-relapse_hospital_flag) * v_c_relapse[4]) ) %>% 
   add_cost(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
            cost = sum(v_c_sae_events * v_weight_sae)) 
@@ -1099,7 +1099,7 @@ cost_instant <-
 # Can also add util_instant to include disutilities of events (e.g., of relapse or adverse events)
 util_instant <-   add_util(evt = "relapse" ,
                            trt = v_treatment_names,
-                           util = u_relapsing) %>% 
+                           util = u_relapse) %>% 
   add_util(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
            util = sum(v_u_sae_events*v_weight_sae)) 

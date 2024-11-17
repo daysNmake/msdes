@@ -73,7 +73,7 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
                                      c("rate", "EDSS","Natalizumab")),
                               paste0("v_baseline_spms_larr_", 
                                      c("rate", "EDSS")),
-                              "v_discontinuation_rate",
+                              "discontinuation_rate",
                               "sae_events_rate")
   
   # If no random seed sequence is provided set equal to index for simulations
@@ -121,17 +121,14 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
     # Save the random parameter inputs for use in EVPPI
     # Might need to add v_smr as currently deterministic
     # Also p_relapse_hospital is deterministic
-    # Rename u_rrms_edss and u_spms_edss to have v_ at start
-    # Rename c_relapsing and u_relapsing to 'relapse'
-    # Rename v_discontinuation_rate to remove the v_ as it's not a vector
     
     # Utilities
     input_matrix[simulation, 
-                 paste0("u_rrms_edss_", c(0:9))] <- input_list$u_rrms_edss
+                 paste0("u_rrms_edss_", c(0:9))] <- input_list$v_u_rrms_edss
     input_matrix[simulation, 
-                 paste0("u_spms_edss_", c(0:9))] <- input_list$u_spms_edss
+                 paste0("u_spms_edss_", c(0:9))] <- input_list$v_u_spms_edss
     input_matrix[simulation,
-                 "u_relapse"] <- input_list$u_relapsing
+                 "u_relapse"] <- input_list$u_relapse
     input_matrix[simulation,
                  paste0("u_sae_", c("Cholelithiasis", "Need for rehabilitation therapy",
                                     "Urinary tract infection", "Depression",                     
@@ -160,7 +157,7 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
                    "c_relapse_limit_daily_activity",
                    "c_relapse_oral_steroids",
                    "c_relapse_intravenous_steroids",
-                   "c_relapse_hospital_admission")] <- input_list$v_c_relapsing
+                   "c_relapse_hospital_admission")] <- input_list$v_c_relapse
     input_matrix[simulation,
                  paste0("c_sae_", c("Cholelithiasis", "Need for rehabilitation therapy",
                                     "Urinary tract infection", "Depression",                     
@@ -203,7 +200,7 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
                         c("rate", "EDSS"))] <- input_list$v_baseline_spms_larr
     
     # Discontinuation and SAE rates from AFFIRM
-    input_matrix[simulation, "v_discontinuation_rate"] <- input_list$v_discontinuation_rate
+    input_matrix[simulation, "discontinuation_rate"] <- input_list$discontinuation_rate
     
     input_matrix[simulation, "sae_events_rate"] <- input_list$sae_events_rate
     
