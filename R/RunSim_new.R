@@ -119,9 +119,7 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
     
     
     # Save the random parameter inputs for use in EVPPI
-    # Might need to add v_smr as currently deterministic
-    # Also p_relapse_hospital is deterministic
-    
+
     # Utilities
     input_matrix[simulation, 
                  paste0("u_rrms_edss_", c(0:9))] <- input_list$v_u_rrms_edss
