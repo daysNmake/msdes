@@ -44,8 +44,14 @@ library(BCEA)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
+# Function to summarise the results
+source("R/summarise_samples.R")
+source("R/summarise_ce_results.R")
+
 ## New functions to draw from piece wise exponential distribution
 source("R/draw_tte_new.R")
+## New function to run the simulation saving input parameters
+# and with arbitrary random seeds
 source("R/RunSim_new.R")
 
 ## set a seed 
@@ -751,8 +757,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"])) ,
                  nrow = 1, ncol = n_treatments)
   }
-)  
-
+) 
 
 
 #Put objects here that do not change as we loop through treatments for a patient
@@ -1208,6 +1213,13 @@ for(treatment_name in v_treatment_names) {
 # Take mean over patients to remove individual variation
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
+
+
+results_table <- summarise_ce_results(total_qalys = total_qalys, 
+                                      total_costs = total_costs,
+                                      reference = "Natalizumab-IV")
+
+View(results_table)
 
 # Create a BCEA object
 des_bcea <- bcea(eff = total_qalys,
