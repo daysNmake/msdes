@@ -102,6 +102,19 @@ write.csv(tto_relapse_harrms_mu, file="data/v_tto_relapse_harrms_mu.csv")
 write.csv(tto_relapse_harrms_sigma, file="data/m_tto_relapse_harrms_sigma.csv")
 
 
+# Natalizumab Time to relapse RRMS (scenario)
+tto_relapse_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                              sheet = "Models with DMTs", range = "N90:N92", 
+                                              col_names = FALSE,col_types = c("numeric")))
+tto_relapse_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                 sheet = "Models with DMTs", range = "N102:P104", 
+                                                 col_names = FALSE,col_types = c("numeric")))
+dimnames(tto_relapse_rrms_mu) <- edss_model_names_fsrv
+dimnames(tto_relapse_rrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
+
+write.csv(tto_relapse_rrms_mu, file="data/v_tto_relapse_rrms_mu.csv")
+write.csv(tto_relapse_rrms_sigma, file="data/m_tto_relapse_rrms_sigma.csv")
+
 # Time to relapse SPMS
 tto_relapse_spms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
                                             sheet = "Models without DMTs", range = "B45:B46",
@@ -129,3 +142,15 @@ write.csv(tto_sp_conversion_harrms_mu, file="data/v_tto_sp_conversion_harrms_mu.
 write.csv(tto_sp_conversion_harrms_sigma, file="data/m_tto_sp_conversion_harrms_sigma.csv")
 
 
+# Natalizumab Time to SP conversion RRMS  (scenario)
+tto_sp_conversion_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                    sheet = "Models without DMTs", range = "B97:B98", 
+                                                    col_names = FALSE,col_types = c("numeric")))
+tto_sp_conversion_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
+                                                       sheet = "Models without DMTs", range = "B102:C103", 
+                                                       col_names = FALSE,col_types = c("numeric")))
+dimnames(tto_sp_conversion_rrms_mu) <- edss_model_names_fsrv[1:2,]
+dimnames(tto_sp_conversion_rrms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
+
+write.csv(tto_sp_conversion_rrms_mu, file="data/v_tto_sp_conversion_rrms_mu.csv")
+write.csv(tto_sp_conversion_rrms_sigma, file="data/m_tto_sp_conversion_rrms_sigma.csv")
