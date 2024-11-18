@@ -50,7 +50,7 @@ set.seed(243523452)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 1
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -181,7 +181,7 @@ v_smr <- as.double(c(1.68, (2.05-1.38)/3.92))
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
 ## These are direct medical costs we excluded the indirect medical costs  previously controversial with ERGS
-df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
+df_c_tx <-t(read.csv("data/df_c_c_drugs.csv", header = T, row.names = 1))
 
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
 df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs

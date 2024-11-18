@@ -187,7 +187,8 @@ v_smr <- read.csv("data/v_smr.csv", header = T, row.names = 1)
 
 ##  Annual treatment, administration and monitoring costs TA616 TA312 Beta-IFN-MTA
 ## These are direct medical costs we excluded the indirect medical costs  previously controversial with ERGS
-df_c_tx <-t(read.csv("data/df_c_c_drugs.csv", header = T, row.names = 1))
+#df_c_tx <-t(read.csv("data/df_c_c_drugs.csv", header = T, row.names = 1)) # confidential prices
+df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1)) # public prices
 colnames(df_c_tx)<-v_treatment_names
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
 df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
@@ -1199,10 +1200,10 @@ for(treatment_name in v_treatment_names) {
   }
 }
 
-saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_S1_100x100_16_nov.RDS")
-saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_S1_100x100_16_nov.RDS")
-saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_S1_100x100_16_nov.RDS")
-saveRDS(total_costs_ipd, file ="results/total_costs_ipd_S1_100x100_16_nov.RDS")
+saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_S1_100x100_16_nov_public_prices.RDS")
+saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_S1_100x100_16_nov_public_prices.RDS")
+saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_S1_100x100_16_nov_public_prices.RDS")
+saveRDS(total_costs_ipd, file ="results/total_costs_ipd_S1_100x100_16_nov_public_prices.RDS")
 
 # Take mean over patients to remove individual variation
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
