@@ -25,8 +25,8 @@ RunSim_new <- function (trt_list = c("int", "noint"), common_all_inputs = NULL,
   # Count up the number of random input parameters
   input_matrix <- matrix(nrow = n_sim,
                          ncol = 2 * 10 + 1 + 9 + # Utilities
-                           2 * 10 + 6 * 17 + 6 + 9 + # Costs
-                           4 * 17 + # NMA HRs
+                           2 * 10 + 6 * length(trt_list) + 6 + 9 + # Costs
+                           4 * length(trt_list) + # NMA HRs
                            3 * 3 + 4 * 2 + # MS Registry
                            2) # Misc
   colnames(input_matrix) <- c(paste0("u_rrms_edss_", c(0:9)),
