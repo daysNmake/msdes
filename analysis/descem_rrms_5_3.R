@@ -59,8 +59,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 100
-n_samples <- 10
+n_patients <- 1000
+n_samples <- 1000
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -201,7 +201,7 @@ colnames(df_c_tx_monitor)<-v_treatment_names
 # SPMS Costs
 df_c_spms<- read.csv("data/df_c_spms.csv", header = T, row.names = 1)
 colnames(df_c_spms)[1] <- "PegIFN-β-1 SC 125μg"
-p_siponimod <-0 #proportion treated with siponimod
+p_siponimod <-0.556962025 #proportion treated with Siponimod based on MS registry data
 
 ## Annual treatment scheduled
 df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
@@ -1218,10 +1218,10 @@ for(treatment_name in v_treatment_names) {
   }
 }
 
-#saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_15_nov.RDS")
-#saveRDS(total_costs_ipd, file ="results/total_costs_ipd_15_nov.RDS")
-#saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_15_nov.RDS")
-#saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_15_nov.RDS")
+#saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_19_nov.RDS")
+#saveRDS(total_costs_ipd, file ="results/total_costs_ipd_19_nov.RDS")
+#saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_19_nov.RDS")
+#saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_19_nov.RDS")
 
 # Take mean over patients to remove individual variation
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
