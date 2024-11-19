@@ -49,3 +49,17 @@ m_discontinuation <- matrix(c(r_arm, (n_arm-r_arm), f_arm, p_arm, sqrt(v_arm)), 
 m_discontinuation
 write.csv(m_discontinuation, file="data/m_discontinuation.csv")
 
+## SPMS Cost (Public Prices)
+df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
+colnames(df_c_tx)<-v_treatment_names
+df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
+df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
+colnames(df_c_tx_admin)<-v_treatment_names
+df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
+colnames(df_c_tx_monitor)<-v_treatment_names
+
+df_c_spms <- as.data.frame(subset(df_c_tx, select = c("PegIFN-β-1 SC 125μg", "IFNβ-1a SC 22μg")))
+colnames(df_c_spms)[2] <- "Siponimod"
+df_c_spms[,"PegIFN-β-1 SC 125μg"] <- df_c_spms[,"PegIFN-β-1 SC 125μg"]  + df_c_tx_admin[,"PegIFN-β-1 SC 125μg"] + df_c_tx_monitor[,"PegIFN-β-1 SC 125μg"]
+df_c_spms[,"Siponimod"] <- c(rep(7239.11+733+139, 3))
+write.csv(df_c_spms, file="data/df_c_spms.csv")  

@@ -60,7 +60,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 100
+n_samples <- 10
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -198,6 +198,11 @@ colnames(df_c_tx_admin)<-v_treatment_names
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 colnames(df_c_tx_monitor)<-v_treatment_names
 
+# SPMS Costs
+df_c_spms<- read.csv("data/df_c_spms.csv", header = T, row.names = 1)
+colnames(df_c_spms)[1] <- "PegIFN-β-1 SC 125μg"
+p_siponimod <-0 #proportion treated with siponimod
+
 ## Annual treatment scheduled
 df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
 colnames(df_c_tx_load)<-v_treatment_names
@@ -265,6 +270,7 @@ common_all_inputs <-add_item(
   prop_female = prop_female,
   v_edss_values = v_edss_values,
   df_c_tx = df_c_tx, # drug costs are not probabilistic
+  p_siponimod=p_siponimod, 
   v_event_names = v_event_names,
   m_n_patients_edss = m_n_patients_edss,
   m_r_mortality = m_r_mortality,
@@ -1071,25 +1077,35 @@ cost_instant <-
   add_cost(evt = c("annual_treatment") ,
            trt = v_treatment_names,
            cost = if(years_on_treatment <= 1) {
-             df_c_tx["cost_annual_yr1",current_treatment_code] +
+             (1 - spms_flag) * (df_c_tx["cost_annual_yr1",current_treatment_code] +
                v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
-               v_c_trt_monitor["cost_annual_yr1",current_treatment_code]
+               v_c_trt_monitor["cost_annual_yr1",current_treatment_code]) +
+               spms_flag * (((1-p_siponimod) * df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) + 
+                              (p_siponimod * df_c_spms["cost_annual_yr1","Siponimod"]))
            } else if(years_on_treatment == 2){
-             df_c_tx["cost_annual_yr2",current_treatment_code] +
+             (1 - spms_flag) * (df_c_tx["cost_annual_yr2",current_treatment_code] +
                v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-               v_c_trt_monitor["cost_annual_yr2",current_treatment_code]
+               v_c_trt_monitor["cost_annual_yr2",current_treatment_code])+
+               spms_flag * (((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
+                              (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
            } else if(years_on_treatment == 3){
-             (df_c_tx["cost_annual_yr2",current_treatment_code] +
+             (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code]
+                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code])+
+              spms_flag *(((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
+                            (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
            } else if(years_on_treatment == 4){
-             (df_c_tx["cost_annual_yr2",current_treatment_code] +
+             (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code]
+                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code])+
+               spms_flag *(((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
+                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
            } else {
-             (df_c_tx["cost_annual_yr2",current_treatment_code] +
+             (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code]
+                v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code])+
+               spms_flag *(((1 - p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
+                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
            }
   ) %>% 
   add_cost(evt = "relapse" ,
@@ -1142,7 +1158,7 @@ total_runtime <- system.time({
 #save results
 #saveRDS(results, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/descem5_2 100x100_14_nov.RDS")
 # Simulated patients for first simulation
-psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
+#psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
 #saveRDS(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_descem5_2 100x100_14_nov.RDS")
 
 #openxlsx::write.xlsx(psa_ipd, file ="C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git/ipd_100x100_v5_2.xlsx")
