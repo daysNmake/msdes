@@ -34,6 +34,11 @@ v_smr <- as.double(c(1.68, (2.05-1.38)/3.92))
 names(v_smr) <- c("hr", "sd")
 write.csv(v_smr, file="data/v_smr.csv")
 
+## Excess all cause mortality for MS patients HR br severity
+v_smr_severity <- matrix(c(rep(1.6, 4), rep(1.84, 3), rep(4.44,3)),
+                         nrow=1, byrow = FALSE, dimnames = list("mean", v_edss_values))
+write.csv(v_smr_severity, file="data/v_smr_severity.csv")
+
 ## baseline discontinuation AFFIRM and Antilope
 arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300", 
                "Antelope Natalizumab biosimiliar", "Antelope Natalizumab IV300" )
@@ -62,4 +67,6 @@ df_c_spms <- as.data.frame(subset(df_c_tx, select = c("PegIFN-β-1 SC 125μg", "
 colnames(df_c_spms)[2] <- "Siponimod"
 df_c_spms[,"PegIFN-β-1 SC 125μg"] <- df_c_spms[,"PegIFN-β-1 SC 125μg"]  + df_c_tx_admin[,"PegIFN-β-1 SC 125μg"] + df_c_tx_monitor[,"PegIFN-β-1 SC 125μg"]
 df_c_spms[,"Siponimod"] <- c(rep(7239.11+733+139, 3))
-write.csv(df_c_spms, file="data/df_c_spms.csv")  
+write.csv(df_c_spms, file="data/df_c_spms.csv") 
+
+

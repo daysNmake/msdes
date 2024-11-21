@@ -144,13 +144,13 @@ write.csv(tto_sp_conversion_harrms_sigma, file="data/m_tto_sp_conversion_harrms_
 
 # Natalizumab Time to SP conversion RRMS  (scenario)
 tto_sp_conversion_rrms_mu <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
-                                                    sheet = "Models without DMTs", range = "B97:B98", 
-                                                    col_names = FALSE,col_types = c("numeric")))
+                                                  sheet = "Models with DMTs", range = "N146:N148", 
+                                                  col_names = FALSE,col_types = c("numeric")))
 tto_sp_conversion_rrms_sigma <- as.matrix(read_excel("data-raw/ExponentialSurvivalModels (flexsurv).xlsx", 
-                                                       sheet = "Models without DMTs", range = "B102:C103", 
-                                                       col_names = FALSE,col_types = c("numeric")))
-dimnames(tto_sp_conversion_rrms_mu) <- edss_model_names_fsrv[1:2,]
-dimnames(tto_sp_conversion_rrms_sigma) <- c(edss_model_names_fsrv[1:2,], edss_model_names_fsrv[1:2,])
+                                                     sheet = "Models with DMTs", range = "N158:P160", 
+                                                     col_names = FALSE,col_types = c("numeric")))
+dimnames(tto_sp_conversion_rrms_mu) <- edss_model_names_fsrv
+dimnames(tto_sp_conversion_rrms_sigma) <- c(edss_model_names_fsrv, edss_model_names_fsrv)
 
 write.csv(tto_sp_conversion_rrms_mu, file="data/v_tto_sp_conversion_rrms_mu.csv")
 write.csv(tto_sp_conversion_rrms_sigma, file="data/m_tto_sp_conversion_rrms_sigma.csv")
