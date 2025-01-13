@@ -34,7 +34,7 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 10
+n_patients <- 100
 n_samples <- 1
 
 ## Treatments at second line 
@@ -881,9 +881,9 @@ evt_react_list <-
                  ))
                  
                  
-                 new_event(list(
+                 if (edss_value <= 6) {new_event(list(
                    "annual_treatment" = curtime + 1
-                 ))
+                 ))}
                  
                }
   ) %>%
@@ -971,8 +971,8 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(age = age))           
                  
-                 # Sample next discontinuation event. T
-                 new_event(list(
+                 # Sample next serious event. T
+                 if (edss_value < 6) { new_event(list(
                    "serious_adverse_event" = curtime + draw_tte(
                      1,
                      dist = "exp",
@@ -981,7 +981,7 @@ evt_react_list <-
                      coef1 = log(sae_events_rate),
                      hr=v_hr_saes
                    )
-                 ))
+                 ))}
                }) %>%
   # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
@@ -1001,14 +1001,14 @@ evt_react_list <-
                                   age = age))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
-                 new_event(list(
+                 if (edss_value <= 6) { new_event(list(
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
                      coef1 = log(discontinuation_rate),
                      hr= v_hr_discontinuation[current_treatment_code]
                    )
-                 ))
+                 ))}
 
                })
 
