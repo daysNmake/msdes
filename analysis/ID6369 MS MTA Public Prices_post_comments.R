@@ -806,9 +806,9 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = ((1 - treatment_stop) * (1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
-            ) + treatment_stop * v_hr_pbo[, "arr"]
-            
+              hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag)
+             + (treatment_stop * v_hr_pbo[, "arr"])
+            )
             edss_increase <- draw_tte(
               1, 
               dist = "exp",
@@ -822,9 +822,9 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = ((1 - treatment_stop) * (1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
-            ) + treatment_stop * v_hr_pbo[, "edss_increase"]
-            
+              hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag )
+             + (treatment_stop * v_hr_pbo[, "edss_increase"])
+            )
             edss_decrease <- draw_tte(
               1, 
               dist = "exp",
@@ -869,8 +869,8 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates depend on current treatment
-              coef1 = log(discontinuation_rate),
-              hr= v_hr_discontinuation[current_treatment_code]
+              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.00001)),
+              hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.00001)
             )
           })
 
@@ -912,7 +912,7 @@ evt_react_list <-
                  ))
                  
                  
-                 if (treatment_stop == 0) {new_event(list(
+                 if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
                  ))}
                  
@@ -935,9 +935,9 @@ evt_react_list <-
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
                                       v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                     hr = ((1 - treatment_stop) * (1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
-                   ) + treatment_stop * v_hr_pbo[, "arr"]
-                 ))
+                     hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag)
+                    + (treatment_stop * v_hr_pbo[, "arr"])
+                 )))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
@@ -945,7 +945,7 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(edss_value = edss_value,
                                   age = age))
-                 if (edss_value > 6) {modify_item(list(treatment_stop = 1))}
+                 if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  # simulate the next time to EDSS increase
                  if (edss_value < 9) {new_event(list(
@@ -957,9 +957,9 @@ evt_react_list <-
                        v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                        spms_flag * (v_spms_edss_increase["rate"] +
                                       v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                     hr = ((1 - treatment_stop) * (1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
-                   ) + treatment_stop * v_hr_pbo[, "edss_increase"]
-                   
+                     hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag) 
+                    + (treatment_stop * v_hr_pbo[, "edss_increase"])
+                   )
                  ))}
                }) %>%
   add_reactevt(name_evt = "edss_decrease",
@@ -968,7 +968,7 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(edss_value = edss_value,
                                   age = age))
-                 if (edss_value > 6) {modify_item(list(treatment_stop = 1))}
+                 if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  #  next time to EDSS decrease
                  if (edss_value > 0) {new_event(list(
@@ -1005,16 +1005,16 @@ evt_react_list <-
                  modify_item(list(age = age))           
                  
                  # Sample next serious event. T
-                 if (treatment_stop == 0 ) { new_event(list(
+                 new_event(list(
                    "serious_adverse_event" = curtime + draw_tte(
                      1,
                      dist = "exp",
                      # SAE rates same for all treatments
                      # change to include HR from safety NMA
                      coef1 = log(sae_events_rate),
-                     hr=v_hr_saes
+                     hr= ((1 - treatment_stop) * v_hr_saes) + (treatment_stop *  v_hr_pbo[, "saes"])
                    )
-                 ))}
+                 ))
                }) %>%
   # Patients switch only twice (Starting from 2nd line) so 4th line is final (As in protocol)
   add_reactevt(name_evt = "treatment_switch",
@@ -1034,14 +1034,14 @@ evt_react_list <-
                                   age = age))
                  
                  # Sample next discontinuation event. This will be zero if treatment_line >=4
-                 if (treatment_stop == 0) { new_event(list(
+                 new_event(list(
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = log(discontinuation_rate),
-                     hr= v_hr_discontinuation[current_treatment_code]
+                     coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.00001)),
+                     hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.00001)
                    )
-                 ))}
+                 ))
 
                })
 
