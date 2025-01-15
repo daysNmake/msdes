@@ -34,7 +34,7 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 10
+n_patients <- 100
 n_samples <- 1
 
 ## Treatments at second line 
@@ -806,8 +806,8 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag)
-             + (treatment_stop * v_hr_pbo[, "arr"])
+              hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+              treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
             )
             edss_increase <- draw_tte(
               1, 
@@ -822,8 +822,8 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag )
-             + (treatment_stop * v_hr_pbo[, "edss_increase"])
+              hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+                                         treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
             )
             edss_decrease <- draw_tte(
               1, 
@@ -869,8 +869,8 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates depend on current treatment
-              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.00001)),
-              hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.00001)
+              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+              hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
             )
           })
 
@@ -935,8 +935,8 @@ evt_react_list <-
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
                                       v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                     hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag)
-                    + (treatment_stop * v_hr_pbo[, "arr"])
+                     hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+                                               treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
                  )))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
@@ -957,8 +957,8 @@ evt_react_list <-
                        v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                        spms_flag * (v_spms_edss_increase["rate"] +
                                       v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                     hr = (1 - treatment_stop) * (((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag) 
-                    + (treatment_stop * v_hr_pbo[, "edss_increase"])
+                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+                                                treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
                    )
                  ))}
                }) %>%
@@ -1038,8 +1038,8 @@ evt_react_list <-
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.00001)),
-                     hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.00001)
+                     coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+                     hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
                    )
                  ))
 
