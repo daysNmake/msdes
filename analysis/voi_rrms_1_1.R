@@ -8,6 +8,35 @@
 library(voi)
 library(BCEA)
 
+total_qalys_ipd <- readRDS(file ="results/total_qalys_ipd_100x100_test_16_Jan_2025.RDS")
+total_costs_ipd <- readRDS( file ="results/total_costs_ipd__100x100_test_16_Jan_2025.RDS")
+input_matrix  <- readRDS(file ="results/input_matrix_100x100_test_16_Jan_2025.RDS")
+
+## Treatments at second line 
+v_treatment_names <- c("Natalizumab-IV",
+                       "Natalizumab-SC",
+                       "Natalizumab biosimilar-IV",
+                       "Natalizumab biosimilar-SC",
+                       "Fingolimod",
+                       "Alemtuzumab",
+                       "Cladribine", 
+                       "Ponesimod" ,
+                       "Ofatumumab",
+                       "Ocrelizumab",
+                       "PegIFN-β-1 SC 125μg", 
+                       "IFNβ-1a SC 22μg" , 
+                       "IFNβ-1a SC 44μg" ,
+                       "IFNβ-1a IM 30μg", 
+                       "IFNβ-1b SC 250μg", 
+                       "Glatiramer Acetate 20mg",
+                       "Glatiramer Acetate 40mg")
+
+
+# Take mean over patients to remove individual variation
+total_costs <- apply(total_costs_ipd, c(1, 2), mean)
+total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
+
+
 # The VOI package uses data frames
 df_inputs <- as.data.frame(input_matrix)
 
