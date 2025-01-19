@@ -36,6 +36,12 @@ v_treatment_names <- c("Natalizumab-IV",
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
 
+i_treatment <- 2
+reference  <- 1
+
+
+summarise_samples((total_costs[, i_treatment] - total_costs[, reference]) /
+                    (total_qalys[, i_treatment] - total_qalys[, reference]), n_digits = 2)
 
 # The VOI package uses data frames
 df_inputs <- as.data.frame(input_matrix)
