@@ -34,8 +34,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 100
-n_samples <- 1
+n_patients <- 10
+n_samples <- 10
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -182,8 +182,8 @@ m_c_relapse <- m_c_relapse * 2 # Annualised these 6 months costs
 df_c_sae <- saes_data[,4]
 names(df_c_sae)<-sae_names
 
-## RRMS & SPMS edss utilities Orme etal 2007
-u_edss <- read.csv("data/m_u_edss.csv", header = T, row.names = 1)
+## RRMS & SPMS edss utilities Clarity and Orme 
+u_edss <- read.csv("data/m_u_edss.csv_clarity", header = T, row.names = 1)
 m_u_edss_rrms <- u_edss[,c("rrms_mean","rrms_sd")]
 m_u_edss_spms <- u_edss[,c("spms_mean","spms_sd")]
 
@@ -206,7 +206,7 @@ hr_rrms_cdp3_fe <- read.csv("data/Releff_RRMS_CDP3_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp3_fe  <- hr_rrms_cdp3_fe[,c("mean", "sd")]
 # CDP6 NMA
-hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_3_FE.csv",
+hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp6_fe  <- hr_rrms_cdp6_fe[,c("mean", "sd")] 
 # ARR NMA

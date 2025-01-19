@@ -163,6 +163,8 @@ df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops 
 colnames(df_c_tx_admin)<-v_treatment_names
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 colnames(df_c_tx_monitor)<-v_treatment_names
+df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) # Scenario for free JCV test 
+df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) # Scenario for free JCV test 
 
 # SPMS Costs
 df_c_spms<- read.csv("data/df_c_spms.csv", header = T, row.names = 1)
@@ -206,7 +208,7 @@ hr_rrms_cdp3_fe <- read.csv("data/Releff_RRMS_CDP3_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp3_fe  <- hr_rrms_cdp3_fe[,c("mean", "sd")]
 # CDP6 NMA
-hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_3_FE.csv",
+hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp6_fe  <- hr_rrms_cdp6_fe[,c("mean", "sd")] 
 # ARR NMA
@@ -298,7 +300,7 @@ common_all_inputs <-add_item(
     m_c_edss_spms[,"spms_mean"]
   }
   
-) %>% add_item(
+)  %>% add_item(
   # Hazard ratios reducing risk of EDSS increase
   v_hr_edss_increase = if(psa_bool) {
     temp <- matrix(nrow = 1, ncol = n_treatments)
@@ -332,8 +334,8 @@ common_all_inputs <-add_item(
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"]))
     temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"], 
-                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","sd"])) # assumed same as 44μg
+                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
+                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"])) # assumed same as 44μg
     temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"],  
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","sd"]))
@@ -351,7 +353,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
-                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"]), 
+                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
                    exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"])) ,
                  nrow = 1, ncol = n_treatments)
@@ -724,21 +726,47 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"])) ,
                  nrow = 1, ncol = n_treatments)
   }
-) 
+) %>% add_item(
+  # Hazard ratios for Placebo group when patients stop treatment
+  v_hr_pbo = if(psa_bool) {
+    temp <- matrix(nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes")))
+    # CDP6
+    temp[,"edss_increase"] <- exp(rnorm(1,
+                                       mean = m_hr_rrms_cdp6_fe["Placebo","mean"],
+                                       sd = m_hr_rrms_cdp6_fe["Placebo","sd"]))
+    # Annualized relapse rate
+    temp[, "arr"] <- exp(rnorm(1,
+                              mean = m_hr_rrms_arr_fe["Placebo","mean"],
+                              sd = m_hr_rrms_arr_fe["Placebo","sd"]))
+    # discontinuation due to SAEs
+    temp[, "discontinuation"] <- exp(rnorm(1,
+                                         mean = m_hr_rrms_discontinuation_fe["Placebo","mean"],
+                                         sd = m_hr_rrms_discontinuation_fe["Placebo","sd"]))
+    #SAEs
+    temp[, "saes"] <- exp(rnorm(1,
+                                       mean = m_hr_rrms_saes_fe["Placebo","mean"],
+                                       sd = m_hr_rrms_saes_fe["Placebo","sd"]))
+    temp
+  }else {matrix(c(exp(m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(m_hr_rrms_arr_fe["Placebo","mean"]), 
+                  exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"]), 
+                  nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
+)
 
 
 #Put objects here that do not change as we loop through treatments for a patient
 # This is called for each new patient so sample 1 from a distribution of choice
 # for heterogeneous characteristics
-common_pt_inputs <- add_item(sex = sample(size = 1, x = c("male", "female"), 
-                                          prob = c(1 - prop_female, prop_female))                            
-)
+#common_pt_inputs <- add_item(                            
+#)
 
 # Objects that depend on treatment
 # Note that the current treatment is later initialised to trt
 unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,  
                                                  # rrms larger sample size, option to use harrms
                                                  prob = rdiric(1, m_n_patients_edss["harrms",])),
+                             #(male=0, female=1)
+                             sex = sample(size = 1, x = c(0, 1), 
+                                          prob = c(1 - prop_female, prop_female)),
                              n_relapse = 0,
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
@@ -751,6 +779,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
                              years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
+                             treatment_stop = 0, # all patients start on treatment, flag set to 1 when edss is 7+
                              age = initial_age
 )
 
@@ -778,7 +807,9 @@ init_event_list <-
                                v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
-              hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
+              # placebo ARR HR from NMA applied when treatment stopped 
+              hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+              treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
             )
             edss_increase <- draw_tte(
               1, 
@@ -792,7 +823,9 @@ init_event_list <-
                                v_spms_edss_increase["BaselineWebEDSS"]*(edss_value) ),    
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
-              hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
+              # placebo ARR HR from NMA applied when treatment stopped 
+              hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+                                         treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
             )
             edss_decrease <- draw_tte(
               1, 
@@ -818,14 +851,14 @@ init_event_list <-
             death <- draw_tte_new(
               1,
               dist = "pwexp",
-              # population mortality drawn using piece wise exponential
-              coef1 = c(log((1 - prop_female) * m_r_mortality[(initial_age + 1):nrow(m_r_mortality), c("male")] +
-                              prop_female *  m_r_mortality[(initial_age + 1):nrow(m_r_mortality), c("female")],
+              # population mortality drawn using piece wise exponential (male=0, female=1)
+              coef1 = c(log((1 - sex) * m_r_mortality[(age + 1):nrow(m_r_mortality), c("male")] +
+                              sex *  m_r_mortality[(age + 1):nrow(m_r_mortality), c("female")],
               )),
-              time = c(m_r_mortality[(initial_age + 1):nrow(m_r_mortality)]) ,
+              time = c(m_r_mortality[(age + 1):nrow(m_r_mortality)]) ,
               # MS specific mortality multiplier
               hr = v_smr["hr",]
-            )
+            ) - age
             serious_adverse_event <- draw_tte(
               1,
               dist = "exp",
@@ -838,8 +871,8 @@ init_event_list <-
               1,
               dist = "exp",
               # Discontinuation rates depend on current treatment
-              coef1 = log(discontinuation_rate),
-              hr= v_hr_discontinuation[current_treatment_code]
+              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+              hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
             )
           })
 
@@ -852,9 +885,10 @@ evt_react_list <-
                  current_treatment = trt
                  current_treatment_code = v_treatment_codes[trt]
                  modify_item(list(current_treatment = current_treatment,
-                                  current_treatment_code = current_treatment_code,
-                                  #future death events do not exceed time horizon
-                                  "death"= min(cur_evtlist[["death"]], time_horizon + initial_age)
+                                  current_treatment_code = current_treatment_code
+                 ))
+                 modify_event(list(#future death events do not exceed time horizon
+                                  "death"= min(cur_evtlist[["death"]], time_horizon)
                  ))
                  # annual cost events
                  new_event(list(
@@ -867,6 +901,8 @@ evt_react_list <-
                  modify_item(list(age = age
                  ))
                }) %>%
+  
+  
   #add annual cost events
   add_reactevt(name_evt = "annual_treatment",
                input = { 
@@ -878,9 +914,9 @@ evt_react_list <-
                  ))
                  
                  
-                 new_event(list(
+                 if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
-                 ))
+                 ))}
                  
                }
   ) %>%
@@ -901,9 +937,9 @@ evt_react_list <-
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
                                       v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                     hr = ((1 - spms_flag) * v_hr_arr[current_treatment_code]) + spms_flag
-                   )
-                 ))
+                     hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+                                               treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
+                 )))
                }) %>%
   add_reactevt(name_evt = "edss_increase",
                input = {
@@ -911,6 +947,7 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(edss_value = edss_value,
                                   age = age))
+                 if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  # simulate the next time to EDSS increase
                  if (edss_value < 9) {new_event(list(
@@ -922,9 +959,9 @@ evt_react_list <-
                        v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                        spms_flag * (v_spms_edss_increase["rate"] +
                                       v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                     hr = ((1 - spms_flag) * v_hr_edss_increase[current_treatment_code]) + spms_flag 
+                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+                                                treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
                    )
-                   
                  ))}
                }) %>%
   add_reactevt(name_evt = "edss_decrease",
@@ -933,6 +970,7 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(edss_value = edss_value,
                                   age = age))
+                 if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  #  next time to EDSS decrease
                  if (edss_value > 0) {new_event(list(
@@ -968,7 +1006,7 @@ evt_react_list <-
                  age = initial_age + round(curtime)
                  modify_item(list(age = age))           
                  
-                 # Sample next discontinuation event. T
+                 # Sample next serious event. T
                  new_event(list(
                    "serious_adverse_event" = curtime + draw_tte(
                      1,
@@ -976,7 +1014,7 @@ evt_react_list <-
                      # SAE rates same for all treatments
                      # change to include HR from safety NMA
                      coef1 = log(sae_events_rate),
-                     hr=v_hr_saes
+                     hr= ((1 - treatment_stop) * v_hr_saes) + (treatment_stop *  v_hr_pbo[, "saes"])
                    )
                  ))
                }) %>%
@@ -1002,8 +1040,8 @@ evt_react_list <-
                    "treatment_switch" = curtime + draw_tte(
                      1,
                      dist = "exp",
-                     coef1 = log(discontinuation_rate),
-                     hr= v_hr_discontinuation[current_treatment_code]
+                     coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+                     hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
                    )
                  ))
 
@@ -1026,36 +1064,36 @@ cost_ongoing <- add_cost(evt = v_event_names,
 cost_instant <-
   add_cost(evt = c("annual_treatment") ,
            trt = v_treatment_names,
-           cost = if(years_on_treatment <= 1) {
+           cost = if(years_on_treatment <= 1) {(1- treatment_stop ) *(
              (1 - spms_flag) * (df_c_tx["cost_annual_yr1",current_treatment_code] +
                v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
                v_c_trt_monitor["cost_annual_yr1",current_treatment_code]) +
                spms_flag * (((1-p_siponimod) * df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) + 
-                              (p_siponimod * df_c_spms["cost_annual_yr1","Siponimod"]))
-           } else if(years_on_treatment == 2){
+                              (p_siponimod * df_c_spms["cost_annual_yr1","Siponimod"])))
+           } else if(years_on_treatment == 2){(1- treatment_stop ) * (
              (1 - spms_flag) * (df_c_tx["cost_annual_yr2",current_treatment_code] +
                v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                v_c_trt_monitor["cost_annual_yr2",current_treatment_code])+
                spms_flag * (((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-                              (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
-           } else if(years_on_treatment == 3){
+                              (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
+           } else if(years_on_treatment == 3){(1- treatment_stop ) * (
              (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[3,current_treatment_code])+
               spms_flag *(((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-                            (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
-           } else if(years_on_treatment == 4){
+                            (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
+           } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
              (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[4,current_treatment_code])+
                spms_flag *(((1-p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
-           } else {
+                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
+           } else {(1- treatment_stop ) *(
              (1 - spms_flag) *((df_c_tx["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * df_c_tx_load[5,current_treatment_code])+
                spms_flag *(((1 - p_siponimod) * df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"]))
+                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
            }
   ) %>% 
   add_cost(evt = "relapse" ,
@@ -1064,7 +1102,7 @@ cost_instant <-
              ((1-relapse_hospital_flag) * v_c_relapse[4]) ) %>% 
   add_cost(evt = "serious_adverse_event" ,
            trt = v_treatment_names,
-           cost = sum(v_c_sae_events * v_weight_sae)) 
+           cost = (1- treatment_stop ) * sum(v_c_sae_events * v_weight_sae)) 
 
 # Add instant utilities
 util_instant <-   add_util(evt = "relapse" ,
@@ -1085,7 +1123,7 @@ total_runtime <- system.time({
     debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
-    common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
+    #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
     unique_pt_inputs = unique_pt_inputs,      # inputs that change within a simulation between interventions
     init_event_list = init_event_list,        # initial event list
     evt_react_list = evt_react_list,          # reaction of events
@@ -1097,7 +1135,7 @@ total_runtime <- system.time({
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment_code",
-                "treatment_line", "n_switch", "years_on_treatment"),
+                "treatment_line", "n_switch", "years_on_treatment", "treatment_stop"),
     v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
     save_input_matrix = TRUE # Export the input matrix for EVPPI
   )
@@ -1144,11 +1182,25 @@ total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
 
 
+#drop natalizumab-biosimilar-SC
+total_costs <- total_costs[,-c(4)]
+total_qalys <- total_qalys[,-c(4)]
+
+# Function to summarise the results
+#source("R/summarise_samples.R")
+#source("R/summarise_ce_results.R")
 results_table <- summarise_ce_results(total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
-View(results_table)
+#View(results_table)
+
+write.csv(results_table, file ="results/results_100x100_S3_PP_17_Jan_2025.csv")
+saveRDS(total_qalys_ipd, file ="results/total_qalys_ipd_100x100_S3_PP_17_Jan_2025.RDS")
+saveRDS(total_costs_ipd, file ="results/total_costs_ipd__100x100_S3_PP_17_Jan_2025.RDS")
+saveRDS(n_relapse_ipd, file ="results/n_relapse_ipd_100x100_PP_S3_17_Jan_2025.RDS")
+saveRDS(final_edss_value_ipd, file ="results/final_edss_value_ipd_100x100_S3_PP_17_Jan_2025v.RDS")
+
 
 # Create a BCEA object
 des_bcea <- bcea(eff = total_qalys,

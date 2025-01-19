@@ -3,31 +3,6 @@
 ## Validated: Javier Sanchez Alvarez ####
 ##### 11/11/2024 #######################
 
-## Issues identified during validation to be addressed:
-#1 random substreams of numbers to ensure patients would share the same random seed for each specific variable
-#1.a setting the seed per arm
-#2 modify_item is not sequential
-#3 round() may round up or down depending on odd or even numbers
-#4 unintended behavior, patient time to events are initialized at the patient-arm level
-#5 errors when no PSA
-#6 Event "age" has been defined in the list of add_reactevt, but currently not used
-#7 Modular approach to be implemented
-
-## Changes made
-# hard coded data moved to own scripts
-# added in baseline distribution of severity for HARRMS and RRMS patients from MS registry
-# added baseline discontinuation rates calculated from AFFIRM proportions
-# CDP, ARR, Discontinuation & SAEs NMA data pulled in from CSV on clinical drive, to be moved to github repo
-
-## Pending
-#1 I was not able to implement random substreams, alternatively could we set the same seed at every random step?
-# There was comment from JSA to that effect where the seed could be set on every (draw_tte)
-# check scale of followup time for discont/saes is in weeks, months or years?
-# check if the NMA results are on the log scale?
-# check if log rates specified correctly in draw_tte()
-# check if hr in draw_tte() picking up the correct treatments?
-# Is Teriflunomide  in scope, it's SAEs NMA but we have not costed it?
-# What are we doing about stemcell transplantation?
 
 rm(list = ls())
 
@@ -240,7 +215,7 @@ hr_rrms_cdp3_fe <- read.csv("data/Releff_RRMS_CDP3_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp3_fe  <- hr_rrms_cdp3_fe[,c("mean", "sd")]
 # CDP6 NMA
-hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_3_FE.csv",
+hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_FE.csv",
                             header = TRUE, row.names=1)
 m_hr_rrms_cdp6_fe  <- hr_rrms_cdp6_fe[,c("mean", "sd")] 
 # ARR NMA
@@ -370,8 +345,8 @@ common_all_inputs <-add_item(
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"]))
     temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"], 
-                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","sd"])) # assumed same as 44μg
+                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
+                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"])) # assumed same as 44μg
     temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"],  
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","sd"]))
