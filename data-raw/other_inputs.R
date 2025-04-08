@@ -34,10 +34,18 @@ v_smr <- as.double(c(1.68, (2.05-1.38)/3.92))
 names(v_smr) <- c("hr", "sd")
 write.csv(v_smr, file="data/v_smr.csv")
 
-## Excess all cause mortality for MS patients HR br severity
+## Excess all cause mortality for MS patients HR by severity
 v_smr_severity <- matrix(c(rep(1.6, 4), rep(1.84, 3), rep(4.44,3)),
                          nrow=1, byrow = FALSE, dimnames = list("mean", v_edss_values))
 write.csv(v_smr_severity, file="data/v_smr_severity.csv")
+
+## Excess all cause mortality by severity edss<4 (Jick et al), edss>=4 (Harding et al)
+v_smr_severity_Harding <- matrix(
+  c(rep(1.68,4)            , rep(2.02, 2)            , 3.86            , 4.76               , 22.17          , 60.74,
+    rep((2.05-1.38)/3.92,4), rep((3.71-0.98)/3.92, 2),(5.47-2.63)/3.92 , (7.56-2.82)/3.92, (26.75-18.20)/3.92,(76.41-47.62)/3.92),
+  nrow=2, byrow = TRUE, dimnames = list(c("hr", "sd"), v_edss_values)
+)
+write.csv(v_smr_severity_Harding, file="data/v_smr_severity_Harding.csv")
 
 ## baseline discontinuation AFFIRM and Antilope
 arm_names <- c("AFFIRM Placebo", "AFFIRM Natalizumab IV300", 
