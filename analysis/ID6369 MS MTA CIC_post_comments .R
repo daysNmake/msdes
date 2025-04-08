@@ -336,8 +336,8 @@ common_all_inputs <-add_item(
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"]))
     temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"], 
-                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","sd"])) # assumed same as 44μg
+                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
+                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"])) # assumed same as 44μg
     temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"],  
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","sd"]))
@@ -355,7 +355,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
-                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"]), 
+                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
                    exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"])) ,
                  nrow = 1, ncol = n_treatments)

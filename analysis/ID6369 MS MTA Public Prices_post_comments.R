@@ -34,8 +34,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 10
-n_samples <- 10
+n_patients <- 100
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -182,8 +182,8 @@ m_c_relapse <- m_c_relapse * 2 # Annualised these 6 months costs
 df_c_sae <- saes_data[,4]
 names(df_c_sae)<-sae_names
 
-## RRMS & SPMS edss utilities Clarity and Orme 
-u_edss <- read.csv("data/m_u_edss.csv_clarity", header = T, row.names = 1)
+## RRMS & SPMS edss utilities Orme 
+u_edss <- read.csv("data/m_u_edss.csv", header = T, row.names = 1)
 m_u_edss_rrms <- u_edss[,c("rrms_mean","rrms_sd")]
 m_u_edss_spms <- u_edss[,c("spms_mean","spms_sd")]
 
@@ -332,8 +332,8 @@ common_all_inputs <-add_item(
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"]))
     temp[v_treatment_codes["IFNβ-1a SC 22μg"]] <- exp(rnorm(1,
-                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"], 
-                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","sd"])) # assumed same as 44μg
+                                                            mean = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"], 
+                                                            sd = m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","sd"])) # assumed same as 44μg
     temp[v_treatment_codes["IFNβ-1a IM 30μg"]] <- exp(rnorm(1,
                                                             mean = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"],  
                                                             sd = m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","sd"]))
@@ -351,7 +351,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
-                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC22","mean"]), 
+                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), 
                    exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
                    exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"])) ,
                  nrow = 1, ncol = n_treatments)
@@ -766,6 +766,9 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              sex = sample(size = 1, x = c(0, 1), 
                                           prob = c(1 - prop_female, prop_female)),
                              n_relapse = 0,
+                             n_sae_evts = 0,
+                             n_edssinc_evts = 0,
+                             n_edssdec_evts = 0,
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
@@ -943,8 +946,10 @@ evt_react_list <-
                input = {
                  edss_value = min(edss_value + 1, max(v_edss_values))
                  age = initial_age + round(curtime)
+                 n_edssinc_evts = n_edssinc_evts + 1
                  modify_item(list(edss_value = edss_value,
-                                  age = age))
+                                  age = age,
+                                  n_edssinc_evts = n_edssinc_evts))
                  if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  # simulate the next time to EDSS increase
@@ -966,8 +971,10 @@ evt_react_list <-
                input = {
                  edss_value = max(edss_value - 1, min(v_edss_values))
                  age = initial_age + round(curtime)
+                 n_edssdec_evts = n_edssdec_evts + 1
                  modify_item(list(edss_value = edss_value,
-                                  age = age))
+                                  age = age,
+                                  n_edssdec_evts = n_edssdec_evts))
                  if (edss_value > 6 & treatment_stop == 0) {modify_item(list(treatment_stop = 1))}
                  
                  #  next time to EDSS decrease
@@ -1002,7 +1009,9 @@ evt_react_list <-
   add_reactevt(name_evt = "serious_adverse_event",
                input = {  
                  age = initial_age + round(curtime)
-                 modify_item(list(age = age))           
+                 n_sae_evts = n_sae_evts + 1
+                 modify_item(list(age = age,
+                                  n_sae_evts = n_sae_evts))           
                  
                  # Sample next serious event. T
                  new_event(list(
@@ -1132,7 +1141,7 @@ total_runtime <- system.time({
     ncores = 4,                               # number of cores to use, recommended not to use all
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
-    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "current_treatment_code",
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
                 "treatment_line", "n_switch", "years_on_treatment", "treatment_stop"),
     v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
     save_input_matrix = TRUE # Export the input matrix for EVPPI
@@ -1143,7 +1152,8 @@ total_runtime <- system.time({
 
 # Summarise the results
 # Get the total costs and QALYs , number of relapses and final edss value for each patient
-total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-array(NA, dim = c(n_samples, n_treatments, n_patients),
+total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-
+  n_edssinc_evts_ipd<- n_edssdec_evts_ipd<- n_sae_evts_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -1169,6 +1179,15 @@ for(treatment_name in v_treatment_names) {
       final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$edss_value[temp_index]
       
+      n_edssinc_evts_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$n_edssinc_evts[temp_index]
+      
+      n_edssdec_evts_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$n_edssdec_evts[temp_index]
+      
+      n_sae_evts_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$n_sae_evts[temp_index]
+      
     } # End loop over patients
     # Summarise for just this sample
     
@@ -1178,8 +1197,20 @@ for(treatment_name in v_treatment_names) {
 # Take mean over patients to remove individual variation
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
+total_relapses <- apply(n_relapse_ipd, c(1, 2), mean)
+total_edss_increases <- apply(n_edssinc_evts_ipd, c(1, 2), mean)
+total_edss_decreases <- apply(n_edssdec_evts_ipd, c(1, 2), mean)
+total_saes <- apply(n_sae_evts_ipd, c(1, 2), mean)
 
+#compare events by treatment groups
+trt_relapses <- apply(total_relapses, 2, mean)
+trt_edss_increases <- apply(total_edss_increases, 2, mean)
+trt_edss_decreases <- apply(total_edss_decreases, 2, mean)
+trt_saes <- apply(total_saes, 2, mean)
+key_events_trt_grps <- as.data.frame(cbind(trt_relapses, trt_edss_increases, trt_edss_decreases, trt_saes)
+)
 
+# cost-effectiveness analysis
 results_table <- summarise_ce_results(total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
