@@ -318,20 +318,28 @@ common_all_inputs <-add_item(
   # smr by severity 
   v_hr_smr_edss = if(psa_bool) {
     temp <- v_smr_severity_harding["smr",]
-    for(j_edss in 1:6) {
-      temp[j_edss] <- exp(
-        rnorm(1, mean=log(v_smr_severity_harding["smr",j_edss]), 
-              sd=v_smr_severity_harding["sd",j_edss])
-      )
-    }    
-    for(j_edss in 7:10) {
+    
+    #The rlnorm distribution gives the most reliable SMR credible interval
+    for(j_edss in 1:10) {
       temp[j_edss] <- log(
-        rlnorm(1, mean=v_smr_severity_harding["smr",j_edss], 
-               sd=v_smr_severity_harding["sd",j_edss])
-      )
+        rlnorm(1, mean=v_smr_severity_harding["smr",j_edss]/ v_smr_severity_harding["smr",5], 
+               sd=v_smr_severity_harding["sd",j_edss] + v_smr["sd",] ) * rnorm(1, mean = v_smr["hr",] , sd=v_smr["sd",])
+       )
     }
     
     temp
+    
+    
+#    #  alternative drawing from a normal distribution gives very wide credible interbvals
+#    for(j_edss in 1:10) {
+#      temp[j_edss] <- exp(
+#        rnorm(1, mean= log(v_smr_severity_harding["smr",j_edss] - log(v_smr_severity_harding["smr",5])) , 
+#              sd=v_smr_severity_harding["sd",j_edss] + v_smr["sd",])  + 
+#          rnorm(1, mean = log(v_smr["hr",]) , sd=v_smr["sd",])
+#      )
+#    }
+#    temp
+    
     
   } else {
     v_smr_severity_harding["smr",]
