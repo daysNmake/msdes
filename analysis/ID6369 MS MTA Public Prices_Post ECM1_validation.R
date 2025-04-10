@@ -156,12 +156,13 @@ m_c_edss_spms <- m_c_edss[,c("spms_mean","spms_se")]
 
 
 ## Excess all cause mortality for MS patients HR by severity edss<4 (Jick et al), edss>=4 (Harding et al)
-v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Harding.csv", header = T, row.names = 1))
+#v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Harding.csv", header = T, row.names = 1))
+v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Jick_Harding.csv", header = T, row.names = 1)) #calibrated
 dimnames(v_smr_severity_harding) <- list(c("smr", "sd"), v_edss_values)
 
 ## Excess all cause mortality for MS patients Jick 2014 
 v_smr <- as.matrix(read.csv("data/v_smr.csv", header = T, row.names = 1))
-v_smr_severity_harding[,5:10] <- v_smr
+#v_smr_severity_harding[,5:10] <- v_smr
 
 ##  Annual treatment, administration and monitoring costs 
 #public list prices
@@ -1235,10 +1236,11 @@ total_runtime <- system.time({
 
 # Summarise the results
 # Get the total costs and QALYs , number of relapses and final edss value for each patient
-#total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-
+#total_costs_ipd <- total_qalys_ipd <-  n_relapse_ipd <-
 #  n_edssinc_evts_ipd<- n_edssdec_evts_ipd<- n_sae_evts_ipd<- 
-   yrs_edss_0_ipd <- yrs_edss_1_ipd <- yrs_edss_2_ipd <- yrs_edss_3_ipd <- yrs_edss_4_ipd <- yrs_edss_5_ipd <- yrs_edss_6_ipd <- 
-     yrs_edss_7_ipd <- yrs_edss_8_ipd <- yrs_edss_9_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
+#   yrs_edss_0_ipd <- yrs_edss_1_ipd <- yrs_edss_2_ipd <- yrs_edss_3_ipd <- yrs_edss_4_ipd <- yrs_edss_5_ipd <- yrs_edss_6_ipd <- 
+#     yrs_edss_7_ipd <- yrs_edss_8_ipd <- yrs_edss_9_ipd <- 
+     final_edss_value_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -1252,16 +1254,16 @@ for(treatment_name in v_treatment_names) {
         #results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
         results$output_psa[[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
       #validation
-      yrs_edss_0_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_0[temp_index]
-      yrs_edss_1_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_1[temp_index]
-      yrs_edss_2_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_2[temp_index]
-      yrs_edss_3_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_3[temp_index]
-      yrs_edss_4_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_4[temp_index]
-      yrs_edss_5_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_5[temp_index]
-      yrs_edss_6_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_6[temp_index]
-      yrs_edss_7_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_7[temp_index]
-      yrs_edss_8_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_8[temp_index]
-      yrs_edss_9_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_9[temp_index]
+      #yrs_edss_0_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_0[temp_index]
+     # yrs_edss_1_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_1[temp_index]
+      #yrs_edss_2_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_2[temp_index]
+      #yrs_edss_3_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_3[temp_index]
+      #yrs_edss_4_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_4[temp_index]
+      #yrs_edss_5_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_5[temp_index]
+      #yrs_edss_6_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_6[temp_index]
+      #yrs_edss_7_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_7[temp_index]
+      #yrs_edss_8_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_8[temp_index]
+      #yrs_edss_9_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_9[temp_index]
       
       #total_costs_ipd[i_sample, treatment_name, i_patient] <-
         #results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
@@ -1272,8 +1274,8 @@ for(treatment_name in v_treatment_names) {
       #n_relapse_ipd[i_sample, treatment_name, i_patient] <-
         #results$output_psa[[i_sample]]$merged_df$n_relapse[temp_index]
       
-      #final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
-        #results$output_psa[[i_sample]]$merged_df$edss_value[temp_index]
+      final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$edss_value[temp_index]
       
       #n_edssinc_evts_ipd[i_sample, treatment_name, i_patient] <-
         #results$output_psa[[i_sample]]$merged_df$n_edssinc_evts[temp_index]
@@ -1291,16 +1293,16 @@ for(treatment_name in v_treatment_names) {
 }
 
 # Take mean over patients to remove individual variation
-   total_yrs_edss_0 <- apply(yrs_edss_0_ipd, c(1, 2), mean)
-    total_yrs_edss_1 <- apply(yrs_edss_1_ipd, c(1, 2), mean)
-    total_yrs_edss_2 <- apply(yrs_edss_2_ipd, c(1, 2), mean)
-    total_yrs_edss_3 <- apply(yrs_edss_3_ipd, c(1, 2), mean)
-    total_yrs_edss_4 <- apply(yrs_edss_4_ipd, c(1, 2), mean)
-    total_yrs_edss_5 <- apply(yrs_edss_5_ipd, c(1, 2), mean)
-    total_yrs_edss_6 <- apply(yrs_edss_6_ipd, c(1, 2), mean)
-    total_yrs_edss_7 <- apply(yrs_edss_7_ipd, c(1, 2), mean)
-    total_yrs_edss_8 <- apply(yrs_edss_8_ipd, c(1, 2), mean)
-    total_yrs_edss_9 <- apply(yrs_edss_9_ipd, c(1, 2), mean)
+#   total_yrs_edss_0 <- apply(yrs_edss_0_ipd, c(1, 2), mean)
+#    total_yrs_edss_1 <- apply(yrs_edss_1_ipd, c(1, 2), mean)
+#    total_yrs_edss_2 <- apply(yrs_edss_2_ipd, c(1, 2), mean)
+#    total_yrs_edss_3 <- apply(yrs_edss_3_ipd, c(1, 2), mean)
+#    total_yrs_edss_4 <- apply(yrs_edss_4_ipd, c(1, 2), mean)
+#    total_yrs_edss_5 <- apply(yrs_edss_5_ipd, c(1, 2), mean)
+#    total_yrs_edss_6 <- apply(yrs_edss_6_ipd, c(1, 2), mean)
+#    total_yrs_edss_7 <- apply(yrs_edss_7_ipd, c(1, 2), mean)
+#    total_yrs_edss_8 <- apply(yrs_edss_8_ipd, c(1, 2), mean)
+#    total_yrs_edss_9 <- apply(yrs_edss_9_ipd, c(1, 2), mean)
 #total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 #total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
 #total_relapses <- apply(n_relapse_ipd, c(1, 2), mean)
@@ -1308,27 +1310,40 @@ for(treatment_name in v_treatment_names) {
 #total_edss_decreases <- apply(n_edssdec_evts_ipd, c(1, 2), mean)
 #total_saes <- apply(n_sae_evts_ipd, c(1, 2), mean)
 
+     
 #compare events by treatment groups
-    trt_yrs_edss_0 <- apply(total_yrs_edss_0, 2, mean)
-     trt_yrs_edss_1 <- apply(total_yrs_edss_1, 2, mean)
-     trt_yrs_edss_2 <- apply(total_yrs_edss_2, 2, mean)
-     trt_yrs_edss_3 <- apply(total_yrs_edss_3, 2, mean)
-     trt_yrs_edss_4 <- apply(total_yrs_edss_4, 2, mean)
-     trt_yrs_edss_5 <- apply(total_yrs_edss_5, 2, mean)
-     trt_yrs_edss_6 <- apply(total_yrs_edss_6, 2, mean)
-     trt_yrs_edss_7 <- apply(total_yrs_edss_7, 2, mean)
-     trt_yrs_edss_8 <- apply(total_yrs_edss_8, 2, mean)
-     trt_yrs_edss_9 <- apply(total_yrs_edss_9, 2, mean)
+#    trt_yrs_edss_0 <- apply(total_yrs_edss_0, 2, mean)
+#     trt_yrs_edss_1 <- apply(total_yrs_edss_1, 2, mean)
+#     trt_yrs_edss_2 <- apply(total_yrs_edss_2, 2, mean)
+#     trt_yrs_edss_3 <- apply(total_yrs_edss_3, 2, mean)
+#     trt_yrs_edss_4 <- apply(total_yrs_edss_4, 2, mean)
+#     trt_yrs_edss_5 <- apply(total_yrs_edss_5, 2, mean)
+#     trt_yrs_edss_6 <- apply(total_yrs_edss_6, 2, mean)
+#     trt_yrs_edss_7 <- apply(total_yrs_edss_7, 2, mean)
+#     trt_yrs_edss_8 <- apply(total_yrs_edss_8, 2, mean)
+#     trt_yrs_edss_9 <- apply(total_yrs_edss_9, 2, mean)
 #trt_relapses <- apply(total_relapses, 2, mean)
 #trt_edss_increases <- apply(total_edss_increases, 2, mean)
 #trt_edss_decreases <- apply(total_edss_decreases, 2, mean)
+
 #trt_saes <- apply(total_saes, 2, mean)
+
 #key_events_trt_grps <- as.data.frame(cbind(trt_relapses, trt_edss_increases, trt_edss_decreases, trt_saes)
 #)
-key_events_trt_grps <- as.data.frame(cbind(trt_yrs_edss_0, trt_yrs_edss_1, trt_yrs_edss_2, trt_yrs_edss_3, trt_yrs_edss_4, 
-       trt_yrs_edss_5, trt_yrs_edss_6, trt_yrs_edss_7, trt_yrs_edss_8, trt_yrs_edss_9))
-write.csv(key_events_trt_grps, "patients_overtime_jick motrality_100x100_post_ECM1.csv")
+#key_events_trt_grps <- as.data.frame(cbind(trt_yrs_edss_0, trt_yrs_edss_1, trt_yrs_edss_2, trt_yrs_edss_3, trt_yrs_edss_4, 
+#       trt_yrs_edss_5, trt_yrs_edss_6, trt_yrs_edss_7, trt_yrs_edss_8, trt_yrs_edss_9))
+#write.csv(key_events_trt_grps, "patients_overtime_jick motrality_100x100_post_ECM1.csv")
 
+# compare number of dead patients in edss groups
+#edss_dis <- matrix(rep(1:10,length(v_treatment_names)), byrow =TRUE, nrow = length(v_treatment_names), 
+#                   dimnames = list(v_treatment_names, paste("edss", rep(0:9))))
+#for (i.edss in 1:nrow(edss_dis)){
+#  for (j.edss in 1:ncol(edss_dis)){
+#    edss_dis[i.edss,j.edss]<- length(dead$edss_value[dead$trt == names(edss_dis[,j.edss]) & dead$edss_value==j.edss-1])
+#    edss_dis[i.edss,j.edss]<- length(final_edss_value_ipd[1, treatment_name == names(edss_dis[,j.edss]),])
+#    }}
+#edss_dis
+save(final_edss_value_ipd, file="jick_edss_value_ipd.RDS")
 # cost-effectiveness analysis
 results_table <- summarise_ce_results(total_qalys = total_qalys, 
                                       total_costs = total_costs,
