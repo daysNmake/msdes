@@ -832,6 +832,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              tto_dp1 = 0, tto_dp2 = 0, tto_dp3 = 0, tto_dp4 = 0, tto_dp5 = 0, tto_dp6 = 0, tto_dp7 = 0,  #time to progression for each event upto 7 events
                              tto_rel1 = 0, tto_rel2 = 0, tto_rel3 = 0, tto_rel4 = 0, tto_rel5 = 0, tto_rel6 = 0, tto_rel7 = 0,  #time to progression for each event upto 7 events
                              yrs_edss_0 = 0, yrs_edss_1 = 0, yrs_edss_2 = 0, yrs_edss_3 = 0, yrs_edss_4 = 0, yrs_edss_5 = 0, yrs_edss_6 = 0, yrs_edss_7 = 0, yrs_edss_8 = 0, yrs_edss_9 = 0, #  annual severity state counter
+                             waning = 1, # waning weight flag
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
@@ -872,7 +873,7 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+              hr = (1 - spms_flag) * ((1 - treatment_stop) * (1-(1-v_hr_arr[current_treatment_code])*waning)+
               treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
             )
             edss_increase <- draw_tte(
@@ -888,7 +889,7 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+              hr = (1 - spms_flag ) * ((1 - treatment_stop) * (1-(1-v_hr_edss_increase[current_treatment_code])*waning) + 
                                          treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
             )
             edss_decrease <- draw_tte(
@@ -977,6 +978,23 @@ evt_react_list <-
                    age = age
                  ))
                  
+                 # time on treatment-line counter
+                 if(treatment_line == 2 & spms_flag == 0 & treatment_stop == 0) {
+                   modify_item(list(t_2ndline = years_on_treatment))
+                 } else if (treatment_line == 3 & spms_flag == 0 & treatment_stop == 0){
+                   modify_item(list(t_3rdline = years_on_treatment))
+                 }else if (treatment_line == 4 & spms_flag == 0 & treatment_stop == 0){
+                   modify_item(list(t_4thline = years_on_treatment))
+                 }
+                 
+                 # 2nd line RRMS treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.25 at t >=5  otherwise 1
+                 if (treatment_line == 2 & spms_flag == 0 & treatment_stop == 0) {
+                   if (t_2ndline >=3 &  t_2ndline <5 ){modify_item(list(waning = 0.25))
+                   } else if (t_2ndline >= 5){modify_item(list(waning = 0.5))}
+                 } else if(treatment_line != 2 & waning != 1) {modify_item(list(waning = 1))
+                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 1))}
+                 
+                 
                  # time on edss 0-9 counter annually
                  yrs_edss_0 = yrs_edss_0 + 1
                  yrs_edss_1 = yrs_edss_1 + 1
@@ -1025,7 +1043,7 @@ evt_react_list <-
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
                                       v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                     hr = (1 - spms_flag) * ((1 - treatment_stop) * v_hr_arr[current_treatment_code] +
+                     hr = (1 - spms_flag) * ((1 - treatment_stop) * (1-(1-v_hr_arr[current_treatment_code])*waning) +
                                                treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
                  )))
                }) %>%
@@ -1049,7 +1067,7 @@ evt_react_list <-
                        v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                        spms_flag * (v_spms_edss_increase["rate"] +
                                       v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * v_hr_edss_increase[current_treatment_code] + 
+                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * (1-(1-v_hr_edss_increase[current_treatment_code])*waning) + 
                                                 treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
                    )
                  ))}
@@ -1229,7 +1247,7 @@ total_runtime <- system.time({
     drc = 0.035,                              # discount rate for costs
     drq = 0.035,                               # discount rate for qaly/lys
     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
-                "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_progression", "t_2ndline", "t_3rdline", "t_4thline", "yrs_edss_0", 
+                "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_progression", "t_2ndline", "t_3rdline", "t_4thline", "waning", "yrs_edss_0", 
                 "yrs_edss_1", "yrs_edss_2", "yrs_edss_3", "yrs_edss_4", "yrs_edss_5", "yrs_edss_6", "yrs_edss_7", "yrs_edss_8", "yrs_edss_9", #  annual severity state counter
                 "tto_dp1" , "tto_dp2" , "tto_dp3" , "tto_dp4" , "tto_dp5" , "tto_dp6" , "tto_dp7",
                 "tto_rel1" , "tto_rel2" , "tto_rel3" , "tto_rel4" , "tto_rel5" , "tto_rel6" , "tto_rel7"),
