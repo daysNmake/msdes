@@ -41,9 +41,11 @@ write.csv(v_smr_severity, file="data/v_smr_severity.csv")
 
 ## Excess all cause mortality by severity edss<4 (Jick et al), edss>=4 (Harding et al)
 v_smr_severity_Harding <- matrix(
-  c(rep(1.68,4)            , rep(2.02, 2)            , 3.86            , 4.76               , 22.17          , 60.74,
-    rep((2.05-1.38)/3.92,4), rep((3.71-0.98)/3.92, 2),(5.47-2.63)/3.92 , (7.56-2.82)/3.92, (26.75-18.20)/3.92,(76.41-47.62)/3.92),
-  nrow=2, byrow = TRUE, dimnames = list(c("hr", "sd"), v_edss_values)
+  c(rep(1.68,4)                      , rep(2.02, 2)                      , 3.86                      , 4.76                     , 22.17                        , 60.74,
+    rep((2.05-1.38)/3.92,4)          , rep((3.71-0.98)/3.92, 2)          ,(5.47-2.63)/3.92           , (7.56-2.82)/3.92          , (26.75-18.20)/3.92          ,(76.41-47.62)/3.92,
+    rep((log(2.05)-log(1.38))/3.92,4), rep((log(3.71)-log(0.98))/3.92, 2),(log(5.47)-log(2.63))/3.92 , (log(7.56)-log(2.82))/3.92, (log(26.75)-log(18.20))/3.92,(log(76.41)-log(47.62))/3.92
+    ),
+  nrow=3, byrow = TRUE, dimnames = list(c("smr", "sd", "logsd"), v_edss_values)
 )
 write.csv(v_smr_severity_Harding, file="data/v_smr_severity_Harding.csv")
 
@@ -77,4 +79,21 @@ df_c_spms[,"PegIFN-β-1 SC 125μg"] <- df_c_spms[,"PegIFN-β-1 SC 125μg"]  + df
 df_c_spms[,"Siponimod"] <- c(rep(7239.11+733+139, 3))
 write.csv(df_c_spms, file="data/df_c_spms.csv") 
 
+
+## Re treatment proportions for 2nd and 3rd line treatments HARRMS population (Source: MS Registry Analysis)
+treatment_names <- c("Natalizumab-IV","Natalizumab-SC",
+                     "Natalizumab biosimilar-IV", "Natalizumab biosimilar-SC",
+                     "Cladribine", "Ofatumumab", "Ocrelizumab")
+n_nat<- 4 # number of Natalizumab treatment variations
+n_2ndline<- c(rep(17,n_nat), 17, 23, 34) 
+r_2ndline<- rep(sum(n_2ndline[-c(2:n_nat)]), length(n_2ndline)) 
+n_3rdline<- c(rep(5,n_nat), 2, 4, 9) 
+r_3rdline<- rep(sum(n_3rdline[-c(2:n_nat)]), length(n_3rdline)) 
+parameters_names<- c("alpha_2ndline","beta_2ndline","alpha_3rdline","beta_3rdline")
+
+m_proportion_ontrtline <- matrix(c(n_2ndline, r_2ndline, n_3rdline, r_3rdline) , byrow=TRUE, ncol =7, 
+                            dimnames=list(parameters_names, treatment_names))
+m_proportion_ontrtline
+
+write.csv(m_proportion_ontrtline, file="data/m_proportion_ontrtline.csv")
 
