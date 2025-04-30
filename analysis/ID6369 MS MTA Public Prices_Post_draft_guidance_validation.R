@@ -35,7 +35,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 100
+n_samples <- 10
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -45,7 +45,7 @@ v_treatment_names <- c("Natalizumab-IV",
                       # "Fingolimod",
                       # "Alemtuzumab",
                        "Cladribine", 
-                      # "Ponesimod" ,
+                       "Ublituximab" ,
                        "Ofatumumab",
                        "Ocrelizumab" #,
                       # "PegIFN-β-1 SC 125μg", 
@@ -69,12 +69,12 @@ v_higher_line_treatments <- c("Natalizumab-IV",
                               "Natalizumab-SC",
                               "Natalizumab biosimilar-IV",
                               "Natalizumab biosimilar-SC",
-                            # "Alemtuzumab",
+                              "Cladribine",
+                              "Ublituximab",
                               "Ofatumumab",
-                              "Cladribine"
+                              "Ocrelizumab"
                               )
-v_higher_line_treatment_codes <- c(1, 2, 3, 4, 5, 6 #, 7
-                                   )
+v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
 ## Model event states
@@ -159,7 +159,8 @@ v_smr <- read.csv("data/v_smr.csv", header = T, row.names = 1)
 
 ## Excess all cause mortality for MS patients HR by severity edss<4 (Jick et al), edss>=4 (Harding et al)
 v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Harding.csv", header = T, row.names = 1))
-dimnames(v_smr_severity_harding) <- list(c("smr", "sd"), v_edss_values)
+v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on EDSS 8 & 9 are equal to EDSS7 
+dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), v_edss_values)
 
 ##  Annual treatment, administration and monitoring costs 
 #public list prices
@@ -238,6 +239,9 @@ hr_rrms_discontinuation_fe <- read.csv("data/Releff_RRMS_Discontinuation_FE.csv"
                                        header = TRUE, row.names=1)
 m_hr_rrms_discontinuation_fe <- as.matrix(hr_rrms_discontinuation_fe[,c("mean", "sd")]) 
 
+## proportions on 2nd and 3rd line treatment, assuming Cladribine and Ublituximab are equivalent to Natalizumab
+m_proportion_ontrtline<- read.csv("data/m_proportion_ontrtline.csv", header = T, row.names = 1)
+colnames(m_proportion_ontrtline) <- v_treatment_names
 
 # Global parameters of the model as they are common to all patients and treatments
 common_all_inputs <-add_item(
@@ -315,34 +319,23 @@ common_all_inputs <-add_item(
   }
   
 ) %>% add_item(
-  # smr by severity 
+  # smr by severity Harding centered on Jick
   v_hr_smr_edss = if(psa_bool) {
     temp <- v_smr_severity_harding["smr",]
-    
-    #The rlnorm distribution gives the most reliable SMR credible interval
-#    for(j_edss in 1:10) {
-#      temp[j_edss] <- log(
-#        rlnorm(1, mean=v_smr_severity_harding["smr",j_edss]/ v_smr_severity_harding["smr",5], 
-#               sd=v_smr_severity_harding["sd",j_edss] + v_smr["sd",] ) * rnorm(1, mean = v_smr["hr",] , sd=v_smr["sd",])
-#       )
-#    }
-    
-#    temp
-    
-    
-    #  alternative drawing from a normal distribution gives very wide credible intervals on edss 8&9
+
     for(j_edss in 1:10) {
       temp[j_edss] <- exp(
-        rnorm(1, mean= log(v_smr_severity_harding["smr",j_edss] - log(v_smr_severity_harding["smr",5])) , 
-              sd=v_smr_severity_harding["sd",j_edss] + v_smr["sd",])  + 
-          rnorm(1, mean = log(v_smr["hr",]) , sd=v_smr["sd",])
+        rnorm(1, mean= log(v_smr_severity_harding["smr",j_edss]) - log(v_smr_severity_harding["smr",5]) , 
+              sd=v_smr_severity_harding["logsd",j_edss]) 
+      ) + rnorm(1000, mean=  log(v_smr_severity_harding["smr",1]), 
+                sd=v_smr_severity_harding["logsd",1]
       )
     }
+    
     temp
     
-    
   } else {
-    v_smr_severity_harding["smr",]
+    (v_smr_severity_harding["smr",] / v_smr_severity_harding["smr",5]) *v_smr_severity_harding["smr",1]
   }
   
 ) %>% add_item(
@@ -363,9 +356,9 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"],
                                                        sd = m_hr_rrms_cdp6_fe["Cladribine O3.5","sd"]))
-#    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-#                                                      mean = m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"],
-#                                                      sd = m_hr_rrms_cdp6_fe["Fingolimod O0.5","sd"])) #  trt class 
+    temp[v_treatment_codes["Ublituximab"]] <- exp(rnorm(1,
+                                                      mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"],
+                                                      sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"])) #  trt class 
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
                                                        sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"])) #  trt class 
@@ -397,8 +390,8 @@ common_all_inputs <-add_item(
   } else {matrix(c(1, 1, 1, 1, 
 #                   exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), 
                     exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
-#                   exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), 
-                   exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]) #, 
+                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
+                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]) #, 
 #                    exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), 
 #                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
@@ -493,9 +486,9 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                                        mean =  m_hr_rrms_arr_fe["Cladribine O3.5","mean"],
                                                        sd = m_hr_rrms_arr_fe["Cladribine O3.5","sd"]))
-#    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-#                                                      mean =  m_hr_rrms_arr_fe["Ponesimod O20","mean"],
-#                                                      sd = m_hr_rrms_arr_fe["Ponesimod O20","sd"]))
+    temp[v_treatment_codes["Ublituximab"]] <- exp(rnorm(1,
+                                                      mean =  m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"],
+                                                      sd = m_hr_rrms_arr_fe["Ocrelizumab IV600","sd"]))
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean =  m_hr_rrms_arr_fe["Ofatumumab SC20","mean"],
                                                        sd = m_hr_rrms_arr_fe["Ofatumumab SC20","sd"]))
@@ -528,7 +521,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
 #                   exp(m_hr_rrms_arr_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"]),  
                    exp(m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
-#                   exp(m_hr_rrms_arr_fe["Ponesimod O20","mean"]), 
+                   exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_arr_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]) #, 
 #                   exp(m_hr_rrms_arr_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_arr_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_arr_fe["Interferon beta 1a SC22","mean"]), 
@@ -577,9 +570,9 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Cladribine"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"],
                                                        sd = m_hr_rrms_discontinuation_fe["Cladribine O3.5","sd"]))
-#    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-#                                                      mean = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"],
-#                                                      sd = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","sd"])) # trt class  
+    temp[v_treatment_codes["Ublituximab"]] <- exp(rnorm(1,
+                                                      mean = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"],
+                                                      sd = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","sd"])) # trt class  
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
                                                        sd = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","sd"])) #  trt class 
@@ -612,7 +605,7 @@ common_all_inputs <-add_item(
                    exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
 #                   exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
-#                   exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), 
+                   exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]) #, 
 #                   exp(m_hr_rrms_discontinuation_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), 
@@ -739,9 +732,9 @@ common_all_inputs <-add_item(
 #                                                        mean = m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"],
 #                                                        sd = m_hr_rrms_saes_fe["Alemtuzumab IV12","sd"])) 
     temp[v_treatment_codes["Cladribine"]] <- 1 #assumption
-#    temp[v_treatment_codes["Ponesimod"]] <- exp(rnorm(1,
-#                                                      mean = m_hr_rrms_saes_fe["Ponesimod O20","mean"],
-#                                                      sd = m_hr_rrms_saes_fe["Ponesimod O20","sd"])) 
+    temp[v_treatment_codes["Ublituximab"]] <- exp(rnorm(1,
+                                                      mean = m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"],
+                                                      sd = m_hr_rrms_saes_fe["Ocrelizumab IV600","sd"])) 
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_saes_fe["Ofatumumab SC20","mean"], 
                                                        sd = m_hr_rrms_saes_fe["Ofatumumab SC20","sd"])) 
@@ -773,7 +766,7 @@ common_all_inputs <-add_item(
   } else {matrix(c(1, 1, 1, 1, 
 #                   exp(m_hr_rrms_saes_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"]), 
                    1, 
-#                   exp(m_hr_rrms_saes_fe["Ponesimod O20","mean"]), 
+                   exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]), 
                    exp(m_hr_rrms_saes_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]) #, 
 #                   exp(m_hr_rrms_saes_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), 
@@ -806,7 +799,28 @@ common_all_inputs <-add_item(
   }else {matrix(c(exp(m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(m_hr_rrms_arr_fe["Placebo","mean"]), 
                   exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"]), 
                   nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
-)
+
+  ) #%>% add_item(
+  #proportions on 2nd and 3rd line treatments
+#  m_prop_2nd_3rd_trt = if(psa_bool) {
+
+#    temp<- matrix(nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+#                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)))
+
+#    for(i_trt in 1:ncol(m_proportion_ontrtline)) {
+#      temp[1, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = m_proportion_ontrtline["beta_2ndline", i_trt])
+#      temp[2, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = m_proportion_ontrtline["beta_3rdline", i_trt])
+#    }
+    
+#    temp
+#  } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
+#                 byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+#                 dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
+#                 ))
+    
+#  }
+  
+#)
 
 
 #Put objects here that do not change as we loop through treatments for a patient
@@ -832,7 +846,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              tto_dp1 = 0, tto_dp2 = 0, tto_dp3 = 0, tto_dp4 = 0, tto_dp5 = 0, tto_dp6 = 0, tto_dp7 = 0,  #time to progression for each event upto 7 events
                              tto_rel1 = 0, tto_rel2 = 0, tto_rel3 = 0, tto_rel4 = 0, tto_rel5 = 0, tto_rel6 = 0, tto_rel7 = 0,  #time to progression for each event upto 7 events
                              yrs_edss_0 = 0, yrs_edss_1 = 0, yrs_edss_2 = 0, yrs_edss_3 = 0, yrs_edss_4 = 0, yrs_edss_5 = 0, yrs_edss_6 = 0, yrs_edss_7 = 0, yrs_edss_8 = 0, yrs_edss_9 = 0, #  annual severity state counter
-                             waning = 1, # waning weight flag
+                             waning = 0, # waning weight flag set to zero will have no effect on HR x (1-waning)
                              spms_flag = sample(size = 1, 
                                                 x = c(0, 1), # Random
                                                 prob = c(1 - initial_spms_prop, initial_spms_prop)),
@@ -840,7 +854,9 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                                                             x = c(0, 1), # Random
                                                             prob = c(1 - p_relapse_hospital,p_relapse_hospital)),
                              current_treatment = "Natalizumab", # This is later changed to trt
+                             #current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["2",]),
                              current_treatment_code = 1, # This is later changed to code of trt
+                             #current_treatment_code = v_treatment_codes[current_treatment],
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
                              years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
@@ -873,7 +889,7 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - spms_flag) * ((1 - treatment_stop) * (1-(1-v_hr_arr[current_treatment_code])*waning)+
+              hr = (1 - spms_flag) * ((1 - treatment_stop) * (v_hr_arr[current_treatment_code]*(1-waning)) +
               treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
             )
             edss_increase <- draw_tte(
@@ -889,7 +905,7 @@ init_event_list <-
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
-              hr = (1 - spms_flag ) * ((1 - treatment_stop) * (1-(1-v_hr_edss_increase[current_treatment_code])*waning) + 
+              hr = (1 - spms_flag ) * ((1 - treatment_stop) * (v_hr_arr[current_treatment_code]*(1-waning)) + 
                                          treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
             )
             edss_decrease <- draw_tte(
@@ -987,12 +1003,12 @@ evt_react_list <-
                    modify_item(list(t_4thline = years_on_treatment))
                  }
                  
-                 # 2nd line RRMS treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.25 at t >=5  otherwise 1
-                 if (treatment_line == 2 & spms_flag == 0 & treatment_stop == 0) {
-                   if (t_2ndline >=3 &  t_2ndline <5 ){modify_item(list(waning = 0.25))
-                   } else if (t_2ndline >= 5){modify_item(list(waning = 0.5))}
-                 } else if(treatment_line != 2 & waning != 1) {modify_item(list(waning = 1))
-                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 1))}
+                 # 2nd line RRMS treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5  otherwise 0
+#                 if (treatment_line == 2 & spms_flag == 0 & treatment_stop == 0) {
+#                   if (t_2ndline >=3 &  t_2ndline <5 ){modify_item(list(waning = 0.25))
+#                   } else if (t_2ndline >= 5){modify_item(list(waning = 0.5))}
+#                 } else if(treatment_line != 2 & waning != 0) {modify_item(list(waning = 0))
+#                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  
                  # time on edss 0-9 counter annually
@@ -1043,7 +1059,7 @@ evt_react_list <-
                                                   v_baseline_harrms_larr["DMTNatalizumab"]) +
                        spms_flag * (v_baseline_spms_larr["rate"] +
                                       v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                     hr = (1 - spms_flag) * ((1 - treatment_stop) * (1-(1-v_hr_arr[current_treatment_code])*waning) +
+                     hr = (1 - spms_flag) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) +
                                                treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
                  )))
                }) %>%
@@ -1067,7 +1083,7 @@ evt_react_list <-
                        v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                        spms_flag * (v_spms_edss_increase["rate"] +
                                       v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * (1-(1-v_hr_edss_increase[current_treatment_code])*waning) + 
+                     hr = (1 - spms_flag ) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) + 
                                                 treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
                    )
                  ))}
@@ -1137,10 +1153,11 @@ evt_react_list <-
                  discontinuation_rate = (treatment_line < 4) *  discontinuation_rate
                  n_switch = n_switch + 1
                  age = initial_age + round(curtime)
-                 modify_item(list(current_treatment = sample(x = v_higher_line_treatments,
-                                                             size = 1),
-                                  current_treatment_code = sample(x = v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes],
-                                                                  size = 1,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),0.4,0.4)}else{}),
+                 modify_item(list(current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes],
+                                                             size = 1,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}),
+                   #current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes], 
+                   #                           size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes]),
+                   current_treatment_code = v_higher_line_treatment_codes[current_treatment],
                                   treatment_line = treatment_line,
                                   discontinuation_rate = discontinuation_rate,
                                   n_switch = n_switch,

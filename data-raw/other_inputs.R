@@ -83,17 +83,19 @@ write.csv(df_c_spms, file="data/df_c_spms.csv")
 ## Re treatment proportions for 2nd and 3rd line treatments HARRMS population (Source: MS Registry Analysis)
 treatment_names <- c("Natalizumab-IV","Natalizumab-SC",
                      "Natalizumab biosimilar-IV", "Natalizumab biosimilar-SC",
-                     "Cladribine", "Ofatumumab", "Ocrelizumab")
+                     "Cladribine", "Ublituximab", "Ofatumumab", "Ocrelizumab")
 n_nat<- 4 # number of Natalizumab treatment variations
-n_2ndline<- c(rep(17,n_nat), 17, 23, 34) 
-r_2ndline<- rep(sum(n_2ndline[-c(2:n_nat)]), length(n_2ndline)) 
-n_3rdline<- c(rep(5,n_nat), 2, 4, 9) 
-r_3rdline<- rep(sum(n_3rdline[-c(2:n_nat)]), length(n_3rdline)) 
+# Ublituximab assumed equivelent to Ocrelizumab
+n_2ndline<- c(rep(17,n_nat), 17, 34, 23, 34) 
+r_2ndline<- rep(91, length(n_2ndline)) 
+n_3rdline<- c(rep(2,n_nat), 5, 9, 4, 9) 
+r_3rdline<- rep(20, length(n_3rdline)) 
 parameters_names<- c("alpha_2ndline","beta_2ndline","alpha_3rdline","beta_3rdline")
 
-m_proportion_ontrtline <- matrix(c(n_2ndline, r_2ndline, n_3rdline, r_3rdline) , byrow=TRUE, ncol =7, 
-                            dimnames=list(parameters_names, treatment_names))
+m_proportion_ontrtline <- matrix(c(n_2ndline, r_2ndline, n_3rdline, r_3rdline) , byrow=TRUE, ncol =8, 
+                                 dimnames=list(parameters_names, treatment_names))
 m_proportion_ontrtline
 
 write.csv(m_proportion_ontrtline, file="data/m_proportion_ontrtline.csv")
+
 

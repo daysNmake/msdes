@@ -1,5 +1,5 @@
-"","Natalizumab-IV","Natalizumab-SC","Natalizumab biosimilar-IV","Natalizumab biosimilar-SC","Cladribine","Ofatumumab","Ocrelizumab"
-"alpha_2ndline",17,17,17,17,17,23,34
-"beta_2ndline",91,91,91,91,91,91,91
-"alpha_3rdline",5,5,5,5,2,4,9
-"beta_3rdline",20,20,20,20,20,20,20
+"","Natalizumab-IV","Natalizumab-SC","Natalizumab biosimilar-IV","Natalizumab biosimilar-SC","Cladribine","Ublituximab","Ofatumumab","Ocrelizumab"
+"alpha_2ndline",17,17,17,17,17,34,23,34
+"beta_2ndline",91,91,91,91,91,91,91,91
+"alpha_3rdline",2,2,2,2,5,9,4,9
+"beta_3rdline",20,20,20,20,20,20,20,20
