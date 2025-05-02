@@ -800,27 +800,27 @@ common_all_inputs <-add_item(
                   exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"]), 
                   nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
 
-  ) #%>% add_item(
+  ) %>% add_item(
     #proportions on 2nd and 3rd line treatments
-#   m_prop_2nd_3rd_trt = if(psa_bool) {
+   m_prop_2nd_3rd_trt = if(psa_bool) {
     
-#    temp<- matrix(nrow= 2, ncol = ncol(m_proportion_ontrtline), 
-#                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)))
+    temp<- matrix(nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)))
 
-#    for(i_trt in 1:ncol(m_proportion_ontrtline)) {
-#      temp[1, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = m_proportion_ontrtline["beta_2ndline", i_trt])
-#      temp[2, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = m_proportion_ontrtline["beta_3rdline", i_trt])
-#    }
+    for(i_trt in 1:ncol(m_proportion_ontrtline)) {
+      temp[1, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = m_proportion_ontrtline["beta_2ndline", i_trt])
+      temp[2, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = m_proportion_ontrtline["beta_3rdline", i_trt])
+    }
   
-#  temp
-#  } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
-#                 byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
-#                 dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
-#                 ))
+  temp
+  } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
+                 byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+                 dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
+                 ))
     
-#  }
+  }
   
-#)
+)
 
 
 #Put objects here that do not change as we loop through treatments for a patient
@@ -853,10 +853,10 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              relapse_hospital_flag = sample(size = 1, 
                                                             x = c(0, 1), # Random
                                                             prob = c(1 - p_relapse_hospital,p_relapse_hospital)),
-                             current_treatment = "Natalizumab", # This is later changed to trt
-                             #current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["2",]),
-                             current_treatment_code = 1, # This is later changed to code of trt
-                             #current_treatment_code = v_treatment_codes[current_treatment],
+                             #current_treatment = "Natalizumab", # This is later changed to trt
+                             current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["3",]),
+                             #current_treatment_code = 1, # This is later changed to code of trt
+                             current_treatment_code = v_treatment_codes[current_treatment],
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
                              years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
@@ -1003,12 +1003,12 @@ evt_react_list <-
                    modify_item(list(t_4thline = years_on_treatment))
                  }
                  
-                 # 2nd line RRMS treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
-#                 if (treatment_line == 2 & spms_flag == 0 & treatment_stop == 0) {
-#                   if (t_2ndline >=3 & t_2ndline <5 ){modify_item(list(waning = 0.25))
-#                     } else if (t_2ndline >= 5){modify_item(list(waning = 0.5))}
-#                 } else if(treatment_line != 2 & waning != 0) {modify_item(list(waning = 0))
-#                   } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
+                 # treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
+                 #                 if (spms_flag == 0 & treatment_stop == 0) {
+                 #                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
+                 #                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
+                 #                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
+                 #                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
@@ -1128,7 +1128,7 @@ evt_react_list <-
                  n_switch = n_switch + 1
                  age = initial_age + round(curtime)
                  modify_item(list(current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes],
-                                                             size = 1,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}),
+                                                             size = 1), #,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}
                                   #current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes], 
                                   #                           size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes]),
                                   current_treatment_code = v_higher_line_treatment_codes[current_treatment],

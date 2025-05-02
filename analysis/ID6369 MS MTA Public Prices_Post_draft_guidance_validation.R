@@ -35,7 +35,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 10
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -1279,8 +1279,9 @@ total_runtime <- system.time({
 # Get the total costs and QALYs , number of relapses and final edss value for each patient
 #total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-
 #  n_edssinc_evts_ipd<- n_edssdec_evts_ipd <-
-   yrs_edss_0_ipd <- yrs_edss_1_ipd <- yrs_edss_2_ipd <- yrs_edss_3_ipd <- yrs_edss_4_ipd <- yrs_edss_5_ipd <- yrs_edss_6_ipd <- 
-     yrs_edss_7_ipd <- yrs_edss_8_ipd <- yrs_edss_9_ipd <- n_sae_evts_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+#   yrs_edss_0_ipd <- yrs_edss_1_ipd <- yrs_edss_2_ipd <- yrs_edss_3_ipd <- yrs_edss_4_ipd <- yrs_edss_5_ipd <- yrs_edss_6_ipd <- 
+#     yrs_edss_7_ipd <- yrs_edss_8_ipd <- yrs_edss_9_ipd n_sae_evts_ipd<-
+   n_spms_yr5_ipd <- n_spms_yr10_ipd <-  n_spms_yr15_ipd <-   array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -1290,20 +1291,22 @@ for(treatment_name in v_treatment_names) {
       # With statement is neater but much slower
       temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
         results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        #results$output_psa[[i_sample]]$merged_df$evttime == 0 & # conditioning on event time 0 misses the number of relapses and final edss value
+        results$output_psa[[i_sample]]$merged_df$evttime == 0 & # conditioning on event time 5 misses the number of relapses and final edss value
         #results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
-        results$output_psa[[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
-
-      yrs_edss_0_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_0[temp_index]
-       yrs_edss_1_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_1[temp_index]
-      yrs_edss_2_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_2[temp_index]
-      yrs_edss_3_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_3[temp_index]
-      yrs_edss_4_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_4[temp_index]
-      yrs_edss_5_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_5[temp_index]
-      yrs_edss_6_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_6[temp_index]
-      yrs_edss_7_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_7[temp_index]
-      yrs_edss_8_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_8[temp_index]
-      yrs_edss_9_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_9[temp_index]
+        #results$output_psa[[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
+        results$output_psa[[i_sample]]$merged_df$evtname == "annual_treatment"
+        
+      
+      #yrs_edss_0_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_0[temp_index]
+      #yrs_edss_1_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_1[temp_index]
+      #yrs_edss_2_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_2[temp_index]
+      #yrs_edss_3_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_3[temp_index]
+      #yrs_edss_4_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_4[temp_index]
+      #yrs_edss_5_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_5[temp_index]
+      #yrs_edss_6_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_6[temp_index]
+      #yrs_edss_7_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_7[temp_index]
+      #yrs_edss_8_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_8[temp_index]
+      #yrs_edss_9_ipd[i_sample, treatment_name, i_patient] <- results$output_psa[[i_sample]]$merged_df$yrs_edss_9[temp_index]
       
       #total_costs_ipd[i_sample, treatment_name, i_patient] <-
       #  results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
@@ -1325,6 +1328,9 @@ for(treatment_name in v_treatment_names) {
       
      # n_sae_evts_ipd[i_sample, treatment_name, i_patient] <-
      #   results$output_psa[[i_sample]]$merged_df$n_sae_evts[temp_index]
+      
+      n_spms_yr5_ipd[i_sample, treatment_name, i_patient] <-
+        results$output_psa[[i_sample]]$merged_df$spms_flag[temp_index]
       
     } # End loop over patients
     # Summarise for just this sample
