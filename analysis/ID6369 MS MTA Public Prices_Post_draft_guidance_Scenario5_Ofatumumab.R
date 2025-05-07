@@ -78,6 +78,10 @@ v_higher_line_treatments <- c("Natalizumab-IV",
 v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
+## prior treatment index
+v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
+names(v_prior_treatment_indices) <- v_higher_line_treatments
+
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death")
 
@@ -250,6 +254,7 @@ common_all_inputs <-add_item(
   v_treatment_codes = v_treatment_codes,
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
+  v_prior_treatment_indices = v_prior_treatment_indices,
   initial_age = initial_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
@@ -814,7 +819,6 @@ common_all_inputs <-add_item(
     }
   
   temp
-  
   } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
                  byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
@@ -855,10 +859,10 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              relapse_hospital_flag = sample(size = 1, 
                                                             x = c(0, 1), # Random
                                                             prob = c(1 - p_relapse_hospital,p_relapse_hospital)),
-                             #current_treatment = "Natalizumab", # This is later changed to trt
-                             current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["2",]),
-                             #current_treatment_code = 1, # This is later changed to code of trt
-                             current_treatment_code = v_treatment_codes[current_treatment],
+                             current_treatment = "Ublituximab ", # This is later changed to trt
+                             #current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["3",]),
+                             current_treatment_code = 6, # This is later changed to code of trt
+                             #current_treatment_code = v_treatment_codes[current_treatment],
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
                              years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
@@ -1127,13 +1131,21 @@ evt_react_list <-
                input = {
                  treatment_line = treatment_line + 1
                  discontinuation_rate = (treatment_line < 4) *  discontinuation_rate
+                 v_prior_treatment_indices[current_treatment_code] = 1
                  n_switch = n_switch + 1
+                 if(n_switch == 1) {
+                   current_treatment = "Ublituximab" 
+                 } else if (n_switch >= 2) {
+                   current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
+                                              size = 1) 
+                 }
+                 
+                 current_treatment_code = v_higher_line_treatment_codes[current_treatment]
+                 
                  age = initial_age + round(curtime)
-                 modify_item(list(#current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes],
-                                  #                           size = 1,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}),
-                                  current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes], 
-                                                             size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes]),
-                                  current_treatment_code = v_higher_line_treatment_codes[current_treatment],
+                 modify_item(list(current_treatment = current_treatment,
+                                  current_treatment_code = current_treatment_code,
+                                  v_prior_treatment_indices = v_prior_treatment_indices,
                                   treatment_line = treatment_line,
                                   discontinuation_rate = discontinuation_rate,
                                   n_switch = n_switch,
@@ -1246,7 +1258,7 @@ total_runtime <- system.time({
   )
 })
 
-# Summarise the results
+
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
@@ -1286,7 +1298,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
 
 
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
-write.csv(results_table, "results/results_public/results_s4_public_prices_100x100_01_may.csv")
-#write.csv(results_table, "results/results_conf/results_s4_conf_prices_100x100_01_may.csv")
+write.csv(results_table, "results/results_public/results_s6_public_prices_100x100_01_may.csv")
+#write.csv(results_table, "results/results_conf/results_s6_conf_prices_100x100_01_may.csv")
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
 

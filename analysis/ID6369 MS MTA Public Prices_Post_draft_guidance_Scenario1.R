@@ -78,6 +78,10 @@ v_higher_line_treatments <- c("Natalizumab-IV",
 v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
 
+## prior treatment index
+v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
+names(v_prior_treatment_indices) <- v_higher_line_treatments
+
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death")
 
@@ -250,6 +254,7 @@ common_all_inputs <-add_item(
   v_treatment_codes = v_treatment_codes,
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
+  v_prior_treatment_indices = v_prior_treatment_indices,
   initial_age = initial_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
@@ -801,27 +806,27 @@ common_all_inputs <-add_item(
                   exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"]), 
                   nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
 
-  ) #%>% add_item(
+  ) %>% add_item(
     #proportions on 2nd and 3rd line treatments
-#   m_prop_2nd_3rd_trt = if(psa_bool) {
+   m_prop_2nd_3rd_trt = if(psa_bool) {
     
-#    temp<- matrix(nrow= 2, ncol = ncol(m_proportion_ontrtline), 
-#                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)))
+    temp<- matrix(nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+                  dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)))
 
-#    for(i_trt in 1:ncol(m_proportion_ontrtline)) {
-#      temp[1, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = m_proportion_ontrtline["beta_2ndline", i_trt])
-#      temp[2, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = m_proportion_ontrtline["beta_3rdline", i_trt])
-#    }
+    for(i_trt in 1:ncol(m_proportion_ontrtline)) {
+      temp[1, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = m_proportion_ontrtline["beta_2ndline", i_trt])
+      temp[2, i_trt] <- rbeta(1, shape1= m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = m_proportion_ontrtline["beta_3rdline", i_trt])
+    }
   
-#  temp
-#  } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
-#                 byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
-#                 dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
-#                 ))
+  temp
+  } else {matrix(c(m_proportion_ontrtline["alpha_2ndline",] /m_proportion_ontrtline["beta_2ndline",], m_proportion_ontrtline["alpha_3rdline",] /m_proportion_ontrtline["beta_3rdline",]), 
+                 byrow=TRUE, nrow= 2, ncol = ncol(m_proportion_ontrtline), 
+                 dimnames = list(c("2", "3"), colnames(m_proportion_ontrtline)
+                 ))
     
-#  }
+  }
   
-#)
+)
 
 
 #Put objects here that do not change as we loop through treatments for a patient
@@ -1126,13 +1131,22 @@ evt_react_list <-
                input = {
                  treatment_line = treatment_line + 1
                  discontinuation_rate = (treatment_line < 4) *  discontinuation_rate
+                 v_prior_treatment_indices[current_treatment_code] = 1
                  n_switch = n_switch + 1
+                 if(n_switch == 1) {
+                   current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]], 
+                                              size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])
+                 } else if (n_switch >= 2) {
+                   current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
+                                              size = 1) 
+                 }
+                 
+                 current_treatment_code = v_higher_line_treatment_codes[current_treatment]
+                 
                  age = initial_age + round(curtime)
-                 modify_item(list(current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes],
-                                                             size = 1,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}),
-                                  #current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes], 
-                                  #                           size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes]),
-                                  current_treatment_code = v_higher_line_treatment_codes[current_treatment],
+                 modify_item(list(current_treatment = current_treatment,
+                                  current_treatment_code = current_treatment_code,
+                                  v_prior_treatment_indices = v_prior_treatment_indices,
                                   treatment_line = treatment_line,
                                   discontinuation_rate = discontinuation_rate,
                                   n_switch = n_switch,

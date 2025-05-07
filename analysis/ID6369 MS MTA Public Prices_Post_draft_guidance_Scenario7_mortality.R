@@ -7,6 +7,7 @@
 rm(list = ls())
 
 library(descem)
+library(readxl)
 library(MASS)
 library(VGAM)
 library(dplyr)
@@ -35,7 +36,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 10
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -76,6 +77,10 @@ v_higher_line_treatments <- c("Natalizumab-IV",
                               )
 v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
+
+## prior treatment index
+v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
+names(v_prior_treatment_indices) <- v_higher_line_treatments
 
 ## Model event states
 v_event_names <- c("initialise", "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death")
@@ -159,7 +164,7 @@ v_smr <- read.csv("data/v_smr.csv", header = T, row.names = 1)
 
 ## Excess all cause mortality for MS patients HR by severity edss<4 (Jick et al), edss>=4 (Harding et al)
 v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Harding.csv", header = T, row.names = 1))
-v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on EDSS 8 & 9 are equal to EDSS7 
+#v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on EDSS 8 & 9 are equal to EDSS7 
 dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), v_edss_values)
 
 ##  Annual treatment, administration and monitoring costs 
@@ -249,6 +254,7 @@ common_all_inputs <-add_item(
   v_treatment_codes = v_treatment_codes,
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
+  v_prior_treatment_indices = v_prior_treatment_indices,
   initial_age = initial_age,
   time_horizon = time_horizon,
   prop_female = prop_female,
@@ -1004,11 +1010,11 @@ evt_react_list <-
                  }
                  
                  # treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
-                 #                 if (spms_flag == 0 & treatment_stop == 0) {
-                 #                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
-                 #                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
-                 #                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
-                 #                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
+#                 if (spms_flag == 0 & treatment_stop == 0) {
+#                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
+#                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
+#                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
+#                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
@@ -1125,13 +1131,22 @@ evt_react_list <-
                input = {
                  treatment_line = treatment_line + 1
                  discontinuation_rate = (treatment_line < 4) *  discontinuation_rate
+                 v_prior_treatment_indices[current_treatment_code] = 1
                  n_switch = n_switch + 1
+                 if(n_switch == 1) {
+                   current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]], 
+                                              size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])
+                 } else if (n_switch >= 2) {
+                   current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
+                                              size = 1) 
+                 }
+                 
+                 current_treatment_code = v_higher_line_treatment_codes[current_treatment]
+                 
                  age = initial_age + round(curtime)
-                 modify_item(list(current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes],
-                                                             size = 1), #,  prob = if (current_treatment_code <= 4){c(rep(0.1/3,3),rep(0.9/4,4))}else{}
-                                  #current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes], 
-                                  #                           size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes]),
-                                  current_treatment_code = v_higher_line_treatment_codes[current_treatment],
+                 modify_item(list(current_treatment = current_treatment,
+                                  current_treatment_code = current_treatment_code,
+                                  v_prior_treatment_indices = v_prior_treatment_indices,
                                   treatment_line = treatment_line,
                                   discontinuation_rate = discontinuation_rate,
                                   n_switch = n_switch,
@@ -1244,12 +1259,7 @@ total_runtime <- system.time({
   )
 })
 
-
-
-# Summarise the results
-# Get the total costs and QALYs , number of relapses and final edss value for each patient
-total_costs_ipd <- total_qalys_ipd <- final_edss_value_ipd <- n_relapse_ipd <-
-  n_edssinc_evts_ipd<- n_edssdec_evts_ipd<- n_sae_evts_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -1259,82 +1269,37 @@ for(treatment_name in v_treatment_names) {
       # With statement is neater but much slower
       temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
         results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        #results$output_psa[[i_sample]]$merged_df$evttime == 0 & # conditioning on event time 0 misses the number of relapses and final edss value
-        #results$output_psa[[i_sample]]$merged_df$evtname == "initialise"
-        results$output_psa[[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
+        results$output_psa[[i_sample]]$merged_df$evtname == "death"
       
       total_costs_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
       
       total_qalys_ipd[i_sample, treatment_name, i_patient] <-
         results$output_psa[[i_sample]]$merged_df$total_qalys[temp_index]
-      
-      n_relapse_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$n_relapse[temp_index]
-      
-      final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$edss_value[temp_index]
-      
-      n_edssinc_evts_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$n_edssinc_evts[temp_index]
-      
-      n_edssdec_evts_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$n_edssdec_evts[temp_index]
-      
-      n_sae_evts_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$n_sae_evts[temp_index]
-      
     } # End loop over patients
     # Summarise for just this sample
     
   }
 }
 
-# Take mean over patients to remove individual variation
+
+options(scipen = 999)
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
-total_relapses <- apply(n_relapse_ipd, c(1, 2), mean)
-total_edss_increases <- apply(n_edssinc_evts_ipd, c(1, 2), mean)
-total_edss_decreases <- apply(n_edssdec_evts_ipd, c(1, 2), mean)
-total_saes <- apply(n_sae_evts_ipd, c(1, 2), mean)
 
-#compare events by treatment groups
-trt_relapses <- apply(total_relapses, 2, mean)
-trt_edss_increases <- apply(total_edss_increases, 2, mean)
-trt_edss_decreases <- apply(total_edss_decreases, 2, mean)
-trt_saes <- apply(total_saes, 2, mean)
-key_events_trt_grps <- as.data.frame(cbind(trt_relapses, trt_edss_increases, trt_edss_decreases, trt_saes)
-)
 
-# cost-effectiveness analysis
+#drop natalizumab-biosimilar-SC
+total_costs <- total_costs[,-c(4)]
+total_qalys <- total_qalys[,-c(4)]
+
 results_table <- summarise_ce_results(total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
-View(results_table)
 
-# Create a BCEA object
-des_bcea <- bcea(eff = total_qalys,
-                 cost = total_costs,
-                 ref = 1,
-                 interventions = v_treatment_names)
 
-# Plot the CE plane
-library(ggplot2)
-ceplane.plot(des_bcea, wtp = 30000,
-             graph = "ggplot2",
-             icer = list(color = c("red", "green", "blue", "orange", "yellow",
-                                   "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
-                                   "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
-             point = list(color = c("red", "green", "blue", "orange", "yellow",
-                                    "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
-                                    "purple", "brown", "skyblue", "magenta", "cyan", "darkred")))
-
-#plot a CEAC
-des_multi_ce <- multi.ce(des_bcea)
-ceac.plot(des_multi_ce, graph = "ggplot2",
-          line = list(color = c("red", "green", "blue", "orange", "yellow",
-                                "pink", "darkgreen", "lightblue", "darkorange","lightyellow",
-                                "purple", "brown", "skyblue", "magenta", "cyan", "darkred")),
-          pos = c(0, 0.50))
+setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
+write.csv(results_table, "results/results_public/results_s7_public_prices_100x100_01_may.csv")
+#write.csv(results_table, "results/results_conf/results_s7_conf_prices_100x100_01_may.csv")
+setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
 
