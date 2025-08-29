@@ -6,8 +6,8 @@
 
 rm(list = ls())
 
-library(descem)
 library(readxl)
+library(descem)
 library(MASS)
 library(VGAM)
 library(dplyr)
@@ -38,17 +38,18 @@ set.seed(n_seed)
 n_patients <- 100
 n_samples <- 100
 
+
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
                        "Natalizumab-SC",
                        "Natalizumab biosimilar-IV",
                        "Natalizumab biosimilar-SC",
-                      # "Fingolimod",
+                       "Ocrelizumab-SC",
                       # "Alemtuzumab",
                        "Cladribine", 
                        "Ublituximab" ,
                        "Ofatumumab",
-                       "Ocrelizumab" #,
+                       "Ocrelizumab-IV" #,
                       # "PegIFN-β-1 SC 125μg", 
                       # "IFNβ-1a SC 22μg" , 
                       # "IFNβ-1a SC 44μg" ,
@@ -73,7 +74,8 @@ v_higher_line_treatments <- c("Natalizumab-IV",
                               "Cladribine",
                               "Ublituximab",
                               "Ofatumumab",
-                              "Ocrelizumab"
+                              "Ocrelizumab-IV",
+                              "Ocrelizumab-SC"
                               )
 v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
 names(v_higher_line_treatment_codes) <- v_higher_line_treatments
@@ -168,23 +170,37 @@ v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on
 dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), v_edss_values)
 
 ##  Annual treatment, administration and monitoring costs 
-#public list prices
-df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
+#Confidential prices
+df_c_tx <- read_excel("data/df_c_c_drugs.xlsx")
+df_c_tx<- as.data.frame(df_c_tx)
+row.names(df_c_tx) <- df_c_tx[,1]
+df_c_tx <- df_c_tx[,-1]
+df_c_tx<-t(df_c_tx)
+colnames(df_c_tx)[colnames(df_c_tx) == 'Ocrelizumab'] <- 'Ocrelizumab-IV'
 df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
 df_c_tx[,1:4] <- (df_c_tx[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,1:4]*0.4 # 60% on EID interval dosing
+df_c_tx <- cbind(df_c_tx, df_c_tx[,"Ocrelizumab-IV"])
+colnames(df_c_tx)[colnames(df_c_tx) == ''] <- 'Ocrelizumab-SC'
 
 # These are direct medical costs we excluded the indirect medical costs
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names = 1))
 df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
+colnames(df_c_tx_admin)[colnames(df_c_tx_admin) == 'Ocrelizumab'] <- 'Ocrelizumab-IV'
 df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
 df_c_tx_admin[,1:4] <- (df_c_tx_admin[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:4]*0.4 # 60% on EID interval dosing
+df_c_tx_admin <- cbind(df_c_tx_admin, df_c_tx_admin[,"Ocrelizumab-IV"])
+colnames(df_c_tx_admin)[colnames(df_c_tx_admin) == ''] <- 'Ocrelizumab-SC'
+df_c_tx_admin[,"Ocrelizumab-SC"] <- df_c_tx_admin[2,"Ocrelizumab-SC"] 
 
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
+colnames(df_c_tx_monitor)[colnames(df_c_tx_monitor) == 'Ocrelizumab'] <- 'Ocrelizumab-IV'
 df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
 df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) #  free JCV test 
 df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) #  free JCV test 
 df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - 247) #  free JCV test 
 df_c_tx_monitor[,"Natalizumab biosimilar-SC"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-SC"] - 247) #  free JCV test
+df_c_tx_monitor <- cbind(df_c_tx_monitor, df_c_tx_monitor[,"Ocrelizumab-IV"])
+colnames(df_c_tx_monitor)[colnames(df_c_tx_monitor) == ''] <- 'Ocrelizumab-SC'
 
 # SPMS Costs
 df_c_spms<- read.csv("data/df_c_spms.csv", header = T, row.names = 1)
@@ -193,7 +209,10 @@ p_siponimod <-0.556962025 #proportion treated with Siponimod based on MS registr
 
 ## Annual treatment scheduled
 df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
+colnames(df_c_tx_load)[colnames(df_c_tx_load) == 'Ocrelizumab'] <- 'Ocrelizumab-IV'
 df_c_tx_load <- df_c_tx_load[,intersect(colnames(df_c_tx_load),v_treatment_names)]
+df_c_tx_load <- cbind(df_c_tx_load, df_c_tx_load[,"Ocrelizumab-IV"])
+colnames(df_c_tx_load)[colnames(df_c_tx_load) == ''] <- 'Ocrelizumab-SC'
 rownames(df_c_tx_load)<- c(seq(1,5,1))
 
 ## Relapse Costs inflated Hawton 2016 to 2023
@@ -246,7 +265,11 @@ m_hr_rrms_discontinuation_fe <- as.matrix(hr_rrms_discontinuation_fe[,c("mean", 
 
 ## proportions on 2nd and 3rd line treatment, assuming Cladribine and Ublituximab are equivalent to Natalizumab
 m_proportion_ontrtline<- read.csv("data/m_proportion_ontrtline.csv", header = T, row.names = 1)
-colnames(m_proportion_ontrtline) <- v_treatment_names
+colnames(m_proportion_ontrtline)[colnames(m_proportion_ontrtline) == 'Ocrelizumab'] <- 'Ocrelizumab-IV'
+m_proportion_ontrtline <- cbind(m_proportion_ontrtline, m_proportion_ontrtline[,"Ocrelizumab-IV"])
+colnames(m_proportion_ontrtline[,1:4]) <- v_treatment_names[1:4]
+colnames(m_proportion_ontrtline)[colnames(m_proportion_ontrtline) == 'm_proportion_ontrtline[, "Ocrelizumab-IV"]'] <- 'Ocrelizumab-SC'
+m_proportion_ontrtline[,"Ocrelizumab-SC"] <- m_proportion_ontrtline[,"Ocrelizumab-IV"] <- m_proportion_ontrtline[,"Ocrelizumab-IV"] *0.5
 
 # Global parameters of the model as they are common to all patients and treatments
 common_all_inputs <-add_item(
@@ -280,7 +303,7 @@ common_all_inputs <-add_item(
     temp
     
   } else {
-    m_u_edss_rrms[,"rrms_mean"]
+    m_u_edss_rrms[,"rrms_mean"] + m_u_carer[, "Mean"]
   }
   
 ) %>% add_item(
@@ -294,7 +317,7 @@ common_all_inputs <-add_item(
     temp
     
   } else {
-    (m_u_edss_spms[,"spms_mean"] + m_u_carer[j_edss, "Mean"])
+    (m_u_edss_spms[,"spms_mean"] + m_u_carer[, "Mean"])
   }
 ) %>% add_item(
   # RRMS EDSS Health state Direct Medical costs for RRMS Tyas et al inflated 
@@ -368,7 +391,7 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
                                                        sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"])) #  trt class 
-    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab-IV"]] <- exp(rnorm(1,
                                                         mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
                                                         sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"]))
 #    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
@@ -392,16 +415,20 @@ common_all_inputs <-add_item(
 #    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
 #                                                                    mean = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"],
 #                                                                    sd = m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
+    temp[v_treatment_codes["Ocrelizumab-SC"]] <- exp(rnorm(1,
+                                                           mean = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"], 
+                                                           sd = m_hr_rrms_cdp6_fe["Ocrelizumab IV600","sd"]))
     temp
   } else {matrix(c(1, 1, 1, 1, 
 #                   exp(m_hr_rrms_cdp6_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_cdp6_fe["Alemtuzumab IV12","mean"]), 
                     exp(m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
                     exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
-                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]) #, 
+                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), #, 
 #                    exp(m_hr_rrms_cdp6_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1a SC44","mean"]), 
 #                   exp(m_hr_rrms_cdp6_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_cdp6_fe["Interferon beta 1b IM 250","mean"]),
 #                   exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_cdp6_fe["Glatiramer acetate SC20","mean"])
+                    exp(m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"])
                     ) ,
                  nrow = 1, ncol = n_treatments)
   }
@@ -477,12 +504,8 @@ common_all_inputs <-add_item(
     
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean =  m_hr_rrms_arr_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_arr_fe["Fingolimod O0.5","sd"]))
@@ -498,7 +521,7 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean =  m_hr_rrms_arr_fe["Ofatumumab SC20","mean"],
                                                        sd = m_hr_rrms_arr_fe["Ofatumumab SC20","sd"]))
-    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab-IV"]] <- exp(rnorm(1,
                                                         mean =  m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"],
                                                         sd = m_hr_rrms_arr_fe["Ocrelizumab IV600","sd"]))
 #    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
@@ -522,17 +545,21 @@ common_all_inputs <-add_item(
 #    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
 #                                                                    mean = m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"],
 #                                                                    sd = m_hr_rrms_arr_fe["Glatiramer acetate SC40","sd"]))
+    temp[v_treatment_codes["Ocrelizumab-SC"]] <- exp(rnorm(1,
+                                                           mean =  m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"],
+                                                           sd = m_hr_rrms_arr_fe["Ocrelizumab IV600","sd"]))
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                   1, 
 #                   exp(m_hr_rrms_arr_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"]),  
                    exp(m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
                     exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
-                   exp(m_hr_rrms_arr_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]) #, 
+                   exp(m_hr_rrms_arr_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]) , 
 #                   exp(m_hr_rrms_arr_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_arr_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_arr_fe["Interferon beta 1a SC22","mean"]), 
 #                   exp(m_hr_rrms_arr_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_arr_fe["Interferon beta 1b IM 250","mean"]), 
 #                   exp(m_hr_rrms_arr_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"])
+                    exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"])
   ), nrow = 1, ncol = n_treatments)}
   
 ) %>% add_item(
@@ -561,12 +588,8 @@ common_all_inputs <-add_item(
     # relative treatment effects log Hr from the NMA with Natalizumab as the reference
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","sd"]))
@@ -582,7 +605,7 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
                                                        sd = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","sd"])) #  trt class 
-    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab-IV"]] <- exp(rnorm(1,
                                                         mean = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
                                                         sd = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","sd"]))
 #    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
@@ -606,18 +629,22 @@ common_all_inputs <-add_item(
 #    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
 #                                                                    mean = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"],
 #                                                                    sd = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
+    temp[v_treatment_codes["Ocrelizumab-SC"]] <- exp(rnorm(1,
+                                                           mean = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"], 
+                                                           sd = m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","sd"]))
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                   1, 
 #                   exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
-                   exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]) #, 
+                   exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]) , 
 #                   exp(m_hr_rrms_discontinuation_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a SC44","mean"]), 
 #                   exp(m_hr_rrms_discontinuation_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_discontinuation_fe["Interferon beta 1b IM 250","mean"]),
 #                   exp(m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"])
-                   ) ,
+                      exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]) 
+) ,
                  nrow = 1, ncol = n_treatments)
   }
 ) %>% add_item(
@@ -744,7 +771,7 @@ common_all_inputs <-add_item(
     temp[v_treatment_codes["Ofatumumab"]] <- exp(rnorm(1,
                                                        mean = m_hr_rrms_saes_fe["Ofatumumab SC20","mean"], 
                                                        sd = m_hr_rrms_saes_fe["Ofatumumab SC20","sd"])) 
-    temp[v_treatment_codes["Ocrelizumab"]] <- exp(rnorm(1,
+    temp[v_treatment_codes["Ocrelizumab-IV"]] <- exp(rnorm(1,
                                                         mean = m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"], 
                                                         sd = m_hr_rrms_saes_fe["Ocrelizumab IV600","sd"]))
 #    temp[v_treatment_codes["PegIFN-β-1 SC 125μg"]] <- exp(rnorm(1,
@@ -768,16 +795,20 @@ common_all_inputs <-add_item(
 #    temp[v_treatment_codes["Glatiramer Acetate 40mg"]] <- exp(rnorm(1,
 #                                                                    mean = m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"],
 #                                                                    sd = m_hr_rrms_saes_fe["Glatiramer acetate SC40","sd"])) 
+    temp[v_treatment_codes["Ocrelizumab-SC"]] <- exp(rnorm(1,
+                                                           mean = m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"], 
+                                                           sd = m_hr_rrms_saes_fe["Ocrelizumab IV600","sd"]))
     temp
   } else {matrix(c(1, 1, 1, 1, 
 #                   exp(m_hr_rrms_saes_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_saes_fe["Alemtuzumab IV12","mean"]), 
                    1, 
                    exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]), 
-                   exp(m_hr_rrms_saes_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]) #, 
+                   exp(m_hr_rrms_saes_fe["Ofatumumab SC20","mean"]), exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"]) , 
 #                   exp(m_hr_rrms_saes_fe["Peginterferon beta 1a SC125","mean"]), 
 #                   exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), exp(m_hr_rrms_saes_fe["Interferon beta 1a SC44","mean"]), 
 #                   exp(m_hr_rrms_saes_fe["Interferon beta 1a IM30","mean"]), exp(m_hr_rrms_saes_fe["Interferon beta 1b IM 250","mean"]),
 #                   exp(m_hr_rrms_saes_fe["Glatiramer acetate SC20","mean"]), exp(m_hr_rrms_saes_fe["Glatiramer acetate SC40","mean"])
+                  exp(m_hr_rrms_saes_fe["Ocrelizumab IV600","mean"])
                    ) ,
                  nrow = 1, ncol = n_treatments)
   }
@@ -803,8 +834,9 @@ common_all_inputs <-add_item(
                                        sd = m_hr_rrms_saes_fe["Placebo","sd"]))
     temp
   }else {matrix(c(exp(m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(m_hr_rrms_arr_fe["Placebo","mean"]), 
-                  exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"]), 
-                  nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
+                  exp(m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(m_hr_rrms_saes_fe["Placebo","mean"])), 
+                  nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes")))
+    }
 
   ) %>% add_item(
     #proportions on 2nd and 3rd line treatments
@@ -1009,18 +1041,16 @@ evt_react_list <-
                    modify_item(list(t_4thline = years_on_treatment))
                  }
                  
-
                  # treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
-                 if (spms_flag == 0 & treatment_stop == 0) {
-                            if (years_on_treatment <= 2){modify_item(list(waning = 0))
-                     } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
-                     } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
-                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
+                 #                 if (spms_flag == 0 & treatment_stop == 0) {
+                 #                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
+                 #                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
+                 #                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
+                 #                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
                  ))}
-                 
                  
                }
   ) %>%
@@ -1140,7 +1170,7 @@ evt_react_list <-
                                               size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])
                  } else if (n_switch >= 2) {
                    current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
-                                              size = 1) 
+                                                                      size = 1) 
                  }
                  
                  current_treatment_code = v_higher_line_treatment_codes[current_treatment]
@@ -1263,6 +1293,8 @@ total_runtime <- system.time({
 
 
 
+
+
 # Summarise the results
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
@@ -1286,6 +1318,7 @@ for(treatment_name in v_treatment_names) {
     
   }
 }
+
 options(scipen = 999)
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
@@ -1299,10 +1332,10 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
-
+View(results_table)
 
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
-write.csv(results_table, "results/results_public/results_s3_public_prices_100x100_01_may.csv")
-#write.csv(results_table, "results/results_conf/results_s3_conf_prices_100x100_01_may.csv")
+#write.csv(results_table, "results/results_public/results_s10_public_prices_100x100_13_may.csv")
+write.csv(results_table, "results/results_conf/results_s10_conf_prices_100x100_13_may.csv")
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
 

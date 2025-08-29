@@ -477,12 +477,8 @@ common_all_inputs <-add_item(
     
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean =  m_hr_rrms_arr_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_arr_fe["Fingolimod O0.5","sd"]))
@@ -523,8 +519,8 @@ common_all_inputs <-add_item(
 #                                                                    mean = m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"],
 #                                                                    sd = m_hr_rrms_arr_fe["Glatiramer acetate SC40","sd"]))
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                  1, 
 #                   exp(m_hr_rrms_arr_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"]),  
                    exp(m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
                     exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
@@ -561,12 +557,8 @@ common_all_inputs <-add_item(
     # relative treatment effects log Hr from the NMA with Natalizumab as the reference
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","sd"]))
@@ -607,8 +599,8 @@ common_all_inputs <-add_item(
 #                                                                    mean = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"],
 #                                                                    sd = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                   1, 
 #                   exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
@@ -1298,7 +1290,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
 
 
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
-write.csv(results_table, "results/results_public/results_s6_public_prices_100x100_01_may.csv")
-#write.csv(results_table, "results/results_conf/results_s6_conf_prices_100x100_01_may.csv")
+write.csv(results_table, "results/results_public/results_s6_public_prices_100x100_13_may.csv")
+#write.csv(results_table, "results/results_conf/results_s6_conf_prices_100x100_13_may.csv")
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
 

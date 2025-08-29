@@ -7,7 +7,6 @@
 rm(list = ls())
 
 library(descem)
-library(readxl)
 library(MASS)
 library(VGAM)
 library(dplyr)
@@ -168,12 +167,8 @@ v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on
 dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), v_edss_values)
 
 ##  Annual treatment, administration and monitoring costs 
-#Confidential prices
-df_c_tx <- read_excel("data/df_c_c_drugs.xlsx")
-df_c_tx<- as.data.frame(df_c_tx)
-row.names(df_c_tx) <- df_c_tx[,1]
-df_c_tx <- df_c_tx[,-1]
-df_c_tx<-t(df_c_tx)
+#public list prices
+df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
 df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
 df_c_tx[,1:4] <- (df_c_tx[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,1:4]*0.4 # 60% on EID interval dosing
 
@@ -182,6 +177,7 @@ df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin.csv", header = T, row.names =
 df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
 df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
 df_c_tx_admin[,1:4] <- (df_c_tx_admin[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:4]*0.4 # 60% on EID interval dosing
+df_c_tx_admin[,"Natalizumab-SC"] <- (df_c_tx_admin[,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost
 
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
@@ -481,12 +477,8 @@ common_all_inputs <-add_item(
     
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean =  m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_arr_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean =  m_hr_rrms_arr_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_arr_fe["Fingolimod O0.5","sd"]))
@@ -527,8 +519,8 @@ common_all_inputs <-add_item(
 #                                                                    mean = m_hr_rrms_arr_fe["Glatiramer acetate SC40","mean"],
 #                                                                    sd = m_hr_rrms_arr_fe["Glatiramer acetate SC40","sd"]))
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_arr_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                   1, 
 #                   exp(m_hr_rrms_arr_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_arr_fe["Alemtuzumab IV12","mean"]),  
                    exp(m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
                     exp(m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
@@ -565,12 +557,8 @@ common_all_inputs <-add_item(
     # relative treatment effects log Hr from the NMA with Natalizumab as the reference
     temp[v_treatment_codes["Natalizumab-IV"]] <- 1 #reference treatment
     temp[v_treatment_codes["Natalizumab-SC"]] <- 1 #reference treatment
-    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
-    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- exp(rnorm(1,
-                                                                      mean = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"],
-                                                                      sd = m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","sd"]))
+    temp[v_treatment_codes["Natalizumab biosimilar-IV"]] <- 1
+    temp[v_treatment_codes["Natalizumab biosimilar-SC"]] <- 1
 #    temp[v_treatment_codes["Fingolimod"]] <- exp(rnorm(1,
 #                                                       mean = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"],
 #                                                       sd = m_hr_rrms_discontinuation_fe["Fingolimod O0.5","sd"]))
@@ -611,8 +599,8 @@ common_all_inputs <-add_item(
 #                                                                    mean = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","mean"],
 #                                                                    sd = m_hr_rrms_discontinuation_fe["Glatiramer acetate SC20","sd"])) # assumed same as 20 mg
     temp
-  } else {matrix(c(1, 1, exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
-                   exp(m_hr_rrms_discontinuation_fe["Natalizumab biosimilar","mean"]), 
+  } else {matrix(c(1, 1, 1, 
+                   1, 
 #                   exp(m_hr_rrms_discontinuation_fe["Fingolimod O0.5","mean"]), exp(m_hr_rrms_discontinuation_fe["Alemtuzumab IV12","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
                    exp(m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
@@ -865,7 +853,7 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                                                             prob = c(1 - p_relapse_hospital,p_relapse_hospital)),
                              #current_treatment = "Natalizumab", # This is later changed to trt
                              current_treatment = sample(x = v_treatment_names, size=1, prob = m_prop_2nd_3rd_trt["3",]),
-                             #urrent_treatment_code = 1, # This is later changed to code of trt
+                             #current_treatment_code = 1, # This is later changed to code of trt
                              current_treatment_code = v_treatment_codes[current_treatment],
                              treatment_line = 2, # all patients starting on 2nd line treatment
                              n_switch = 0, # treatment switch counter for sense checking
@@ -1013,18 +1001,16 @@ evt_react_list <-
                    modify_item(list(t_4thline = years_on_treatment))
                  }
                  
-
                  # treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
-                 if (spms_flag == 0 & treatment_stop == 0) {
-                            if (years_on_treatment <= 2){modify_item(list(waning = 0))
-                     } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
-                     } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
-                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
+                 #                 if (spms_flag == 0 & treatment_stop == 0) {
+                 #                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
+                 #                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
+                 #                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
+                 #                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
                  ))}
-                 
                  
                }
   ) %>%
@@ -1268,6 +1254,7 @@ total_runtime <- system.time({
 
 
 # Summarise the results
+# Get the total costs and QALYs for each patient
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
@@ -1291,6 +1278,7 @@ for(treatment_name in v_treatment_names) {
   }
 }
 
+
 options(scipen = 999)
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
 total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
@@ -1305,9 +1293,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 
-
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
-#write.csv(results_table, "results/results_public/results_s3_public_prices_100x100_01_may.csv")
-write.csv(results_table, "results/results_conf/results_s3_conf_prices_100x100_01_may.csv")
+write.csv(results_table, "results/results_public/results_s1_public_prices_100x100_13_may.csv")
+#write.csv(results_table, "results/results_conf/results_s1_conf_prices_100x100_13_may.csv")
 setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
-
