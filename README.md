@@ -151,7 +151,8 @@ There are four functions in the "R" folder
 ###### A contemporary study of mortality in the multiple sclerosis population of south east Wales Harding, Katharine et al. Multiple Sclerosis and Related Disorders, Volume 25, 186 - 191 {#ref-700}
 
 
-###### Notes for developers only (outdated)
+
+## Notes for developers only (outdated)
 #### Issues identified during validation to be addressed:
   + 1 random substreams of numbers to ensure patients would share the same random seed for each specific variable
     + time consuming and complicated to implement random substreams
@@ -221,5 +222,6 @@ Go to analysis/descem_rrms_5_1.R
 
 
 ## To run the NMA
+####  already run and results saved 
 Go to analysis/nma and run the associated script
 
