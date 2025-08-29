@@ -1262,42 +1262,42 @@ total_runtime <- system.time({
 
 
 
-# Summarise the results
-total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
-                                            dimnames = list(NULL, v_treatment_names, NULL))
-
-# Below is not very efficient but only needs to be run once at end of simulation
-for(treatment_name in v_treatment_names) {
-  for(i_sample in 1:n_samples) {
-    for(i_patient in 1:n_patients) {
-      # With statement is neater but much slower
-      temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
-        results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        results$output_psa[[i_sample]]$merged_df$evtname == "death"
-      
-      total_costs_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
-      
-      total_qalys_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$total_qalys[temp_index]
-    } # End loop over patients
-    # Summarise for just this sample
-    
-  }
-}
-
-options(scipen = 999)
-total_costs <- apply(total_costs_ipd, c(1, 2), mean)
-total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
-
-
-#drop natalizumab-biosimilar-SC and cladrebiene
-total_costs <- total_costs[,-c(4,5)]
-total_qalys <- total_qalys[,-c(4,5)]
-
-results_table <- summarise_ce_results(total_qalys = total_qalys, 
-                                      total_costs = total_costs,
-                                      reference = "Natalizumab-IV")
-
-View(results_table)
+# # Summarise the results
+# total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
+#                                             dimnames = list(NULL, v_treatment_names, NULL))
+# 
+# # Below is not very efficient but only needs to be run once at end of simulation
+# for(treatment_name in v_treatment_names) {
+#   for(i_sample in 1:n_samples) {
+#     for(i_patient in 1:n_patients) {
+#       # With statement is neater but much slower
+#       temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
+#         results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
+#         results$output_psa[[i_sample]]$merged_df$evtname == "death"
+#       
+#       total_costs_ipd[i_sample, treatment_name, i_patient] <-
+#         results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
+#       
+#       total_qalys_ipd[i_sample, treatment_name, i_patient] <-
+#         results$output_psa[[i_sample]]$merged_df$total_qalys[temp_index]
+#     } # End loop over patients
+#     # Summarise for just this sample
+#     
+#   }
+# }
+# 
+# options(scipen = 999)
+# total_costs <- apply(total_costs_ipd, c(1, 2), mean)
+# total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
+# 
+# 
+# #drop natalizumab-biosimilar-SC and cladrebiene
+# total_costs <- total_costs[,-c(4,5)]
+# total_qalys <- total_qalys[,-c(4,5)]
+# 
+# results_table <- summarise_ce_results(total_qalys = total_qalys, 
+#                                       total_costs = total_costs,
+#                                       reference = "Natalizumab-IV")
+# 
+# View(results_table)
 
