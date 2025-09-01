@@ -17,13 +17,14 @@ v_treatment_names <- c("Natalizumab-IV",
                        "Cladribine","Ublituximab" ,
                        "Ofatumumab","Ocrelizumab","Natalizumab-SC","Natalizumab biosimilar-IV" )
 
+# number of treatment
 n_treatments <- length(v_treatment_names)
 
 #add treatment codes for Natalizumab-SC and Natalizumab biosimilar-IV
 v_treatment_codes <- c(seq(1, n_treatments))
 names(v_treatment_codes) <- v_treatment_names
 
-
+# natalizumab-sc ipd
 natorigsc_ipd[,"trt"] <-"Natalizumab-SC"
 for( row_i in 1:length(natorigsc_ipd)){
   if (natorigsc_ipd[row_i, current_treatment_code == 1]) {
@@ -31,6 +32,7 @@ for( row_i in 1:length(natorigsc_ipd)){
   }
 }
 
+#biosimilar-iv ipd
 natbiosimsc_ipd[,"trt"] <- "Natalizumab biosimilar-IV"
 for( row_i in 1:length(natbiosimsc_ipd)){
   if (natbiosimsc_ipd[row_i, current_treatment_code == 1]) {
@@ -38,8 +40,7 @@ for( row_i in 1:length(natbiosimsc_ipd)){
   }
 }
 
-#natall_ipd<- rbind(natorgiv_ipd, natorigsc_ipd, natbiosimsc_ipd)
-
+# group the 3 natalizumabs ipd into a single list
 nat_list <- list(natorgiv_ipd, natorigsc_ipd, natbiosimsc_ipd)
 
 # treatment, relpase,  health state cost data input ( when not avaible outside descem enviroment)
@@ -81,16 +82,21 @@ v_c_sae_events <- t(matrix(df_c_sae, nrow = n_sae, ncol = 1,
 ## addin instant  costs:
 #-----------------------
 # treatment costs
+# add empty treatment costs into a list of the 3 natalizumab ipd data frames
 for (trt_i in 1:length(nat_list)){
   nat_list[[trt_i]] <- cbind(nat_list[[trt_i]],"trt_cost" = 0, "relapse_cost" =0, "sae_cost"=0, "hs_cost"=0, "disc_trt_cost"=0, "disc_relapse_cost" =0, "disc_sae_cost"=0, "disc_hs_cost"=0) #, "tot_posthoc"=0)
 }
 
+# loop over each natalizumab ipd data frame
 for (trt_i in 1:length(nat_list)){
+#loop over each simulation
 for(i_sample in 1:n_samples) {
+#loop over each patient
 for(i_patient in 1:n_patients) {
+#loop over each row of events for each patient
 for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient])) {
   
-  
+  # addin treatment costs for patients on year 1 treatment
   if(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "annual_treatment" & years_on_treatment <= 1]) {
     
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"trt_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,treatment_stop] ) *(
@@ -101,7 +107,8 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
         (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,spms_flag] * (((1-p_siponimod) * df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) + 
                                             (p_siponimod * df_c_spms["cost_annual_yr1","Siponimod"])))
     )
-    
+   
+    #  addin treatment costs for patients on year 2 treatment
   } else if (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "annual_treatment" & years_on_treatment == 2]) {
     
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"trt_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"treatment_stop"] ) *(
@@ -113,6 +120,7 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
                                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
     )
     
+    #addin treatment costs for patients on year 3 treatment
   } else if (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "annual_treatment" & years_on_treatment == 3]) {
     
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"trt_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,treatment_stop] ) *(
@@ -124,6 +132,7 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
                                             (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
     )
     
+    #addin treatment costs for patients on year 4 treatment
   } else if (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "annual_treatment" & years_on_treatment == 4]) {
     
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"trt_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"treatment_stop"] ) *(
@@ -136,6 +145,7 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
     )
     
   }
+  #addin treatment costs for patients on year 5+ treatment
   else if (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "annual_treatment" &  years_on_treatment >= 5]) {
     
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"trt_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"treatment_stop"] ) *(
@@ -149,16 +159,18 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
     
   } #else {nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,trt_cost] <- 0}
   
-  
+  # addin relapse costs for patient
   if(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "relapse"]) {
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"relapse_cost"] <- (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,relapse_hospital_flag]* v_c_relapse[6])+
       ((1 - nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,relapse_hospital_flag] ) * v_c_relapse[4]) 
   } #else {nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,relapse_cost] <- 0}
   
+  # addin saes costs for patient
   if(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,evtname == "serious_adverse_event"]) {
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"sae_cost"] <- (1- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,treatment_stop]) * sum(v_c_sae_events * v_weight_sae)
   } #else {nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,sae_cost] <- 0}
   
+  # addin healthstate costs for patient
   nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"hs_cost"] <- (1 - nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,spms_flag]) * (v_c_rrms_edss[nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,edss_value] == v_edss_values]) +
     (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,spms_flag] * v_c_spms_edss[nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,edss_value] == v_edss_values])
   
@@ -173,18 +185,13 @@ for (trt_i in 1:length(nat_list)){
 for(i_sample in 1:n_samples) {
 for(i_patient in 1:n_patients) {
 for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient])) {
-  
-#  if (nat_list[[trt_i]][row_i,trt_cost > 0] ) {
-    
-    nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_trt_cost"]<- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,trt_cost] *  ((1+lcldrc)^(-nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime])) # Note use of DISCRETE TIME discounting for instantaneous costs and benefits
-  
-#    } else {nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_trt_cost"]<-0}
-  
+
+  #discount treatment costs
+  nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_trt_cost"]<- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,trt_cost] *  ((1+lcldrc)^(-nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime])) # Note use of DISCRETE TIME discounting for instantaneous costs and benefits
+  #discount relapse costs
   nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_relapse_cost"] <- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,relapse_cost] *  ((1+lcldrc)^(-nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime])) # Note use of DISCRETE TIME discounting for instantaneous costs and benefits
-  
+  #discount saes costs
   nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_sae_cost"] <- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,sae_cost] *  ((1+lcldrc)^(-nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime])) # Note use of DISCRETE TIME discounting for instantaneous costs and benefits
-  
-  #nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_hs_cost] <- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,hs_cost] *  ((1+lcldrc)^(-nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime])) # ongoing not instantaious costs
   
 }}}}
 
@@ -196,20 +203,17 @@ for(i_sample in 1:n_samples) {
 for(i_patient in 1:n_patients) {
 for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient])) {
   
-  #if (nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,hs_cost > 0] ) {
+  ##discount healthstate costs
     nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"disc_hs_cost"] <- ((nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,hs_cost])/(0 - Instantdrc)) * (exp(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,curtime] * ( 0 - Instantdrc)) - exp(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,prevtime] * (0 - Instantdrc)))
-  #} #else {nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_hs_cost] <-0}
+  
 }}}}
 
 ## Sum up costs per patient
-
 for (trt_i in 1:length(nat_list)){
 for(i_sample in 1:n_samples) {
 for(i_patient in 1:n_patients) {
 for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient])) {
 
-  #nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"tot_posthoc"] <- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_trt_cost]+ nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_hs_cost] + 
-  #                                                            nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_relapse_cost] + nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_sae_cost]
   nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,"cost"] <- nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_trt_cost]+ nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_hs_cost] + 
                                                               nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_relapse_cost] + nat_list[[trt_i]][simulation == i_sample][pat_id == i_patient][row_i,disc_sae_cost]
   
@@ -217,7 +221,6 @@ for (row_i in 1:nrow(nat_list[[trt_i]][simulation == i_sample][pat_id == i_patie
 }}}
 
 #combine processed ipd with remainder of the treatments
-
 results_ipd<-rbind(nat_list[[1]][,-c(22:29)], nat_list[[2]][,-c(22:29)], nat_list[[3]][,-c(22:29)] , remainder_ipd)
 
 # Summarise the results
