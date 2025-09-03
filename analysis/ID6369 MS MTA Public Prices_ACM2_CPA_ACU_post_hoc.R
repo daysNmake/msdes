@@ -3,11 +3,11 @@
 ## Validated: Javier Sanchez Alvarez ####
 ##### 11/11/2024 #######################
 
-################################################################################
-########################### ACM2 Committee preferred assumptions################
-################################### Admin cost updated #########################
-#Post hoc analysis on a single natalizumab trajectory with a 3 sets of costs ###
-####################################Public Prices 25/08/2025 ###################
+########################### ACM2 Committee preferred assumptions###############
+################################### Admin cost updated ########################
+### Post hoc analysis on a single natalizumab trajectory with identical QALYs#
+### but 3 sets of costs for natalizumab originator-IV/SC and biosimilar-IV ###
+################################### Public Prices 03/09/2025 ################
 
 rm(list = ls())
 
@@ -160,7 +160,7 @@ dimnames(m_r_mortality) <-  list(NULL, c("time" ,"male", "female"))
 
 ## edss costs direct medical costs Tyas etal. 2005 inflated to 2022/2023 
 m_c_edss <- read.csv("data/m_c_edss.csv", header = T, row.names = 1) 
-m_c_edss[,] <- 0.0001 # set to zero for the purposes of post hoc anaylsis 
+#m_c_edss[,] <- 0.0001 # set to zero for the purposes of post hoc anaylsis 
 m_c_edss_rrms <- m_c_edss[,c("rrms_mean","rrms_se")]
 m_c_edss_spms <- m_c_edss[,c("spms_mean","spms_se")]
 
@@ -206,12 +206,12 @@ rownames(df_c_tx_load)<- c(seq(1,5,1))
 ## Relapse Costs inflated Hawton 2016 to 2023
 m_c_relapse <-read.csv("data/m_c_relapse.csv", header = T, row.names = 1)
 m_c_relapse <- m_c_relapse * 2 # Annualised these 6 months costs
-m_c_relapse[,] <- 0.0001 # set to zero for the purposes of post hoc anaylsis 
+#m_c_relapse[,] <- 0.0001 # set to zero for the purposes of post hoc anaylsis 
 
 ## Adverse events costs MS-MTA report
 df_c_sae <- saes_data[,4]
 names(df_c_sae)<-sae_names
-df_c_sae[] <- 0.0001 # set to zero for the purposes of post hoc anaylsis
+#df_c_sae[] <- 0.0001 # set to zero for the purposes of post hoc anaylsis
 
 ## RRMS & SPMS edss utilities Orme 
 u_edss <- read.csv("data/m_u_edss.csv", header = T, row.names = 1)
@@ -1238,7 +1238,7 @@ total_runtime <- system.time({
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
-    debug = TRUE,
+    debug = FALSE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
@@ -1260,10 +1260,10 @@ total_runtime <- system.time({
   )
 })
 
-#######################################################################
-### Post-hoc analysis of patient trajectories to produce results for #
-### the 3 natalizumabs with identical QALYs but differing costs #####
-#####################################################################
+###################################################################################
+### Post-hoc analysis of patient trajectories to produce results for #############
+### Originator-IV/SC and biosimilar-IV with identical QALYs but differing costs #
+#################################################################################
 
 #ipd from model with only natalizumab_IV
 psa_ipd <- bind_rows(map(results$output_psa, "merged_df"))
@@ -1302,11 +1302,11 @@ for( row_i in 1:length(natbiosimsc_ipd)){
   }
 }
 
-# group the 3 natalizumabs ipd into a single list
+# group the Originator-IV/SC and biosimilar-IV ipd into a single list
 nat_list <- list(natorgiv_ipd, natorigsc_ipd, natbiosimsc_ipd)
 
-# Originator -SC and biosimilar-IV treatment, relapse,  health state cost data input ( when not available outside descem environment)
-#---------------------------------------------------------------------------------------------
+# Originator-IV/SC and biosimilar-IV treatment, relapse,  health state cost data input (when not available outside descem environment)
+#----------------------------------------------------------------------------------------------------------------------------------#
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
 df_c_tx[,"Natalizumab-IV"] <- (df_c_tx[,"Natalizumab-IV"]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,"Natalizumab-IV"]*0.4 # 60% on EID interval dosing
 df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
@@ -1329,10 +1329,6 @@ for (i_sample in 1:n_samples){
                                                       df_c_tx_admin[j_cost,i_trt] / ((df_c_tx_admin[j_cost,i_trt]/sd_psa)^2))
     }}}
 
-
-
-
-
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) #  free JCV test 
 df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) #  free JCV test 
@@ -1352,20 +1348,20 @@ df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1
 df_c_tx_load <- df_c_tx_load[,intersect(colnames(df_c_tx_load),v_treatment_names)]
 rownames(df_c_tx_load)<- c(seq(1,5,1))
 
-v_c_rrms_edss <- m_c_edss_rrms[,"rrms_mean"] # health state costs assumed 0 as no difference between the natalizumabs
-v_c_spms_edss <- m_c_edss_spms[,"spms_mean"] # health state costs assumed 0 as no difference between the natalizumabs
+v_c_rrms_edss <- m_c_edss_rrms[,"rrms_mean"] # no difference in health state costs assumed between originator-iv, originator-sc, and biosimilar-iv
+v_c_spms_edss <- m_c_edss_spms[,"spms_mean"] # no difference in health state costs assumed between originator-iv, originator-sc, and biosimilar-iv
 names(v_c_spms_edss) <- names(v_c_rrms_edss) <- v_edss_values
 
-v_c_relapse <- m_c_relapse[, "mean"] # relapse costs assumed 0 as no difference between the natalizumabs
+v_c_relapse <- m_c_relapse[, "mean"] # no difference in relapse costs assumed between originator-iv, originator-sc, and biosimilar-iv
 v_c_sae_events <- t(matrix(df_c_sae, nrow = n_sae, ncol = 1,
-                           dimnames = list(sae_names, "sae_cost"))) # sae costs assumed 0 as no difference between the natalizumabs
+                           dimnames = list(sae_names, "sae_cost"))) # no difference in sae costs assumed between originator-iv, originator-sc, and biosimilar-iv
 
 ## discount rates:
 lcldrc=0.035
 Instantdrc <- log(1+lcldrc)
 
 ## addin instant  costs:
-#-----------------------
+#----------------------#
 # treatment costs
 # add empty treatment costs into a list of the 3 natalizumab ipd data frames
 for (trt_i in 1:length(nat_list)){
