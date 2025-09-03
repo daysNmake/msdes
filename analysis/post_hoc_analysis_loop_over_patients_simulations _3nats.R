@@ -44,6 +44,8 @@ nat_list <- list(natorgiv_ipd, natorigsc_ipd, natbiosimsc_ipd)
 # treatment, relpase,  health state cost data input ( when not avaible outside descem enviroment)
 #---------------------------------------------------------------------------------------------
 
+sd_psa <- 10
+
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
 df_c_tx[,"Natalizumab-IV"] <- (df_c_tx[,"Natalizumab-IV"]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,"Natalizumab-IV"]*0.4 # 60% on EID interval dosing
 df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
@@ -54,8 +56,32 @@ df_c_tx_admin[,"Natalizumab-IV"] <- (df_c_tx_admin[,"Natalizumab-IV"]*0.6*(round
 df_c_tx_admin[1,"Natalizumab-SC"] <- (df_c_tx_admin[1,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 1
 df_c_tx_admin[2:3,"Natalizumab-SC"] <- (df_c_tx_admin[2:3,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 2
 df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
-v_c_trt_admin <- matrix(df_c_tx_admin, nrow = nrow(df_c_tx_admin), ncol = n_treatments,
-                        dimnames = list(row.names(df_c_tx_admin), v_treatment_names))
+# v_c_trt_admin <- matrix(df_c_tx_admin, nrow = nrow(df_c_tx_admin), ncol = n_treatments,
+#                         dimnames = list(row.names(df_c_tx_admin), v_treatment_names)) # deterministic
+
+# v_c_trt_admin <- matrix(nrow = nrow(df_c_tx_admin), ncol = n_treatments,
+#                dimnames = list(row.names(df_c_tx_admin), v_treatment_names))
+# for (j_cost in 1:nrow(df_c_tx_admin)) {
+#   for(i_trt in 1:n_treatments) {
+#     v_c_trt_admin[j_cost,i_trt] <- rgamma(1, ((df_c_tx_admin[j_cost,i_trt])^2) / ((df_c_tx_admin[j_cost,i_trt] / sd_psa)^2),
+#                                  df_c_tx_admin[j_cost,i_trt] / ((df_c_tx_admin[j_cost,i_trt]/sd_psa)^2))
+#   }}
+
+genadmincost<- function ( cost = c("cost_annual_yr1", "cost_annual_yr2", "average_annual_cost"), treatment = v_treatment_names) {
+  
+  
+  v_c_trt_admin <- matrix(nrow = nrow(df_c_tx_admin), ncol = n_treatments,
+                          dimnames = list(row.names(df_c_tx_admin), v_treatment_names))
+  for (j_cost in 1:nrow(df_c_tx_admin)) {
+    for(i_trt in 1:n_treatments) {
+      v_c_trt_admin[j_cost,i_trt] <- rgamma(1, ((df_c_tx_admin[j_cost,i_trt])^2) / ((df_c_tx_admin[j_cost,i_trt] / sd_psa)^2),
+                                            df_c_tx_admin[j_cost,i_trt] / ((df_c_tx_admin[j_cost,i_trt]/sd_psa)^2))
+    }}
+  return (v_c_trt_admin[cost,treatment])
+}
+
+genadmincost(cost ="cost_annual_yr2", treatment = 5) 
+
 
 df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
 df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) #  free JCV test 
