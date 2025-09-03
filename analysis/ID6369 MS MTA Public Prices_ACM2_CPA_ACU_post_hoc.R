@@ -1009,12 +1009,6 @@ evt_react_list <-
                    modify_item(list(t_4thline = years_on_treatment))
                  }
                  
-                 # treatment waning flag sets weight to 0.25 at 3>= t <5 or 0.5 at t >=5 otherwise 0
-                 #                 if (spms_flag == 0 & treatment_stop == 0) {
-                 #                   if (years_on_treatment <= 2){modify_item(list(waning = 0))
-                 #                   } else if (years_on_treatment > 2 & years_on_treatment <5 ){modify_item(list(waning = 0.25))
-                 #                   } else if (years_on_treatment >= 5){modify_item(list(waning = 0.5))}
-                 #                 } else if(spms_flag == 1 | treatment_stop == 1) {modify_item(list(waning = 0))}
                  
                  if (edss_value <= 6 & treatment_stop == 0) {new_event(list(
                    "annual_treatment" = curtime + 1
