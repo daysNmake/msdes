@@ -40,7 +40,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 10
-n_samples <- 10
+n_samples <- 1000
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -1232,7 +1232,7 @@ total_runtime <- system.time({
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
-    debug = FALSE,
+    debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
@@ -1282,7 +1282,7 @@ names(v_treatment_codes) <- v_treatment_names
 
 # natalizumab-sc ipd
 natorigsc_ipd[,"trt"] <-"Natalizumab-SC"
-for( row_i in 1:length(natorigsc_ipd)){
+for( row_i in 1:nrow(natorigsc_ipd)){
   if (natorigsc_ipd[row_i, current_treatment_code == 1]) {
     natorigsc_ipd[row_i, "current_treatment_code"] <- v_treatment_codes["Natalizumab-SC"]
   }
@@ -1290,7 +1290,7 @@ for( row_i in 1:length(natorigsc_ipd)){
 
 #biosimilar-iv ipd
 natbiosimsc_ipd[,"trt"] <- "Natalizumab biosimilar-IV"
-for( row_i in 1:length(natbiosimsc_ipd)){
+for( row_i in 1:nrow(natbiosimsc_ipd)){
   if (natbiosimsc_ipd[row_i, current_treatment_code == 1]) {
     natbiosimsc_ipd[row_i, "current_treatment_code"] <- v_treatment_codes["Natalizumab biosimilar-IV"]
   }
@@ -1302,15 +1302,18 @@ nat_list <- list(natorgiv_ipd, natorigsc_ipd, natbiosimsc_ipd)
 # Originator-IV/SC and biosimilar-IV treatment, relapse,  health state cost data input (when not available outside descem environment)
 #----------------------------------------------------------------------------------------------------------------------------------#
 df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
-df_c_tx[,"Natalizumab-IV"] <- (df_c_tx[,"Natalizumab-IV"]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,"Natalizumab-IV"]*0.4 # 60% on EID interval dosing
 df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
+df_c_tx[,1:3] <- (df_c_tx[,1:3]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,1:3]*0.4 # 60% on EID interval dosing
+df_c_tx<- df_c_tx[, c(1,4,5,6,7,2,3)] # reorder to match new treatment order
 
 df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin_v2.csv", header = T, row.names = 1))
+df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
 df_c_tx_admin[df_c_tx_admin==0] <-0.0001 # set zero costs to positive number stops generating NaNs
-df_c_tx_admin[,"Natalizumab-IV"] <- (df_c_tx_admin[,"Natalizumab-IV"]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,"Natalizumab-IV"]*0.4 # 60% on EID interval dosing
+df_c_tx_admin[,1:3] <- (df_c_tx_admin[,1:3]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:3]*0.4 # 60% on EID interval dosing
 df_c_tx_admin[1,"Natalizumab-SC"] <- (df_c_tx_admin[1,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 1
 df_c_tx_admin[2:3,"Natalizumab-SC"] <- (df_c_tx_admin[2:3,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 2
-df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
+df_c_tx_admin<- df_c_tx_admin[, c(1,4,5,6,7,2,3)] # reorder to match new treatment order
+
 sd_psa <- 10
 cost_yr <- c("cost_annual_yr1", "cost_annual_yr2", "average_annual_cost")
 a_c_trt_admin <- array(NA , dim = c(n_samples, nrow(df_c_tx_admin), n_treatments ),
@@ -1328,6 +1331,8 @@ df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247)
 df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) #  free JCV test 
 df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - 247) #  free JCV test 
 df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
+df_c_tx_monitor<- df_c_tx_monitor[, c(1,4,5,6,7,2,3)] # reorder to match new treatment order
+
 a_c_trt_monitor <- array(NA , dim = c(n_samples, nrow(df_c_tx_monitor), n_treatments ),
                          dimnames = list( NULL, row.names(df_c_tx_monitor), v_treatment_names))
 for (i_sample in 1:n_samples){
@@ -1362,6 +1367,7 @@ for (trt_i in 1:length(nat_list)){
   nat_list[[trt_i]] <- cbind(nat_list[[trt_i]],"trt_cost" = 0, "relapse_cost" =0, "sae_cost"=0, "hs_cost"=0, "disc_trt_cost"=0, "disc_relapse_cost" =0, "disc_sae_cost"=0, "disc_hs_cost"=0) #, "tot_posthoc"=0)
 }
 
+post_hoc_runtime <- system.time(
 # loop over each natalizumab ipd data frame
 for (trt_i in 1:length(nat_list)){
   # temporary object to store ipd per treatment
@@ -1494,6 +1500,9 @@ for (trt_i in 1:length(nat_list)){
   nat_list[[trt_i]] <- nat_list_itrt
   
 }
+)
+
+print(post_hoc_runtime)
 
 #combine processed ipd with remainder of the treatments
 results_ipd<-rbind(nat_list[[1]][,-c(22:29)], nat_list[[2]][,-c(22:29)], nat_list[[3]][,-c(22:29)] , remainder_ipd)
@@ -1501,6 +1510,8 @@ results_ipd<-rbind(nat_list[[1]][,-c(22:29)], nat_list[[2]][,-c(22:29)], nat_lis
 # Summarise the results
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
+sum_results_runtime <- system.time(
+
 for (i_trt in v_treatment_names){
   for(i_sample in 1:n_samples) {
     for(i_patient in 1:n_patients) {
@@ -1509,8 +1520,9 @@ for (i_trt in v_treatment_names){
       total_qalys_ipd[i_sample, i_trt, i_patient] <- sum(results_ipd[simulation == i_sample][trt == i_trt][pat_id == i_patient,"qaly"])
     }
   }}
+)
 
-
+print(sum_results_runtime)
 
 # Summarise the results
 
@@ -1526,3 +1538,4 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 View(results_table)
+

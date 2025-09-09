@@ -28,7 +28,7 @@ v_treatment_names <- c("Natalizumab-IV","Natalizumab-SC","Natalizumab biosimilar
                        "Natalizumab biosimilar-SC","Cladribine","Ublituximab" ,
                        "Ofatumumab","Ocrelizumab" )
 reference <- v_treatment_names[-c(4,5)]
-acm2_th_dic <- 30 # (12, 13, 31, 32)
+acm2_th_dic <- 30 # (12, 13, 30, 31, 32)
 
 for (i in 1:length(reference)) {
   

@@ -3,13 +3,13 @@ setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/
 
 
 # Load results from previous run
-# input_matrix <- readRDS("too large for git/results/results_public/post ACM2/input_matrix_ACM2_CPA_ACU_public.RDS")
-# total_qalys_ipd <- readRDS("too large for git/results/results_public/post ACM2/total_qalys_ipd_ACM2_CPA_ACU_public.RDS")
-# total_costs_ipd <- readRDS("too large for git/results/results_public/post ACM2/total_costs_ipd_ACM2_CPA_ACU_public.RDS")
+# input_matrix <- readRDS("too large for git/results/results_public/nat qaly aligned 04 june 25/input_matrix_ACM2_CPA_ACU_NAT_ALIGNED_public.RDS")
+# total_qalys_ipd <- readRDS("too large for git/results/results_public/nat qaly aligned 04 june 25/total_qalys_ipd_ACM2_CPA_ACU_NAT_ALIGNED_public.RDS")
+# total_costs_ipd <- readRDS("too large for git/results/results_public/nat qaly aligned 04 june 25/total_costs_ipd_ACM2_CPA_ACU_NAT_ALIGNED_public.RDS")
 
-input_matrix <- readRDS("too large for git/results/results_conf/post ACM2/input_matrix_ipd_ACM2_CPA_ACU_conf.RDS")
-total_qalys_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_qalys_ipd_ACM2_CPA_ACU_conf.RDS")
-total_costs_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_costs_ipd_ACM2_CPA_ACU_conf.RDS")
+input_matrix <- readRDS("too large for git/results/results_conf/nat qaly aligned 04 june 25/input_matrix_ipd_ACM2_CPA_ACU_NAT_ALIGNED_conf.RDS")
+total_qalys_ipd <- readRDS("too large for git/results/results_conf/nat qaly aligned 04 june 25/total_qalys_ipd_ACM2_CPA_ACU_NAT_ALIGNED_conf.RDS")
+total_costs_ipd <- readRDS("too large for git/results/results_conf/nat qaly aligned 04 june 25/total_costs_ipd_ACM2_CPA_ACU_NAT_ALIGNED_conf.RDS")
 
 source("MS-MTA/R/summarise_samples.R")
 
@@ -24,8 +24,8 @@ for(i_patients_con in c(1:4)) {
   for(i_samples_con in c(1:4)) {
     # Use a subset of the IPD 
     # Calculate the mean across patients aligning with how they are used for main results
-    total_costs_temp <- rowMeans(total_costs_ipd[1:convergence_subsets[i_samples_con], "Natalizumab-IV", 1:convergence_subsets[i_patients_con]])
-    total_qalys_temp <- rowMeans(total_qalys_ipd[1:convergence_subsets[i_samples_con], "Natalizumab-IV", 1:convergence_subsets[i_patients_con]])
+    total_costs_temp <- rowMeans(total_costs_ipd[1:convergence_subsets[i_samples_con], "Natalizumab biosimilar-IV", 1:convergence_subsets[i_patients_con]])
+    total_qalys_temp <- rowMeans(total_qalys_ipd[1:convergence_subsets[i_samples_con], "Natalizumab biosimilar-IV", 1:convergence_subsets[i_patients_con]])
     total_nb_20k_temp <- total_qalys_temp * 20000 - total_costs_temp
     total_nb_30k_temp <- total_qalys_temp * 30000 - total_costs_temp
     convergence_tables["Total costs", i_patients_con, i_samples_con] <- 
@@ -51,6 +51,6 @@ row.names(convergence_results)[5:8] <- "Total QALYs"
 row.names(convergence_results)[9:12] <- "Net benefit at £20,000/QALY"
 row.names(convergence_results)[13:16] <- "Net benefit at £30,000/QALY"
 
-write.csv(convergence_results, file = "too large for git/results/results_conf/post ACM2/convergencetable_postacm2_conf.csv")
+write.csv(convergence_results, file = "too large for git/results/results_conf/nat qaly aligned 04 june 25/convergencetable_cic_nat_qaly_aligned_nat_biosim_iv_conf.csv")
 # write.csv(convergence_results, file = "too large for git/results/results_public/post ACM2/convergencetable_postacm2_public.csv")
 
