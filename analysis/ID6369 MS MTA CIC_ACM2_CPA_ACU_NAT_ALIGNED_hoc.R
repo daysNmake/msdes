@@ -9,6 +9,9 @@
 ### but 3 sets of costs for natalizumab originator-IV/SC and biosimilar-IV ###
 ################################### Confidential Prices 03/09/2025 ################
 
+# changes on lines 1455, 1466 need to be updated with public prices version
+# what elese can be done to reduce vareiattion in costs in comparison with pre hoc model?
+
 rm(list = ls())
 library(readxl)
 library(descem)
@@ -39,8 +42,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 100
-n_samples <- 100
+n_patients <- 1
+n_samples <- 1
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -1452,7 +1455,7 @@ for (trt_i in 1:length(nat_list)){
           
         }
         #addin treatment costs for patients on year 5+ treatment
-        else if (temp_row[,evtname == "annual_treatment" &  years_on_treatment >= 5]) {
+        else if (temp_row[,evtname == "annual_treatment"]) {   # &  years_on_treatment >= 5
           
           temp_row[,"trt_cost"] <- (1- temp_row[,"treatment_stop"] ) *(
             (1 - temp_row[,spms_flag]) * ((df_c_tx["cost_annual_yr2",temp_row[,current_treatment_code]] +
@@ -1463,7 +1466,7 @@ for (trt_i in 1:length(nat_list)){
                                          (p_siponimod * df_c_spms["cost_annual_yr2","Siponimod"])))
           )
           
-        } 
+        } else {temp_row[,"trt_cost"] <- 0}
         
         # addin relapse costs for patient
         if(temp_row[,evtname == "relapse"]) {
@@ -1512,6 +1515,25 @@ for (trt_i in 1:length(nat_list)){
 )
 
 print(post_hoc_runtime)
+
+## fault checking##
+#compare Nat IV posthoc with with with psaipd for 1 patient 1 sim
+#View(psa_ipd[trt=="Natalizumab-IV"][,c(1:3)])
+#View(nat_list[[1]][trt=="Natalizumab-IV"][,c(1:3)])
+# cost_compare <- cbind(psa_ipd[trt=="Natalizumab-IV"][,c(1:3)],
+#       "posthoc" = nat_list[[1]][trt=="Natalizumab-IV"][,3])
+# 
+# for (row_i in 1:nrow(cost_compare)){
+# if (cost_compare[row_i,"posthoc.cost"] > 0) {
+#   
+#   cost_compare[row_i,"delta"] <- ((cost_compare[row_i,"cost"] - cost_compare[row_i,"posthoc.cost"] )/ cost_compare[row_i,"cost"])
+# } else (cost_compare[row_i,"delta"] <- 0)
+# }
+# View(cost_compare)
+# hist(cost_compare$delta)
+# setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo")
+# write.csv(cost_compare, "too large for git/results/results_conf/nat qaly aligned 04 june 25/ipd_cost_comparison_1X1_v1.csv")
+# setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/MS-MTA")
 
 #combine processed ipd with remainder of the treatments
 results_ipd<-rbind(nat_list[[1]][,-c(22:29)], nat_list[[2]][,-c(22:29)], nat_list[[3]][,-c(22:29)] , remainder_ipd)

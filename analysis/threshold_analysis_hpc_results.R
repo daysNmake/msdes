@@ -6,8 +6,8 @@ setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/
 
 # Load results from previous run
 
-total_qalys_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_qalys_ipd_ACM2_CPA_ACU_THA5_conf.RDS")
-total_costs_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_costs_ipd_ACM2_CPA_ACU_THA5_conf.RDS")
+total_qalys_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_qalys_ipd_ACM2_CPA_ACU_THA10_conf.RDS")
+total_costs_ipd <- readRDS("too large for git/results/results_conf/post ACM2/total_costs_ipd_ACM2_CPA_ACU_THA10_conf.RDS")
 
 source("MS-MTA/R/summarise_tha_results.R")
 source("MS-MTA/R/summarise_samples.R")
@@ -28,7 +28,7 @@ v_treatment_names <- c("Natalizumab-IV","Natalizumab-SC","Natalizumab biosimilar
                        "Natalizumab biosimilar-SC","Cladribine","Ublituximab" ,
                        "Ofatumumab","Ocrelizumab" )
 reference <- v_treatment_names[-c(4,5)]
-acm2_th_dic <- 30 # (12, 13, 30, 31, 32)
+acm2_th_dic <- 0 # (0, 1, 2, 3, 4, 12, 13, 30, 31, 32)
 
 for (i in 1:length(reference)) {
   
