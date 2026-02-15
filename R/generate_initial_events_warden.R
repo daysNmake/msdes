@@ -1,11 +1,14 @@
 
 ## WARDEN implementation of initial events
+# need to ask for help with death
 
 gen_init_events<-function(RRMS_events){
   add_tte(arm = v_treatment_names,
           evts = v_event_names,
           input={ 
             initialise <- 0
+            annual_treatment <- 0
+            age <-0
             relapse <- draw_tte(
               1, 
               dist = "exp", 
@@ -61,17 +64,17 @@ gen_init_events<-function(RRMS_events){
                   #setting a very high event time to progression for SPMS patients
                   (spms_flag * -10)} else {  -10 }
             )
-            death <- draw_tte_new(
-              1,
-              dist = "pwexp",
-              # population mortality drawn using piece wise exponential (male=0, female=1)
-              coef1 = c(log((1 - sex) * m_r_mortality[(age + 1):nrow(m_r_mortality), c("male")] +
-                              sex *  m_r_mortality[(age + 1):nrow(m_r_mortality), c("female")],
-              )),
-              time = c(m_r_mortality[(age + 1):nrow(m_r_mortality)]) ,
-              # MS specific mortality multiplier
-              hr = v_hr_smr_edss[edss_value == v_edss_values]
-            ) - age
+            # death <- draw_tte_new(
+            #   1,
+            #   dist = "pwexp",
+            #   # population mortality drawn using piece wise exponential (male=0, female=1)
+            #   coef1 = c(log((1 - sex) * m_r_mortality[(age + 1):nrow(m_r_mortality), c("male")] +
+            #                   sex *  m_r_mortality[(age + 1):nrow(m_r_mortality), c("female")],
+            #   )),
+            #   time = c(m_r_mortality[(age + 1):nrow(m_r_mortality)]) ,
+            #   # MS specific mortality multiplier
+            #   hr = v_hr_smr_edss[edss_value == v_edss_values]
+            # ) - age
             serious_adverse_event <- draw_tte(
               1,
               dist = "exp",
