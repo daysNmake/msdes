@@ -1,11 +1,8 @@
-#### RRMS DES using the WARDN package??? ####
+#### RRMS DES using DESCEM (modularisation update)####
 ## Authored: Howard Thom & Ayman Sadek ###
 ## Validated: Javier Sanchez Alvarez ####
-##### 11/11/2024 #######################
-
-##########################################
 ## ACM2 Committee preferred assumptions##
-# Public Prices 24/06/2025 #############
+# Public Prices #############
 
 rm(list = ls())
 
@@ -24,20 +21,28 @@ library(ggplot2)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-#Function to generate inputs
+#Function to generate inputs, this is can be used for both DESCEM and WARDEN implementations
 source("R/generate_inputs.R")
-#functions to generate initial events and reaction events
+
+# Global parameters of the model as they are common to all patients and treatments, DESCEM specific
+source("R/generate_global_inputs.R")
+
+# patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
+source("R/generate_individual_inputs.R")
+
+#functions to generate initial events and reaction events, DESCEM specific
 source("R/generate_initial_events.R")
 source("R/generate_reaction_events.R")
 
-# Function to summarise the results
+# Function to summarise the results, package agnostic
 source("R/summarise_samples.R")
 source("R/summarise_ce_results.R")
 
-## New functions to draw from piece wise exponential distribution
+## New functions to draw from piece wise exponential distribution, DESCEM specific
 source("R/draw_tte_new.R")
-# ## New function to run the simulation saving input parameters
-# # and with arbitrary random seeds
+
+## New function to run the simulation saving input parameters, DESCEM specific
+# and with arbitrary random seeds
  source("R/RunSim_new.R")
 
 ## set a seed 
@@ -107,20 +112,11 @@ time_horizon <- 100-initial_age # Years so lifetime
 prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
 
 
-
-# Global parameters of the model as they are common to all patients and treatments
-source("R/generate_global_inputs.R")
-
-
-# patient parameters reflecting heterogeneous characteristics that depend on treatment
-source("R/generate_individual_inputs.R")
-
 # Add time to event for each patient for each of the treatments
 # Setting trt to all treatments should mean that the event applies to all treatments
 
 init_event_list <- gen_init_events(RRMS_events=v_event_names)
 evt_react_list <- gen_react_events(RRMS_events=v_event_names)
-
 
 
 # Add ongoing utilities

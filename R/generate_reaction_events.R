@@ -1,3 +1,6 @@
+
+## DESCEM implementation of reaction events
+
 gen_react_events <- function(RRMS_events){
   
   

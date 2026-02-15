@@ -1,5 +1,5 @@
 
-
+## DESCEM implementation of initial events
 
 gen_init_events<-function(RRMS_events){
   add_tte(trt = v_treatment_names,
