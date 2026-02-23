@@ -1,14 +1,10 @@
 
 
 ## current status
-Reaction events creating error "Error in react_evt(list(evt = current_event, curtime = current_prevtime,  : 
-  Time of event 'serious_adverse_event': 51.7224 is smaller than the time of previous event 'edss_decrease': 241.9085. Arm: Natalizumab-IV, id: 1"
+
+Generate global inputs to be updated, these must now be lists and subsetting accordingly must change in the inital and reaction events.
 
 costs and utilities to be moved into generate reaction events
-
-Generate global inputs to be updated
-
-
 Ask for help with death from JSA
 
 # MS-DES repository (Update to reflect change over to WARDEN)
