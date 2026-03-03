@@ -27,7 +27,7 @@ options(tibble.print_max = 50)
 source("R/generate_inputs.R")
 
 # Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
-source("R/generate_global_inputs.R")
+source("R/generate_global_inputs_warden.R")
 
 # patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
 source("R/generate_individual_inputs.R")
