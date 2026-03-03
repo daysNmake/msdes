@@ -195,7 +195,8 @@ total_runtime <- system.time({
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
-    debug = TRUE,
+    debug = FALSE,
+    sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
     arm_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
