@@ -23,14 +23,17 @@ library(ggplot2)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-#Function to generate inputs, the same for bothe packages
+#Function to generate inputs, the same for both packages
 source("R/generate_inputs.R")
 
 # Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
 source("R/generate_global_inputs_warden.R")
 
+#Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
+source("R/pluck_vector_from_env.R")
+
 # patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
-source("R/generate_individual_inputs.R")
+source("R/generate_individual_inputs_warden.R")
 
 #functions to generate initial events and reaction events, WARDEN specific (not complete)
 source("R/generate_initial_events_warden.R")
@@ -187,7 +190,7 @@ evt_react_list <- gen_react_events(RRMS_events=v_event_names)
 #            trt = v_treatment_names,
 #            util = sum(v_u_sae_events*v_weight_sae)) 
 
-
+indicators <-0
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <- system.time({
@@ -197,6 +200,7 @@ total_runtime <- system.time({
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
+    #indicators= ? ,
     arm_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention

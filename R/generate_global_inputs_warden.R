@@ -13,32 +13,31 @@ common_all_inputs <-add_item(
   time_horizon = time_horizon,
   prop_female = prop_female,
   v_edss_values = v_edss_values,
-  df_c_tx = inputs$df_c_tx, # drug costs are not probabilistic
-  p_siponimod = inputs$p_siponimod, 
+  df_c_tx = inputs[["df_c_tx"]], # drug costs are not probabilistic
+  p_siponimod = inputs[["p_siponimod"]], 
   v_event_names = v_event_names,
-  m_n_patients_edss = inputs$m_n_patients_edss,
-  m_r_mortality = inputs$m_r_mortality,
-  v_smr = inputs$v_smr, 
-  v_weight_sae = inputs$v_weight_sae,
-  initial_spms_prop = inputs$initial_spms_prop,
-  p_relapse_hospital = inputs$p_relapse_hospital
+  m_n_patients_edss = inputs[["m_n_patients_edss"]],
+  m_r_mortality = inputs[["m_r_mortality"]],
+  v_weight_sae = inputs[["v_weight_sae"]],
+  initial_spms_prop = inputs[["initial_spms_prop"]],
+  p_relapse_hospital = inputs[["p_relapse_hospital"]]
   
 ) %>% add_item(
   # list of Utilities for RRMS Orme et al and carergiver disutilities Acaster et al.
   l_u_rrms_edss <- pick_val_v(
-    base = inputs$m_u_edss_rrms[,"rrms_mean"],
+    base = inputs[["m_u_edss_rrms"]][,"rrms_mean"],
     psa = {
-      temp <- inputs$m_u_edss_rrms[, "rrms_mean"]
+      temp <- inputs[["m_u_edss_rrms"]][, "rrms_mean"]
         for(j_edss in 1:n_edss_values) {
-          temp[j_edss] <- log(rlnorm(1, mean =  (inputs$m_u_edss_rrms[j_edss, "rrms_mean"]+ inputs$m_u_carer[j_edss, "Mean"]),
-                                     sd =  inputs$m_u_edss_rrms[j_edss, "rrms_sd"]))
+          temp[j_edss] <- log(rlnorm(1, mean =  (inputs[["m_u_edss_rrms"]][j_edss, "rrms_mean"]+ inputs$m_u_carer[j_edss, "Mean"]),
+                                     sd =  inputs[["m_u_edss_rrms"]][j_edss, "rrms_sd"]))
         } 
       temp 
       },
     #sens = ,
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$m_u_edss_rrms[,"rrms_mean"])),    
+    indicator = rep(indicators, length(inputs[["m_u_edss_rrms"]][,"rrms_mean"])),    
     names_out = names(v_edss_values)
     )
   
@@ -195,18 +194,18 @@ common_all_inputs <-add_item(
   )
   
   
-) %>% add_item(
-  # MS Registry time to EDSS decrease SPMS patients
-  l_spms_edss_decrease <- pick_val_v(
-    base = inputs$v_tto_edss_decrease_spms_mu,
-    psa =         mvrnorm(n = 1, mu = inputs$v_tto_edss_decrease_spms_mu, 
-                          Sigma = inputs$m_tto_edss_decrease_spms_sigma) ,
-    #sens = , 
-    psa_ind = psa_bool,
-    sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$v_tto_edss_decrease_spms_mu)),    
-    names_out = colnames(inputs$v_tto_edss_decrease_spms_mu)
-  )
+# ) %>% add_item(
+#   # MS Registry time to EDSS decrease SPMS patients
+#   l_spms_edss_decrease <- pick_val_v(
+#     base = inputs$v_tto_edss_decrease_spms_mu,
+#     psa =         mvrnorm(n = 1, mu = inputs$v_tto_edss_decrease_spms_mu, 
+#                           Sigma = inputs$m_tto_edss_decrease_spms_sigma) ,
+#     #sens = , 
+#     psa_ind = psa_bool,
+#     sens_ind = sensitivity_bool,    
+#     indicator = rep(indicators, length(inputs$v_tto_edss_decrease_spms_mu)),    
+#     names_out = colnames(inputs$v_tto_edss_decrease_spms_mu)
+#   )
   
 )%>% add_item(
   # MS Registry time to progression HARRMS to SPMS 
