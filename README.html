@@ -371,8 +371,9 @@ display: none;
 <h2><em>Current status of update to WARDEN</em></h2>
 <ul>
 <li><p>Generate global inputs function are being updated to WARDEN,
-from: add_item( if(psa_bool) {} else{}) to : add_item(pick_val_v()). All
-variables must be lists (ex: l_hr_arr[[“Natalizumab-SC”]]).</p></li>
+from: <code>add_item( if(psa_bool) {} else{})</code> to :
+<code>add_item(pick_val_v())</code>. All variables must be lists (ex:
+<code>l_hr_arr[[&quot;Natalizumab-SC&quot;]]</code>).</p></li>
 <li><p>Its no longer possible to have matrices, the following variables
 have been split up:</p></li>
 </ul>
@@ -399,10 +400,109 @@ have been split up:</p></li>
 </tbody>
 </table>
 <ul>
-<li><p>Indexing accordingly must change in the initial and reaction
-events, this could be accomplished using purr::pluck() and utilities to
-be moved into generate reaction events</p></li>
-<li><p>Ask for help with death from JSA</p></li>
+<li>Indexing accordingly must change in the initial and reaction events,
+this could be accomplished using custom function
+<code>pluck_vector_from_env()</code></li>
+</ul>
+<table>
+<colgroup>
+<col width="44%" />
+<col width="55%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"><strong>Old </strong></th>
+<th align="center"><strong>New </strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Examples of changes to formulas:</strong></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">v_hr_smr_edss[edss_value == v_edss_values]</td>
+<td align="center">pluck_vector_from_env(l_hr_smr_edss,
+names(v_edss_values[edss_value == v_edss_values]))</td>
+</tr>
+<tr class="odd">
+<td align="left">v_hr_edss_increase[current_treatment_code]</td>
+<td align="center">pluck_vector_from_env(l_hr_edss_increase,
+names(v_treatment_codes[current_treatment_code ==
+v_treatment_codes]))</td>
+</tr>
+<tr class="even">
+<td align="left">v_baseline_harrms_edss_increase[“DMTNatalizumab”]</td>
+<td align="center">purrr::pluck(l_baseline_harrms_edss_increase,
+“DMTNatalizumab”)</td>
+</tr>
+<tr class="odd">
+<td align="left">v_spms_edss_increase[“rate”]</td>
+<td align="center">purrr::pluck(l_spms_edss_increase, “rate”)</td>
+</tr>
+<tr class="even">
+<td align="left">v_rrms_edss_decrease[“BaselineWebEDSS”]</td>
+<td align="center">purrr::pluck(l_rrms_edss_decrease,
+“BaselineWebEDSS”)</td>
+</tr>
+<tr class="odd">
+<td align="left">v_hr_saes - should be changed to depend on
+treatment?</td>
+<td align="center">pluck_vector_from_env(l_hr_saes,
+names(v_treatment_codes[ v_treatment_codes]))</td>
+</tr>
+<tr class="even">
+<td align="left">m_prop_2nd_3rd_trt[“3”,current_treatment_code !=
+v_higher_line_treatment_codes[!v_prior_treatment_indices]]</td>
+<td align="center">pluck_vector_from_env(l_prop_3rdline_trt,
+names(v_higher_line_treatment_codes[current_treatment_code !=
+v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Remaining variables changed:</strong></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">spms_edss_decrease - not used in model?</td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">spms_progression</td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">baseline_harrms_larr , baseline_harrms_larr ,
+baseline_spms_larr , hr_arr</td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">discontinuation_rate, hr_discontinuation</td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">sae_events_rate</td>
+<td align="center"></td>
+</tr>
+<tr class="odd">
+<td align="left">v_hr_pbo</td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">prop_2ndline_trt - not used in model?</td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>costs and utilities to be moved into generate reaction events and
+will need to use this custom function:
+<ul>
+<li>l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events</li>
+<li>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2,
+l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse,
+l_c_sae_events</li>
+</ul></li>
+<li>Ask for help with death from JSA</li>
 </ul>
 </div>
 </div>

@@ -16,17 +16,42 @@
 
 ## *Current status of update to WARDEN*
 
-+ Generate global inputs function are being updated to WARDEN, from: add_item( if(psa_bool) {} else{})  to : add_item(pick_val_v()). All variables must  be lists (ex: l_hr_arr[["Natalizumab-SC"]]).
++ Generate global inputs function are being updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All variables must  be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
 
 + Its no longer possible to have matrices, the following variables have been split up:
 
-| **Old variable**	                | **New variables**	| 
+| **Old variable**	              |      **New variables**	| 
 | :---                            |                     ---: |
 | v_c_trt_admin       | l_c_trt_admin_yr1   & l_c_trt_admin_yr2 |
 | v_c_trt_monitor     | l_c_trt_monitor_yr1 & l_c_trt_monitor_yr2 |
 |  m_prop_2nd_3rd_trt  | l_prop_2ndline_trt  & l_prop_3rdline_trt |
 
-+ Indexing accordingly must change in the initial and reaction events, this could be accomplished using purr::pluck()  and utilities to be moved into generate reaction events
++ Indexing accordingly must change in the initial and reaction events, this could be accomplished using custom function `pluck_vector_from_env()`
+  
+| **Old **	                      |                 **New **	| 
+| :---                            |                     :---: |
+|**Examples of changes to formulas:** |
+| v_hr_smr_edss[edss_value == v_edss_values] | pluck_vector_from_env(l_hr_smr_edss, names(v_edss_values[edss_value == v_edss_values])) |
+| v_hr_edss_increase[current_treatment_code] | pluck_vector_from_env(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) |
+| v_baseline_harrms_edss_increase["DMTNatalizumab"] | purrr::pluck(l_baseline_harrms_edss_increase, "DMTNatalizumab") |
+| v_spms_edss_increase["rate"] | purrr::pluck(l_spms_edss_increase, "rate") |
+| v_rrms_edss_decrease["BaselineWebEDSS"] | purrr::pluck(l_rrms_edss_decrease, "BaselineWebEDSS")|
+| v_hr_saes - should be changed to depend on treatment?| pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes])) |
+| m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]] | pluck_vector_from_env(l_prop_3rdline_trt, names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])) |
+| **Remaining variables changed:** |
+| spms_edss_decrease - not used in model? |
+| spms_progression |
+| baseline_harrms_larr , baseline_harrms_larr  , baseline_spms_larr  , hr_arr |
+| discontinuation_rate, hr_discontinuation |
+| sae_events_rate |
+| v_hr_pbo |
+| prop_2ndline_trt - not used in model? |
+
+
+
++ costs and utilities to be moved into generate reaction events and will need to use this custom function:
+  + l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events
+  + l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse, l_c_sae_events
 
 + Ask for help with death from JSA
 
