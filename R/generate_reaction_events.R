@@ -78,7 +78,7 @@ gen_react_events <- function(RRMS_events){
                                                     v_baseline_harrms_larr["DMTNatalizumab"]) +
                          spms_flag * (v_baseline_spms_larr["rate"] +
                                         v_baseline_spms_larr["BaselineWebEDSS"] * (edss_value)),
-                       hr = (1 - spms_flag) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) +
+                       beta_tx = (1 - spms_flag) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) +
                                                  treatment_stop * v_hr_pbo[, "arr"]) + spms_flag
                      )))
                  }) %>%
@@ -102,7 +102,7 @@ gen_react_events <- function(RRMS_events){
                          v_baseline_harrms_edss_increase["DMTNatalizumab"] +
                          spms_flag * (v_spms_edss_increase["rate"] +
                                         v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                       hr = (1 - spms_flag ) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) + 
+                       beta_tx = (1 - spms_flag ) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) + 
                                                   treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
                      )
                    ))}
@@ -161,7 +161,7 @@ gen_react_events <- function(RRMS_events){
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
                        coef1 = log(sae_events_rate),
-                       hr= ((1 - treatment_stop) * v_hr_saes) + (treatment_stop *  v_hr_pbo[, "saes"])
+                       beta_tx= ((1 - treatment_stop) * v_hr_saes) + (treatment_stop *  v_hr_pbo[, "saes"])
                      )
                    ))
                  }) %>%
@@ -198,7 +198,7 @@ gen_react_events <- function(RRMS_events){
                        1,
                        dist = "exp",
                        coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
-                       hr= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
+                       beta_tx= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
                      )
                    ))
                    

@@ -44,7 +44,7 @@ source("R/summarise_samples.R")
 source("R/summarise_ce_results.R")
 
 ## create New functions to draw from piece wise exponential distribution (ask JSA for help)
-
+source("R/draw_tte_new_warden.R")
 
 ## set a seed 
 n_seed<-243523452
@@ -89,8 +89,7 @@ v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
 names(v_prior_treatment_indices) <- v_higher_line_treatments
 
 ## Model event states
-v_event_names <- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event"
-                   #, "death"
+v_event_names <- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death"
                    )
 
 ## Define the possible EDSS values

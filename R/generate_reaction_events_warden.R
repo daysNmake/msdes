@@ -121,14 +121,14 @@ gen_react_events <- function(RRMS_events){
                    spms_flag <- 1
                    
                  }) %>%
-    # add_reactevt(name_evt = "death",
-    #              # Death only occurs once.
-    #              # Set current time to Inf so simulation ends.
-    #              input = {
-    #                age <- initial_age + round(curtime)
-    #                curtime <- Inf 
-    #                
-    #              }) %>%
+    add_reactevt(name_evt = "death",
+                 # Death only occurs once.
+                 # Set current time to Inf so simulation ends.
+                 input = {
+                   age <- initial_age + round(curtime)
+                   curtime <- Inf
+
+                 }) %>%
     add_reactevt(name_evt = "serious_adverse_event",
                  input = {  
                    age <- initial_age + round(curtime)
@@ -142,7 +142,7 @@ gen_react_events <- function(RRMS_events){
                        dist = "exp",
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
-                       coef1 = log(purrr::pluck(sae_events_rate, "sae_events_rate")),
+                       coef1 = log(purrr::pluck(l_sae_events_rate, "sae_events_rate")),
                        hr= ((1 - treatment_stop) * pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes]))) + (treatment_stop *  purrr::pluck(l_hr_pbo, "saes") )
                      )
                    ))
