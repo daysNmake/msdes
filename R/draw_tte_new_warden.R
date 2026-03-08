@@ -39,58 +39,8 @@ draw_tte_new_warden <- function (n_chosen, dist, coef1 = NULL, coef2 = NULL, coe
                      exp = rexp(n_chosen, rate = exp(coef1 + log(beta_tx))), 
                      beta = rbeta(n_chosen, shape1 = coef1, shape2 = coef2), 
                      poisgamma = rpoisgamma(n_chosen, rate = coef1, theta = coef2,...),
+                     # Piecewise exponential added as needed for background mortality
                      pwexp = hesim::rpwexp(n_chosen, rate = exp(coef1[[1]] + log(hr[[1]])), time = time[[1]]), stop("Invalid distribution. Distribution must be one of: 'lnorm','weibullPH','weibull','llogis','gompertz','gengamma','gamma','exp','beta','poisgamma','pwexp'"))
   return(draw.out)
 }
 
-# draw_tte_new <- function (n_chosen = 1, dist = "exp", coef1 = 1, coef2 = NULL, 
-#                       coef3 = NULL, hr = 1, seed = NULL, time = NULL) 
-# {
-#   if (!is.null(seed)) {
-#     set.seed(seed)
-#   }
-#   # Only report warning about vectors of parameters if not piecewise exponential
-#   if (any(length(coef1) > 1, length(coef2) > 1, length(coef3) > 
-#           1) & dist != "pwexp") {
-#     warning("Provided a coefficient parameter that is a vector")
-#   }
-#   if (dist == "lnorm") {
-#     draw.out <- rlnorm(n_chosen, meanlog = coef1 - log(hr), 
-#                        sdlog = exp(coef2))
-#   }
-#   else if (dist == "weibullPH") {
-#     draw.out <- flexsurv::rweibullPH(n_chosen, shape = exp(coef1), 
-#                                      scale = exp(coef2 + log(hr)))
-#   }
-#   else if (dist == "weibull") {
-#     draw.out <- rweibull(n_chosen, shape = exp(coef1), scale = exp(coef2 - 
-#                                                                      log(hr)))
-#   }
-#   else if (dist == "llogis") {
-#     draw.out <- flexsurv::rllogis(n_chosen, shape = exp(coef1), 
-#                                   scale = exp(coef2 - log(hr)))
-#   }
-#   else if (dist == "gompertz") {
-#     draw.out <- flexsurv::rgompertz(n_chosen, shape = coef1, 
-#                                     rate = exp(coef2 + log(hr)))
-#   }
-#   else if (dist == "gengamma") {
-#     draw.out <- flexsurv::rgengamma(n_chosen, mu = coef1 - 
-#                                       log(hr), sigma = exp(coef2), Q = coef3)
-#   }
-#   else if (dist == "gamma") {
-#     draw.out <- rgamma(n_chosen, shape = exp(coef1), rate = exp(coef2 + 
-#                                                                   log(hr)))
-#   }
-#   else if (dist == "exp") {
-#     draw.out <- rexp(n_chosen, rate = exp(coef1 + log(hr)))
-#   }
-#   # Piecewise exponential added as needed for background mortality
-#   else if (dist == "pwexp") {
-#     draw.out <- hesim::rpwexp(n_chosen, rate = exp(coef1 + log(hr)), time = time)
-#   }
-#   else {
-#     stop("Invalid distribution")
-#   }
-#   return(draw.out)
-# }

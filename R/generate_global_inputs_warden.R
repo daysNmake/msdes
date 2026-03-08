@@ -566,13 +566,13 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   #proportions on 2nd line treatments
   l_prop_2ndline_trt <- pick_val_v(
-    base = inputs$m_proportion_ontrtline["alpha_2ndline",] /inputs$m_proportion_ontrtline["beta_2ndline",] ,
+    base = inputs[["m_proportion_ontrtline"]]["alpha_2ndline",] /inputs[["m_proportion_ontrtline"]]["beta_2ndline",] ,
     psa = {
       
-      temp<- inputs$m_proportion_ontrtline["alpha_2ndline",] /inputs$m_proportion_ontrtline["beta_2ndline",]
+      temp<- inputs[["m_proportion_ontrtline"]]["alpha_2ndline",] /inputs[["m_proportion_ontrtline"]]["beta_2ndline",]
       
-      for(i_trt in 1:ncol(inputs$m_proportion_ontrtline)) {
-        temp[i_trt] <- rbeta(1, shape1= inputs$m_proportion_ontrtline["alpha_2ndline", i_trt], shape2 = inputs$m_proportion_ontrtline["beta_2ndline", i_trt])
+      for(i_trt in 1:ncol(inputs[["m_proportion_ontrtline"]])) {
+        temp[i_trt] <- rbeta(1, shape1= inputs[["m_proportion_ontrtline"]]["alpha_2ndline", i_trt], shape2 = inputs[["m_proportion_ontrtline"]]["beta_2ndline", i_trt])
         
       }
       
@@ -589,13 +589,13 @@ common_all_inputs <-add_item(
 ) %>% add_item(
   #proportions on 3rd line treatments
   l_prop_3rdline_trt <- pick_val_v(
-    base = inputs$m_proportion_ontrtline["alpha_3rdline",] /inputs$m_proportion_ontrtline["beta_3rdline",] ,
+    base = inputs[["m_proportion_ontrtline"]]["alpha_3rdline",] /inputs[["m_proportion_ontrtline"]]["beta_3rdline",] ,
     psa = {
       
-      temp<- inputs$m_proportion_ontrtline["alpha_3rdline",] /inputs$m_proportion_ontrtline["beta_3rdline",]
+      temp<- inputs[["m_proportion_ontrtline"]]["alpha_3rdline",] /inputs[["m_proportion_ontrtline"]]["beta_3rdline",]
       
-      for(i_trt in 1:ncol(inputs$m_proportion_ontrtline)) {
-        temp[i_trt] <- rbeta(1, shape1= inputs$m_proportion_ontrtline["alpha_3rdline", i_trt], shape2 = inputs$m_proportion_ontrtline["beta_3rdline", i_trt])
+      for(i_trt in 1:ncol(inputs[["m_proportion_ontrtline"]])) {
+        temp[i_trt] <- rbeta(1, shape1= inputs[["m_proportion_ontrtline"]]["alpha_3rdline", i_trt], shape2 = inputs[["m_proportion_ontrtline"]]["beta_3rdline", i_trt])
         
       }
       

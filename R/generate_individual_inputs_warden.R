@@ -27,7 +27,8 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                                                             x = c(0, 1), # Random
                                                             prob = c(1 - inputs[["p_relapse_hospital"]],inputs[["p_relapse_hospital"]])),
                              #current_treatment = "Natalizumab", # This is later changed to trt
-                             current_treatment = sample(x = v_treatment_names, size=1, prob = pluck_vector_from_env(l_prop_3rdline_trt, v_treatment_names)),
+                             current_treatment = sample(x = v_treatment_names, size=1, prob = (pluck_vector_from_env(inputs[["m_proportion_ontrtline"]]["alpha_3rdline",], v_treatment_names) / 
+                                                                                                 pluck_vector_from_env(inputs[["m_proportion_ontrtline"]]["beta_3rdline",], v_treatment_names))),
                              #current_treatment_code = 1, # This is later changed to code of trt
                              current_treatment_code = v_treatment_codes[current_treatment],
                              treatment_line = 2, # all patients starting on 2nd line treatment

@@ -19,8 +19,8 @@ gen_init_events<-function(RRMS_events){
                                         (purrr::pluck(l_baseline_harrms_larr, "BaselineWebEDSS") * (edss_value) ) +
                                          purrr::pluck(l_baseline_harrms_larr, "DMTNatalizumab")) +
                 # MS registry time to relapse SPMS log rate
-                spms_flag * (purrr::pluck(l_baseline_harrms_larr,"rate") +
-                               (purrr::pluck(l_baseline_harrms_larr,"BaselineWebEDSS") * (edss_value))),
+                spms_flag * (purrr::pluck(l_baseline_spms_larr,"rate") +
+                               (purrr::pluck(l_baseline_spms_larr,"BaselineWebEDSS") * (edss_value))),
               # Baseline rate modified by HR of current treatment
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
@@ -48,7 +48,7 @@ gen_init_events<-function(RRMS_events){
               dist = "exp",
               # MS registry time to edss decrease All RRMS patients log rate 
               coef1 = (1 - spms_flag) * (purrr::pluck(l_rrms_edss_decrease, "rate") +
-                                         purrr::pluck(l_rrms_edss_decrease, "BaselineWebEDSS") * (edss_value)) + 
+                                         (purrr::pluck(l_rrms_edss_decrease, "BaselineWebEDSS") * (edss_value))) + 
                 #we are setting a very high event time to edss decrease for SPMS patients
                 (spms_flag * -10)
             )
@@ -95,15 +95,7 @@ gen_init_events<-function(RRMS_events){
 }
 
 
-##WARDEN format
-# gen_init_events<-function(RRMS_events){
-#   #init_event_list <- 
-#   add_tte(arm=c("noint","int"), evts = RRMS_events ,input={
-#     sick <- 0
-#     sicker <- draw_tte(1,dist="exp", coef1=coef_noint, beta_tx = ifelse(arm=="int",HR_int,1), seed = random_seed_sicker_i[i]) #this way the value would be the same if it wasn't for the HR, effectively "cloning" patients luck
-#     
-#   })
-# }
+
 
 
 

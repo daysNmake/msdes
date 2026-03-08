@@ -97,13 +97,18 @@ gen_react_events <- function(RRMS_events){
                      "edss_increase" = curtime + draw_tte(
                        1, 
                        dist = "exp",
-                       coef1 = (1 - spms_flag) * (v_baseline_harrms_edss_increase["rate"] +
-                                                    v_baseline_harrms_edss_increase["BaselineWebEDSS"] * (edss_value) ) + 
-                         v_baseline_harrms_edss_increase["DMTNatalizumab"] +
-                         spms_flag * (v_spms_edss_increase["rate"] +
-                                        v_spms_edss_increase["BaselineWebEDSS"] * (edss_value)),  
-                       beta_tx = (1 - spms_flag ) * ((1 - treatment_stop) * ( v_hr_arr[current_treatment_code]*(1 - waning)) + 
-                                                  treatment_stop * v_hr_pbo[, "edss_increase"]) + spms_flag
+                       # MS registry time to edss increase HARRMS log rate on natalizumab
+                       coef1 = (1 - spms_flag) * (purrr::pluck(l_baseline_harrms_edss_increase, "rate") +
+                                                    (purrr::pluck(l_baseline_harrms_edss_increase, "BaselineWebEDSS") * (edss_value)) + 
+                                                    purrr::pluck(l_baseline_harrms_edss_increase, "DMTNatalizumab")) + 
+                         # MS registry time to edss increase SPMS log rate
+                         spms_flag * (purrr::pluck(l_spms_edss_increase, "rate") + 
+                                        purrr::pluck(l_spms_edss_increase, "BaselineWebEDSS")*(edss_value)),    
+                       # Baseline rate modified by HR of current treatment
+                       # No treatment effect if SPMS
+                       # placebo ARR HR from NMA applied when treatment stopped 
+                       beta_tx = (1 - spms_flag ) * ((1 - treatment_stop) * (pluck_vector_from_env(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1-waning)) + 
+                                                       treatment_stop * purrr::pluck(l_hr_pbo, "edss_increase") ) + spms_flag
                      )
                    ))}
                  }) %>%
@@ -123,8 +128,8 @@ gen_react_events <- function(RRMS_events){
                        1, 
                        dist = "exp",
                        # EDSS decrease  
-                       coef1 = (1 - spms_flag) * (v_rrms_edss_decrease["rate"] +
-                                                    v_rrms_edss_decrease["BaselineWebEDSS"]*(edss_value) )  + 
+                       coef1 = (1 - spms_flag) * (purrr::pluck(l_rrms_edss_decrease, "rate") +
+                                                    (purrr::pluck(l_rrms_edss_decrease, "BaselineWebEDSS") * (edss_value)) )  + 
                          #setting a very high event time to edss decrease for SPMS patients
                          (spms_flag * -10 )
                      )
@@ -160,8 +165,9 @@ gen_react_events <- function(RRMS_events){
                        dist = "exp",
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
-                       coef1 = log(sae_events_rate),
-                       beta_tx= ((1 - treatment_stop) * v_hr_saes) + (treatment_stop *  v_hr_pbo[, "saes"])
+                       coef1 = log(purrr::pluck(l_sae_events_rate, "sae_events_rate")),
+                       beta_tx= ((1 - treatment_stop) * pluck_vector_from_env(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) ) + 
+                         (treatment_stop *  purrr::pluck(l_hr_pbo, "saes") )
                      )
                    ))
                  }) %>%
@@ -174,7 +180,7 @@ gen_react_events <- function(RRMS_events){
                    n_switch = n_switch + 1
                    if(n_switch == 1) {
                      current_treatment = sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]], 
-                                                size=1, prob = m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])
+                                                size=1, prob = pluck_vector_from_env(l_prop_3rdline_trt, names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])))
                    } else if (n_switch >= 2) {
                      current_treatment = sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
                                                 size = 1) 
@@ -197,8 +203,9 @@ gen_react_events <- function(RRMS_events){
                      "treatment_switch" = curtime + draw_tte(
                        1,
                        dist = "exp",
-                       coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
-                       beta_tx= ((1 - treatment_stop)  * v_hr_discontinuation[current_treatment_code]) + (treatment_stop * 0.01)
+                       # Discontinuation rates depend on current treatment
+                       coef1 = ((1 - treatment_stop)  * log(purrr::pluck(l_discontinuation_rate, "discontinuation_rate"))) + (treatment_stop * log(0.01)),
+                       beta_tx= ((1 - treatment_stop)  * pluck_vector_from_env(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
                      )
                    ))
                    

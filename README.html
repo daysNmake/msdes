@@ -354,14 +354,15 @@ display: none;
 
 <div id="current-status-of-update-to-warden" class="section level2">
 <h2><em>Current status of update to WARDEN</em></h2>
-<ul>
-<li><p>Generate global inputs function are being updated to WARDEN,
+<p><strong>Error</strong> in if (is.infinite(next_event(1,
+event_queue)$time)) { : argument is of length zero</p>
+<p><strong>Generate inputs functions</strong> were updated to WARDEN,
 from: <code>add_item( if(psa_bool) {} else{})</code> to :
 <code>add_item(pick_val_v())</code>. All variables must be lists (ex:
-<code>l_hr_arr[[&quot;Natalizumab-SC&quot;]]</code>).</p></li>
-<li><p>Its no longer possible to have matrices, the following variables
-have been split up:</p></li>
-</ul>
+<code>l_hr_arr[[&quot;Natalizumab-SC&quot;]]</code>).</p>
+<p><strong>Lists only</strong> are used as its no longer possible to use
+vectors or matrices within events, the following variables have been
+split up:</p>
 <table>
 <thead>
 <tr class="header">
@@ -384,11 +385,9 @@ have been split up:</p></li>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>Indexing accordingly must change in the initial and reaction events,
-this could be accomplished using custom function
-<code>pluck_vector_from_env()</code></li>
-</ul>
+<p><strong>Now indexing on lists</strong> in the initial and reaction
+events, this was accomplished using <code>purrr::pluck()</code> or
+custom function <code>pluck_vector_from_env()</code></p>
 <table>
 <colgroup>
 <col width="44%" />
@@ -443,51 +442,48 @@ v_higher_line_treatment_codes[!v_prior_treatment_indices]]</td>
 names(v_higher_line_treatment_codes[current_treatment_code !=
 v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 </tr>
-<tr class="odd">
-<td align="left"><strong>Remaining variables changed:</strong></td>
-<td align="center"></td>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th align="left"><strong>Remaining variables changed:</strong></th>
 </tr>
-<tr class="even">
+</thead>
+<tbody>
+<tr class="odd">
 <td align="left">spms_edss_decrease - not used in model?</td>
-<td align="center"></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">spms_progression</td>
-<td align="center"></td>
-</tr>
-<tr class="even">
-<td align="left">baseline_harrms_larr , baseline_harrms_larr ,
-baseline_spms_larr , hr_arr</td>
-<td align="center"></td>
 </tr>
 <tr class="odd">
+<td align="left">baseline_harrms_larr , baseline_spms_larr , hr_arr</td>
+</tr>
+<tr class="even">
 <td align="left">discontinuation_rate, hr_discontinuation</td>
-<td align="center"></td>
-</tr>
-<tr class="even">
-<td align="left">sae_events_rate</td>
-<td align="center"></td>
 </tr>
 <tr class="odd">
-<td align="left">v_hr_pbo</td>
-<td align="center"></td>
+<td align="left">sae_events_rate</td>
 </tr>
 <tr class="even">
+<td align="left">v_hr_pbo</td>
+</tr>
+<tr class="odd">
 <td align="left">prop_2ndline_trt - not used in model?</td>
-<td align="center"></td>
 </tr>
 </tbody>
 </table>
+<p><strong>costs and utilities</strong> to be moved into generate
+reaction events and will need to use this custom function:</p>
 <ul>
-<li>costs and utilities to be moved into generate reaction events and
-will need to use this custom function:
-<ul>
-<li>l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events</li>
-<li>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2,
-l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse,
-l_c_sae_events</li>
-</ul></li>
-<li>Ask for help with death from JSA</li>
+<li><p>l_u_rrms_edss, l_u_spms_edss, l_u_relapse,
+l_u_sae_events</p></li>
+<li><p>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 ,
+l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2,
+l_c_relapse, l_c_sae_events</p></li>
+<li><p>Mortality using mdified function calling hesim, could ask JSA to
+write a native function</p></li>
 </ul>
 </div>
 <div id="ms-des-repository" class="section level1">
@@ -601,7 +597,7 @@ parameters which are needed for value of information analysis.</li>
 <div id="issues-identified-d-to-be-addressed" class="section level4">
 <h4>Issues identified d to be addressed:</h4>
 <ul>
-<li>Even times in correct and need to be addressed</li>
+<li>Event-times are in-correct and need to be addressed</li>
 </ul>
 </div>
 <div id="hard-coded-data-in-model-script-to-be-moved-out-into-data-raw-scripts" class="section level4">

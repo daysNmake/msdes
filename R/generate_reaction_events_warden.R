@@ -66,7 +66,7 @@ gen_react_events <- function(RRMS_events){
                                                   purrr::pluck(l_baseline_harrms_larr, "DMTNatalizumab")) +
                          spms_flag * (purrr::pluck(l_baseline_harrms_larr,"rate") +
                                         (purrr::pluck(l_baseline_harrms_larr,"BaselineWebEDSS") * (edss_value))),
-                       hr = (1 - spms_flag) * ((1 - treatment_stop) * ( pluck_vector_from_env(l_hr_arr, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))*(1 - waning)) +
+                       beta_tx =  (1 - spms_flag) * ((1 - treatment_stop) * ( pluck_vector_from_env(l_hr_arr, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))*(1 - waning)) +
                                                  treatment_stop * purrr::pluck(l_hr_pbo, "arr") ) + spms_flag
                      )))
                  }) %>%
@@ -88,7 +88,7 @@ gen_react_events <- function(RRMS_events){
                                                   purrr::pluck(l_baseline_harrms_edss_increase, "DMTNatalizumab")) +
                          spms_flag * (purrr::pluck(l_spms_edss_increase, "rate") +
                                       purrr::pluck(l_spms_edss_increase, "BaselineWebEDSS") * (edss_value)),  
-                       hr = (1 - spms_flag ) * ((1 - treatment_stop) * (pluck_vector_from_env(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1 - waning)) + 
+                       beta_tx =  (1 - spms_flag ) * ((1 - treatment_stop) * (pluck_vector_from_env(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1 - waning)) + 
                                                   treatment_stop * purrr::pluck(l_hr_pbo, "edss_increase") ) + spms_flag
                      )
                    ))}
@@ -143,7 +143,7 @@ gen_react_events <- function(RRMS_events){
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
                        coef1 = log(purrr::pluck(l_sae_events_rate, "sae_events_rate")),
-                       hr= ((1 - treatment_stop) * pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes]))) + (treatment_stop *  purrr::pluck(l_hr_pbo, "saes") )
+                       beta_tx = ((1 - treatment_stop) * pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes]))) + (treatment_stop *  purrr::pluck(l_hr_pbo, "saes") )
                      )
                    ))
                  }) %>%
@@ -173,7 +173,7 @@ gen_react_events <- function(RRMS_events){
                        1,
                        dist = "exp",
                        coef1 = ((1 - treatment_stop)  * log(purrr::pluck(l_discontinuation_rate, "discontinuation_rate"))) + (treatment_stop * log(0.01)),
-                       hr= ((1 - treatment_stop)  * pluck_vector_from_env(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
+                       beta_tx =  ((1 - treatment_stop)  * pluck_vector_from_env(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
                      )
                    ))
                    
@@ -181,25 +181,3 @@ gen_react_events <- function(RRMS_events){
   
 }
 
-##WARDEN FORMAT
-
-# gen_react_events <- function(RRMS_events){
-#   
-#   add_reactevt(name_evt = RRMS_events[1],
-#                input = {}) %>%
-#     add_reactevt(name_evt = RRMS_events[2],
-#                  input = {
-#                    q_default <- util.sicker
-#                    c_default <- cost.sicker + if(arm=="int"){cost.int}else{0}
-#                    fl.sick   <- 0 
-#                  }) %>%
-#     add_reactevt(name_evt = RRMS_events[3],
-#                  input = {
-#                    q_default <- 0
-#                    c_default <- 0
-#                    curtime   <- Inf
-#                  }) 
-#   
-#   
-#   
-# }
