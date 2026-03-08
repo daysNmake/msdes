@@ -1,7 +1,7 @@
 
 ## *Current status of update to WARDEN*
 
-**Error** in if (is.infinite(next_event(1, event_queue)$time)) { :   argument is of length zero
+**fix Error** in if (is.infinite(next_event(1, event_queue)$time)) { :   argument is of length zero
 
 **Generate inputs functions** were updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All variables must  be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
 
@@ -41,8 +41,9 @@
 
   + l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events
   + l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse, l_c_sae_events
+  + implement new functionality which allows us to remove annual cycles
 
-+ Mortality using mdified function calling hesim, could ask JSA to write a native function
+**Mortality** using modified function calling hesim, could ask JSA to write a native function
 
 
 # MS-DES repository 

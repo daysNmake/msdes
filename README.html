@@ -354,7 +354,7 @@ display: none;
 
 <div id="current-status-of-update-to-warden" class="section level2">
 <h2><em>Current status of update to WARDEN</em></h2>
-<p><strong>Error</strong> in if (is.infinite(next_event(1,
+<p><strong>fix Error</strong> in if (is.infinite(next_event(1,
 event_queue)$time)) { : argument is of length zero</p>
 <p><strong>Generate inputs functions</strong> were updated to WARDEN,
 from: <code>add_item( if(psa_bool) {} else{})</code> to :
@@ -477,14 +477,15 @@ v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 <p><strong>costs and utilities</strong> to be moved into generate
 reaction events and will need to use this custom function:</p>
 <ul>
-<li><p>l_u_rrms_edss, l_u_spms_edss, l_u_relapse,
-l_u_sae_events</p></li>
-<li><p>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 ,
-l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2,
-l_c_relapse, l_c_sae_events</p></li>
-<li><p>Mortality using mdified function calling hesim, could ask JSA to
-write a native function</p></li>
+<li>l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events</li>
+<li>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2,
+l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse,
+l_c_sae_events</li>
+<li>implement new functionality which allows us to remove annual
+cycles</li>
 </ul>
+<p><strong>Mortality</strong> using modified function calling hesim,
+could ask JSA to write a native function</p>
 </div>
 <div id="ms-des-repository" class="section level1">
 <h1>MS-DES repository</h1>
