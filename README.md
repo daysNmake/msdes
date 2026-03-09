@@ -1,7 +1,7 @@
 
 ## *Current status of update to WARDEN*
 
-**fix Error** in if (is.infinite(next_event(1, event_queue)$time)) { :   argument is of length zero
+**Model is working  in warden** costs and utilities pending
 
 **Generate inputs functions** were updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All variables must  be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
 
@@ -113,7 +113,7 @@ There are ...n... functions in the "R" folder
 
 ## Notes for developers only 
 #### Issues identified d to be addressed:
-  + Event-times are in-correct and need to be addressed
+  + Error in if (is.infinite(next_event(1, event_queue)$time)) { :   argument is of length zero caused by `l_discontinuation_rate[["discontinuation_rate"]] <- (treatment_line < 4) *  purrr::pluck(l_discontinuation_rate, "discontinuation_rate")` in treatment switch reaction events
   
 #### hard-coded data in model script to be moved out into data-raw scripts:
  + None

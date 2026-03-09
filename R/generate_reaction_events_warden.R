@@ -151,7 +151,7 @@ gen_react_events <- function(RRMS_events){
     add_reactevt(name_evt = "treatment_switch",
                  input = {
                    treatment_line <- treatment_line + 1
-                   l_discontinuation_rate[["discontinuation_rate"]] <- (treatment_line < 4) *  purrr::pluck(l_discontinuation_rate, "discontinuation_rate")
+                   # l_discontinuation_rate[["discontinuation_rate"]] <- (treatment_line < 4) *  purrr::pluck(l_discontinuation_rate, "discontinuation_rate")
                    v_prior_treatment_indices[current_treatment_code] <- 1
                    n_switch <- n_switch + 1
                    if(n_switch == 1) {
