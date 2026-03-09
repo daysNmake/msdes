@@ -354,8 +354,8 @@ display: none;
 
 <div id="current-status-of-update-to-warden" class="section level2">
 <h2><em>Current status of update to WARDEN</em></h2>
-<p><strong>fix Error</strong> in if (is.infinite(next_event(1,
-event_queue)$time)) { : argument is of length zero</p>
+<p><strong>Model is working using WARDEN</strong> some items pending
+described below</p>
 <p><strong>Generate inputs functions</strong> were updated to WARDEN,
 from: <code>add_item( if(psa_bool) {} else{})</code> to :
 <code>add_item(pick_val_v())</code>. All variables must be lists (ex:
@@ -530,8 +530,8 @@ directory that are necessary to run the model.</li>
 but these can be ignored.</li>
 </ul>
 </div>
-<div id="note-on-data-update-to-reflect-change-over-to-warden" class="section level2">
-<h2>Note on data (Update to reflect change over to WARDEN)</h2>
+<div id="note-on-data" class="section level2">
+<h2>Note on data</h2>
 <p>All data are public, including the drug list prices stored in
 “data/df_c_drugs.csv” and loaded on line …n… of
 “analysis/…script_name….R”</p>
@@ -556,8 +556,8 @@ samples to have been run in the simulation.</p></li>
 analysis</p></li>
 </ul>
 </div>
-<div id="custom-functionsupdate-to-reflect-change-over-to-warden" class="section level2">
-<h2>Custom functions(Update to reflect change over to WARDEN)</h2>
+<div id="custom-functions" class="section level2">
+<h2>Custom functions</h2>
 <p>There are …n… functions in the “R” folder</p>
 <ul>
 <li><p>“draw_tte_new_warden.R” provides the
@@ -585,8 +585,9 @@ WTP£25,000/QALY</p></li>
 </ul>
 </div>
 </div>
-<div id="custom-functionsupdate-to-reflect-change-over-to-warden-1" class="section level1">
-<h1>Custom functions(Update to reflect change over to WARDEN)</h1>
+<div id="custom-functionsupdate-to-reflect-change-over-to-warden-if-we-need-to" class="section level1">
+<h1>Custom functions(Update to reflect change over to WARDEN if we need
+to?)</h1>
 <ul>
 <li>“RunSim_new.R” provides the <code>RunSim_new()</code> function which
 can be used instead of the <code>descem::RunSim()</code> function. The
@@ -598,7 +599,10 @@ parameters which are needed for value of information analysis.</li>
 <div id="issues-identified-d-to-be-addressed" class="section level4">
 <h4>Issues identified d to be addressed:</h4>
 <ul>
-<li>Event-times are in-correct and need to be addressed</li>
+<li>Error in if (is.infinite(next_event(1, event_queue)$time)) { :
+argument is of length zero caused by
+<code>l_discontinuation_rate[[&quot;discontinuation_rate&quot;]] &lt;- (treatment_line &lt; 4) *  purrr::pluck(l_discontinuation_rate, &quot;discontinuation_rate&quot;)</code>
+in treatment switch reaction events</li>
 </ul>
 </div>
 <div id="hard-coded-data-in-model-script-to-be-moved-out-into-data-raw-scripts" class="section level4">
