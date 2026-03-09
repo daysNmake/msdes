@@ -367,21 +367,21 @@ split up:</p>
 <thead>
 <tr class="header">
 <th align="left"><strong>Old variable</strong></th>
-<th align="right"><strong>New variables</strong></th>
+<th align="left"><strong>New variables</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">v_c_trt_admin</td>
-<td align="right">l_c_trt_admin_yr1 &amp; l_c_trt_admin_yr2</td>
+<td align="left">l_c_trt_admin_yr1 &amp; l_c_trt_admin_yr2</td>
 </tr>
 <tr class="even">
 <td align="left">v_c_trt_monitor</td>
-<td align="right">l_c_trt_monitor_yr1 &amp; l_c_trt_monitor_yr2</td>
+<td align="left">l_c_trt_monitor_yr1 &amp; l_c_trt_monitor_yr2</td>
 </tr>
 <tr class="odd">
 <td align="left">m_prop_2nd_3rd_trt</td>
-<td align="right">l_prop_2ndline_trt &amp; l_prop_3rdline_trt</td>
+<td align="left">l_prop_2ndline_trt &amp; l_prop_3rdline_trt</td>
 </tr>
 </tbody>
 </table>
@@ -390,55 +390,55 @@ events, this was accomplished using <code>purrr::pluck()</code> or
 custom function <code>pluck_vector_from_env()</code></p>
 <table>
 <colgroup>
-<col width="44%" />
-<col width="55%" />
+<col width="50%" />
+<col width="50%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left"><strong>Old </strong></th>
-<th align="center"><strong>New </strong></th>
+<th align="left"><strong>New </strong></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left"><strong>Examples of changes to formulas:</strong></td>
-<td align="center"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">v_hr_smr_edss[edss_value == v_edss_values]</td>
-<td align="center">pluck_vector_from_env(l_hr_smr_edss,
+<td align="left">pluck_vector_from_env(l_hr_smr_edss,
 names(v_edss_values[edss_value == v_edss_values]))</td>
 </tr>
 <tr class="odd">
 <td align="left">v_hr_edss_increase[current_treatment_code]</td>
-<td align="center">pluck_vector_from_env(l_hr_edss_increase,
+<td align="left">pluck_vector_from_env(l_hr_edss_increase,
 names(v_treatment_codes[current_treatment_code ==
 v_treatment_codes]))</td>
 </tr>
 <tr class="even">
 <td align="left">v_baseline_harrms_edss_increase[“DMTNatalizumab”]</td>
-<td align="center">purrr::pluck(l_baseline_harrms_edss_increase,
+<td align="left">purrr::pluck(l_baseline_harrms_edss_increase,
 “DMTNatalizumab”)</td>
 </tr>
 <tr class="odd">
 <td align="left">v_spms_edss_increase[“rate”]</td>
-<td align="center">purrr::pluck(l_spms_edss_increase, “rate”)</td>
+<td align="left">purrr::pluck(l_spms_edss_increase, “rate”)</td>
 </tr>
 <tr class="even">
 <td align="left">v_rrms_edss_decrease[“BaselineWebEDSS”]</td>
-<td align="center">purrr::pluck(l_rrms_edss_decrease,
+<td align="left">purrr::pluck(l_rrms_edss_decrease,
 “BaselineWebEDSS”)</td>
 </tr>
 <tr class="odd">
 <td align="left">v_hr_saes - should be changed to depend on
 treatment?</td>
-<td align="center">pluck_vector_from_env(l_hr_saes,
+<td align="left">pluck_vector_from_env(l_hr_saes,
 names(v_treatment_codes[ v_treatment_codes]))</td>
 </tr>
 <tr class="even">
 <td align="left">m_prop_2nd_3rd_trt[“3”,current_treatment_code !=
 v_higher_line_treatment_codes[!v_prior_treatment_indices]]</td>
-<td align="center">pluck_vector_from_env(l_prop_3rdline_trt,
+<td align="left">pluck_vector_from_env(l_prop_3rdline_trt,
 names(v_higher_line_treatment_codes[current_treatment_code !=
 v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 </tr>
@@ -720,451 +720,376 @@ severity states (RRMS or SPMS)</li>
 <h2>Input data files</h2>
 <table>
 <colgroup>
-<col width="18%" />
-<col width="40%" />
-<col width="22%" />
-<col width="18%" />
+<col width="25%" />
+<col width="50%" />
+<col width="25%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="left"><strong>Data file name</strong></th>
-<th align="center"><strong>Description of contents</strong></th>
-<th align="center"><strong>Source</strong></th>
-<th align="right"><strong>Confidentiality status</strong></th>
+<th align="left"><strong>Description of contents</strong></th>
+<th align="left"><strong>Source</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left"><strong>Parameters</strong></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">df_all_cause_mortality.csv</td>
-<td align="center">Mortality life tables</td>
-<td align="center"><a href="#ref-600">ONS</a></td>
-<td align="right">public</td>
+<td align="left">Mortality life tables</td>
+<td align="left"><a href="#ref-600">ONS</a></td>
 </tr>
 <tr class="odd">
 <td align="left">m_discontinuation.csv</td>
-<td align="center">Baseline discontinuation proportion</td>
-<td align="center">AFFIRM Study, <a href="#ref-77">Polman etal. 2006</a>
+<td align="left">Baseline discontinuation proportion</td>
+<td align="left">AFFIRM Study, <a href="#ref-77">Polman etal. 2006</a>
 &amp; Antelope Study <a href="#ref-76">Hemmer etal. 2024</a></td>
-<td align="right">public</td>
 </tr>
 <tr class="even">
 <td align="left">m_n_patients_edss.csv</td>
-<td align="center">Baseline Severity All RRMS &amp; HA RRMS</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Baseline Severity All RRMS &amp; HA RRMS</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_proportion_ontrtline.csv”</td>
-<td align="center">Proportion of patients on 2nd &amp; 3rd line
+<td align="left">Proportion of patients on 2nd &amp; 3rd line
 treatments, RRMS &amp; HA RRMS</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">m_saes.csv</td>
-<td align="center">Baseline SAEs proportion</td>
-<td align="center">AFFIRM Study, <a href="#ref-77">Polman etal. 2006</a>
+<td align="left">Baseline SAEs proportion</td>
+<td align="left">AFFIRM Study, <a href="#ref-77">Polman etal. 2006</a>
 &amp; Antelope Study <a href="#ref-76">Hemmer etal. 2024</a></td>
-<td align="right">public</td>
 </tr>
 <tr class="odd">
 <td align="left">v_p_relapse_severity.csv</td>
-<td align="center">Annual probability of relapse by severity</td>
-<td align="center"><a href="#ref-118">Hawton et al 2016</a></td>
-<td align="right">public</td>
+<td align="left">Annual probability of relapse by severity</td>
+<td align="left"><a href="#ref-118">Hawton et al 2016</a></td>
 </tr>
 <tr class="even">
 <td align="left">v_r_relapse_severity.csv</td>
-<td align="center">Annual relapse rate by severity</td>
-<td align="center"><a href="#ref-118">Hawton et al 2016</a></td>
-<td align="right">public</td>
+<td align="left">Annual relapse rate by severity</td>
+<td align="left"><a href="#ref-118">Hawton et al 2016</a></td>
 </tr>
 <tr class="odd">
 <td align="left">v_smr.csv</td>
-<td align="center">All cause excess mortality rate for MS patients</td>
-<td align="center"><a href="#ref-137">Jick etal. 2014</a></td>
-<td align="right">public</td>
+<td align="left">All cause excess mortality rate for MS patients</td>
+<td align="left"><a href="#ref-137">Jick etal. 2014</a></td>
 </tr>
 <tr class="even">
 <td align="left">v_smr_severity.csv</td>
-<td align="center">excess mortality rate for MS patients by
-severity</td>
-<td align="center">Sadovnik etal 1992 cited in <a href="#ref-337">Pokorski etal. 1997</a></td>
-<td align="right">public</td>
+<td align="left">excess mortality rate for MS patients by severity</td>
+<td align="left">Sadovnik etal 1992 cited in <a href="#ref-337">Pokorski
+etal. 1997</a></td>
 </tr>
 <tr class="odd">
 <td align="left">v_smr_severity_Harding.csv</td>
-<td align="center">excess mortality rate for MS patients by
-severity</td>
-<td align="center"><a href="#ref-700">Harding etal. 2018</a></td>
-<td align="right">Public</td>
+<td align="left">excess mortality rate for MS patients by severity</td>
+<td align="left"><a href="#ref-700">Harding etal. 2018</a></td>
 </tr>
 <tr class="even">
 <td align="left">v_smr_severity_Jick_Harding.csv</td>
-<td align="center">excess mortality rate for MS patients by
-severity</td>
-<td align="center"><a href="#ref-700">Harding etal. 2018</a> calibrated
-on the average SMR <a href="#ref-337">Pokorski etal. 1997</a></td>
-<td align="right">Public</td>
+<td align="left">excess mortality rate for MS patients by severity</td>
+<td align="left"><a href="#ref-700">Harding etal. 2018</a> calibrated on
+the average SMR <a href="#ref-337">Pokorski etal. 1997</a></td>
 </tr>
 <tr class="odd">
 <td align="left"><strong>NMA</strong></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Releff_HA_ARR_FE.csv</td>
-<td align="center">ARR HA RRMS relative treatment fixed effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">ARR HA RRMS relative treatment fixed effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_ARR_FE.csv</td>
-<td align="center">ARR All RRMS relative treatment fixed effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">ARR All RRMS relative treatment fixed effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_ARR_RE.csv</td>
-<td align="center">ARR All RRMS relative treatment random effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">ARR All RRMS relative treatment random effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_CDP3_FE.csv</td>
-<td align="center">CDP3 All RRMS relative treatment fixed effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">CDP3 All RRMS relative treatment fixed effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_CDP3_RE.csv</td>
-<td align="center">CDP3 All RRMS relative treatment random effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">CDP3 All RRMS relative treatment random effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_CDP6_FE.csv</td>
-<td align="center">CDP6 All RRMS relative treatment fixed effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">CDP6 All RRMS relative treatment fixed effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_CDP6_RE.csv</td>
-<td align="center">CDP6 All RRMS relative treatment random effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">CDP6 All RRMS relative treatment random effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_CDP6_3_FE.csv</td>
-<td align="center">CDP6 and CDP3 All RRMS relative treatment fixed
+<td align="left">CDP6 and CDP3 All RRMS relative treatment fixed
 effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_CDP6_3_RE.csv</td>
-<td align="center">CDP6 and CDP3 All RRMS relative treatment random
+<td align="left">CDP6 and CDP3 All RRMS relative treatment random
 effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_Discontinuation_FE.csv</td>
-<td align="center">Discontinuation All RRMS relative treatment fixed
+<td align="left">Discontinuation All RRMS relative treatment fixed
 effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_Discontinuation_RE.csv</td>
-<td align="center">Discontinuation All RRMS relative treatment random
+<td align="left">Discontinuation All RRMS relative treatment random
 effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">Releff_RRMS_SeriousAEs_RE.csv</td>
-<td align="center">SAEs All RRMS relative treatment random effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">SAEs All RRMS relative treatment random effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">Releff_RRMS_SeriousAEs_FE.csv</td>
-<td align="center">SAEs All RRMS relative treatment fixed effects</td>
-<td align="center">NMA UoB_TAG analysis 2024</td>
-<td align="right">public</td>
+<td align="left">SAEs All RRMS relative treatment fixed effects</td>
+<td align="left">NMA UoB_TAG analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left"><strong>MS Registry</strong></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_edss_decrease_rrms_mu.csv</td>
-<td align="center">Severity decrease All RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity decrease All RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_edss_decrease_rrms_sigma.csv</td>
-<td align="center">Severity decrease All RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity decrease All RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_edss_increase_harrms_mu.csv</td>
-<td align="center">Severity increase HA RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase HA RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_edss_increase_harrms_sigma.csv</td>
-<td align="center">Severity increase HA RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase HA RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_edss_decrease_spms_mu.csv</td>
-<td align="center">Severity decrease SPMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity decrease SPMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_edss_decrease_spms_sigma.csv</td>
-<td align="center">Severity decrease SPMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity decrease SPMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_edss_increase_rrms_mu.csv</td>
-<td align="center">Severity increase All RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase All RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_edss_increase_rrms_sigma.csv</td>
-<td align="center">Severity increase All RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase All RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_edss_increase_spms_mu.csv</td>
-<td align="center">Severity increase SPMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase SPMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_edss_increase_spms_sigma.csv</td>
-<td align="center">Severity increase SPMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Severity increase SPMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_relapse_harrms_mu.csv</td>
-<td align="center">Relapse HA RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse HA RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_relapse_harrms_sigma.csv</td>
-<td align="center">Relapse HA RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse HA RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_relapse_rrms_mu.csv</td>
-<td align="center">Relapse All RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse All RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_relapse_rrms_sigma.csv</td>
-<td align="center">Relapse All RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse All RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_relapse_spms_mu.csv</td>
-<td align="center">Relapse SPMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse SPMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_relapse_spms_sigma.csv</td>
-<td align="center">Relapse SPMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Relapse SPMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_sp_conversion_harrms_mu.csv</td>
-<td align="center">Progression to SPMS, HA RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Progression to SPMS, HA RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_sp_conversion_harrms_sigma.csv</td>
-<td align="center">Progression to SPMS, HA RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Progression to SPMS, HA RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left">v_tto_sp_conversion_rrms_mu.csv</td>
-<td align="center">Progression to SPMS, All RRMS event rates</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Progression to SPMS, All RRMS event rates</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="odd">
 <td align="left">m_tto_sp_conversion_rrms_sigma.csv</td>
-<td align="center">Progression to SPMS, All RRMS event VCOV</td>
-<td align="center">MS Registry analysis 2024</td>
-<td align="right">public</td>
+<td align="left">Progression to SPMS, All RRMS event VCOV</td>
+<td align="left">MS Registry analysis 2024</td>
 </tr>
 <tr class="even">
 <td align="left"><strong>Costs</strong></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="odd">
 <td align="left">m_c_edss.csv</td>
-<td align="center">Health state direct medical costs by severity
-(2022/23 prices)</td>
-<td align="center"><a href="#ref-130">Tyas etal. 2007</a></td>
-<td align="right">public</td>
+<td align="left">Health state direct medical costs by severity (2022/23
+prices)</td>
+<td align="left"><a href="#ref-130">Tyas etal. 2007</a></td>
 </tr>
 <tr class="even">
 <td align="left">m_c_relapse.csv</td>
-<td align="center">Relapse Costs (2022/23 prices)</td>
-<td align="center"><a href="#ref-118">Hawton et al 2016</a></td>
-<td align="right">public</td>
+<td align="left">Relapse Costs (2022/23 prices)</td>
+<td align="left"><a href="#ref-118">Hawton et al 2016</a></td>
 </tr>
 <tr class="odd">
 <td align="left">df_c_drugs.csv</td>
-<td align="center">Treatment acquisition costs public prices</td>
-<td align="center"><a href="#ref-26">BNF</a></td>
-<td align="right">public</td>
+<td align="left">Treatment acquisition costs public prices</td>
+<td align="left"><a href="#ref-26">BNF</a></td>
 </tr>
 <tr class="even">
 <td align="left">df_c_drugs_admin.csv</td>
-<td align="center">Treatment Administration Costs updated
-07/08/2025</td>
-<td align="center">UoB_TAG analysis (refer to report &amp;
-Addendum)</td>
-<td align="right">public</td>
+<td align="left">Treatment Administration Costs updated 07/08/2025</td>
+<td align="left">UoB_TAG analysis (refer to report &amp; Addendum)</td>
 </tr>
 <tr class="odd">
 <td align="left">df_c_drugs_lowest generic.csv</td>
-<td align="center">Lowest Generic Costs</td>
-<td align="center"><a href="#ref-26">BNF</a></td>
-<td align="right">public</td>
+<td align="left">Lowest Generic Costs</td>
+<td align="left"><a href="#ref-26">BNF</a></td>
 </tr>
 <tr class="even">
 <td align="left">df_c_monitoring.csv</td>
-<td align="center">Treatment Monitoring Costs</td>
-<td align="center">UoB_TAG analysis (refer to report)</td>
-<td align="right">public</td>
+<td align="left">Treatment Monitoring Costs</td>
+<td align="left">UoB_TAG analysis (refer to report)</td>
 </tr>
 <tr class="odd">
 <td align="left">df_c_retreatment.csv</td>
-<td align="center">Re treatment schedule years: 3,4,5+</td>
-<td align="center">UoB_TAG analysis (refer to report)</td>
-<td align="right">public</td>
+<td align="left">Re treatment schedule years: 3,4,5+</td>
+<td align="left">UoB_TAG analysis (refer to report)</td>
 </tr>
 <tr class="even">
 <td align="left">df_c_spms.csv</td>
-<td align="center">SPMS Treatment Administration &amp; Monitoring
+<td align="left">SPMS Treatment Administration &amp; Monitoring
 Costs</td>
-<td align="center">UoB_TAG analysis (refer to report)</td>
-<td align="right">public</td>
+<td align="left">UoB_TAG analysis (refer to report)</td>
 </tr>
 <tr class="odd">
 <td align="left"><strong>Utilities</strong></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">df_u_relapse.csv</td>
-<td align="center">Relapse disutility</td>
-<td align="center"><a href="#ref-128">Orme etal. 2007</a></td>
-<td align="right">public</td>
+<td align="left">Relapse disutility</td>
+<td align="left"><a href="#ref-128">Orme etal. 2007</a></td>
 </tr>
 <tr class="odd">
 <td align="left">m_u_carer.csv</td>
-<td align="center">Caregiver disutilities</td>
-<td align="center"><a href="#ref-500">Acaster etal. 2013</a></td>
-<td align="right">public</td>
+<td align="left">Caregiver disutilities</td>
+<td align="left"><a href="#ref-500">Acaster etal. 2013</a></td>
 </tr>
 <tr class="even">
 <td align="left">m_u_edss.csv</td>
-<td align="center">Health State Utilities by Severity</td>
-<td align="center"><a href="#ref-128">Orme etal. 2007</a></td>
-<td align="right">public</td>
+<td align="left">Health State Utilities by Severity</td>
+<td align="left"><a href="#ref-128">Orme etal. 2007</a></td>
 </tr>
 <tr class="odd">
 <td align="left">m_u_edss_clarity.csv</td>
-<td align="center">Health State Utilities by Severity</td>
-<td align="center">Clarity trial results available in NICE MS technology
+<td align="left">Health State Utilities by Severity</td>
+<td align="left">Clarity trial results available in NICE MS technology
 appraisal committee papers</td>
-<td align="right">public</td>
 </tr>
 <tr class="even">
 <td align="left">m_u_edss_opera.csv</td>
-<td align="center">Health State Utilities by Severity</td>
-<td align="center">OPERA trial results available in NICE MS technology
+<td align="left">Health State Utilities by Severity</td>
+<td align="left">OPERA trial results available in NICE MS technology
 appraisal committee papers</td>
-<td align="right">public</td>
 </tr>
 <tr class="odd">
 <td align="left">m_u_edss_carer_ta127.csv</td>
-<td align="center">Caregiver disutilities</td>
-<td align="center">TA127 analysis available in NICE MS technology
+<td align="left">Caregiver disutilities</td>
+<td align="left">TA127 analysis available in NICE MS technology
 appraisal committee papers</td>
-<td align="right">public</td>
 </tr>
 <tr class="even">
 <td align="left">df_saes_data.csv</td>
-<td align="center">SAEs weighted costs and Utilities</td>
-<td align="center">UoB_TAG analysis (refer to report)</td>
-<td align="right">public</td>
+<td align="left">SAEs weighted costs and Utilities</td>
+<td align="left">UoB_TAG analysis (refer to report)</td>
 </tr>
 <tr class="odd">
 <td align="left"><em>Files not used in model</em></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="right"></td>
+<td align="left"></td>
+<td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left"><em>df_baseline_severity.csv</em></td>
-<td align="center"><em>NA</em></td>
-<td align="center"><em>NA</em></td>
-<td align="right"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
 </tr>
 <tr class="odd">
 <td align="left"><em>df_duration_relapse.csv</em></td>
-<td align="center"><em>NA</em></td>
-<td align="center"><em>NA</em></td>
-<td align="right"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
 </tr>
 <tr class="even">
 <td align="left"><em>df_r_all_cause_mortality.csv</em></td>
-<td align="center"><em>NA</em></td>
-<td align="center"><em>NA</em></td>
-<td align="right"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
 </tr>
 <tr class="odd">
 <td align="left"><em>r_sae.csv</em></td>
-<td align="center"><em>NA</em></td>
-<td align="center"><em>NA</em></td>
-<td align="right"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
+<td align="left"><em>NA</em></td>
 </tr>
 </tbody>
 </table>

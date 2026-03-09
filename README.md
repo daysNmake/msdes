@@ -7,16 +7,16 @@
 
 **Lists only** are used as its no longer possible to use vectors or matrices within events, the following variables have been split up:
 
-| **Old variable**	              |      **New variables**	| 
-| :---                            |                     ---: |
+| **Old variable**|**New variables**| 
+| :---|:---|
 | v_c_trt_admin       | l_c_trt_admin_yr1   & l_c_trt_admin_yr2 |
 | v_c_trt_monitor     | l_c_trt_monitor_yr1 & l_c_trt_monitor_yr2 |
 |  m_prop_2nd_3rd_trt  | l_prop_2ndline_trt  & l_prop_3rdline_trt |
 
 **Now indexing on lists** in the initial and reaction events, this was accomplished using `purrr::pluck()` or custom function `pluck_vector_from_env()`
   
-| **Old **	                      |                 **New **	| 
-| :---                            |                     :---: |
+| **Old **|**New **| 
+| :---|:---|
 |**Examples of changes to formulas:** |
 | v_hr_smr_edss[edss_value == v_edss_values] | pluck_vector_from_env(l_hr_smr_edss, names(v_edss_values[edss_value == v_edss_values])) |
 | v_hr_edss_increase[current_treatment_code] | pluck_vector_from_env(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) |
@@ -167,78 +167,78 @@ There are ...n... functions in the "R" folder
 Go to analysis/nma and run the associated script
 
 
-## Input data files {#table-01}
-| **Data file name**	                | **Description of contents**	| **Source**	| **Confidentiality status**| 
-| :---                                |         :-------:           |   :---:     |                      ---: |
+## Input data files{#table-01}
+| **Data file name**| **Description of contents**	| **Source**	| 
+| :--- | :------- | :--- |
 |**Parameters**|
-|df_all_cause_mortality.csv           | Mortality life tables | [ONS](#ref-600) | public |
-|m_discontinuation.csv                | Baseline discontinuation proportion | AFFIRM Study, [Polman etal. 2006](#ref-77) & Antelope Study [Hemmer etal. 2024](#ref-76) | public |
-|m_n_patients_edss.csv                | Baseline Severity All RRMS & HA RRMS | MS Registry analysis 2024| public |
-|m_proportion_ontrtline.csv"          | Proportion of patients on 2nd & 3rd line treatments, RRMS & HA RRMS | MS Registry analysis 2024| public |
-|m_saes.csv                           | Baseline SAEs proportion | AFFIRM Study, [Polman etal. 2006](#ref-77) & Antelope Study [Hemmer etal. 2024](#ref-76) | public |
-|v_p_relapse_severity.csv             | Annual probability  of relapse by severity | [Hawton et al 2016](#ref-118) | public |
-|v_r_relapse_severity.csv             | Annual relapse rate by severity  | [Hawton et al 2016](#ref-118) | public |
-|v_smr.csv                            | All cause excess mortality rate for MS patients | [Jick etal. 2014](#ref-137) | public |
-|v_smr_severity.csv                   | excess mortality rate for MS patients by severity | Sadovnik etal 1992 cited in [Pokorski etal. 1997](#ref-337) | public |
-|v_smr_severity_Harding.csv           | excess mortality rate for MS patients by severity | [Harding etal. 2018](#ref-700) | Public |
-|v_smr_severity_Jick_Harding.csv      | excess mortality rate for MS patients by severity | [Harding etal. 2018](#ref-700) calibrated on the average SMR [Pokorski etal. 1997](#ref-337)| Public |
+|df_all_cause_mortality.csv | Mortality life tables | [ONS](#ref-600) 
+|m_discontinuation.csv | Baseline discontinuation proportion | AFFIRM Study, [Polman etal. 2006](#ref-77) & Antelope Study [Hemmer etal. 2024](#ref-76) 
+|m_n_patients_edss.csv | Baseline Severity All RRMS & HA RRMS | MS Registry analysis 2024
+|m_proportion_ontrtline.csv" | Proportion of patients on 2nd & 3rd line treatments, RRMS & HA RRMS | MS Registry analysis 2024
+|m_saes.csv | Baseline SAEs proportion | AFFIRM Study, [Polman etal. 2006](#ref-77) & Antelope Study [Hemmer etal. 2024](#ref-76) 
+|v_p_relapse_severity.csv | Annual probability  of relapse by severity | [Hawton et al 2016](#ref-118) 
+|v_r_relapse_severity.csv | Annual relapse rate by severity  | [Hawton et al 2016](#ref-118) 
+|v_smr.csv | All cause excess mortality rate for MS patients | [Jick etal. 2014](#ref-137) 
+|v_smr_severity.csv | excess mortality rate for MS patients by severity | Sadovnik etal 1992 cited in [Pokorski etal. 1997](#ref-337) 
+|v_smr_severity_Harding.csv | excess mortality rate for MS patients by severity | [Harding etal. 2018](#ref-700) 
+|v_smr_severity_Jick_Harding.csv | excess mortality rate for MS patients by severity | [Harding etal. 2018](#ref-700) calibrated on the average SMR [Pokorski etal. 1997](#ref-337)
 |**NMA**|
-|Releff_HA_ARR_FE.csv                 | ARR HA RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_ARR_FE.csv               | ARR All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_ARR_RE.csv               | ARR All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP3_FE.csv              | CDP3 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP3_RE.csv              | CDP3 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP6_FE.csv              | CDP6 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP6_RE.csv              | CDP6 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP6_3_FE.csv            | CDP6 and CDP3 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_CDP6_3_RE.csv            | CDP6 and CDP3 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_Discontinuation_FE.csv   | Discontinuation All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_Discontinuation_RE.csv   | Discontinuation All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_SeriousAEs_RE.csv        | SAEs All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 | public |
-|Releff_RRMS_SeriousAEs_FE.csv        | SAEs All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 | public |
+|Releff_HA_ARR_FE.csv | ARR HA RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_ARR_FE.csv | ARR All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_ARR_RE.csv | ARR All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP3_FE.csv | CDP3 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP3_RE.csv | CDP3 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP6_FE.csv | CDP6 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP6_RE.csv | CDP6 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP6_3_FE.csv | CDP6 and CDP3 All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_CDP6_3_RE.csv | CDP6 and CDP3 All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_Discontinuation_FE.csv | Discontinuation All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_Discontinuation_RE.csv | Discontinuation All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_SeriousAEs_RE.csv | SAEs All RRMS relative treatment random effects | NMA UoB_TAG analysis 2024 
+|Releff_RRMS_SeriousAEs_FE.csv | SAEs All RRMS relative treatment fixed effects | NMA UoB_TAG analysis 2024 
 |**MS Registry**|
-|v_tto_edss_decrease_rrms_mu.csv      | Severity decrease All RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_edss_decrease_rrms_sigma.csv   | Severity decrease All RRMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_edss_increase_harrms_mu.csv    | Severity increase HA RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_edss_increase_harrms_sigma.csv | Severity increase HA RRMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_edss_decrease_spms_mu.csv      | Severity decrease SPMS event rates | MS Registry analysis 2024  | public |
-|m_tto_edss_decrease_spms_sigma.csv   | Severity decrease SPMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_edss_increase_rrms_mu.csv      | Severity increase All RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_edss_increase_rrms_sigma.csv   | Severity increase All RRMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_edss_increase_spms_mu.csv      | Severity increase SPMS event rates | MS Registry analysis 2024  | public |
-|m_tto_edss_increase_spms_sigma.csv   | Severity increase SPMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_relapse_harrms_mu.csv          | Relapse HA RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_relapse_harrms_sigma.csv       | Relapse HA RRMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_relapse_rrms_mu.csv            | Relapse All RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_relapse_rrms_sigma.csv         | Relapse All RRMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_relapse_spms_mu.csv            | Relapse SPMS event rates | MS Registry analysis 2024  | public |
-|m_tto_relapse_spms_sigma.csv         | Relapse SPMS event VCOV | MS Registry analysis 2024 | public |
-|v_tto_sp_conversion_harrms_mu.csv    | Progression to SPMS, HA RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_sp_conversion_harrms_sigma.csv | Progression to SPMS, HA RRMS event VCOV | MS Registry analysis 2024 | public | 
-|v_tto_sp_conversion_rrms_mu.csv      | Progression to SPMS, All RRMS event rates | MS Registry analysis 2024  | public |
-|m_tto_sp_conversion_rrms_sigma.csv   | Progression to SPMS, All RRMS event VCOV | MS Registry analysis 2024 | public |
+|v_tto_edss_decrease_rrms_mu.csv | Severity decrease All RRMS event rates | MS Registry analysis 2024  
+|m_tto_edss_decrease_rrms_sigma.csv | Severity decrease All RRMS event VCOV | MS Registry analysis 2024 
+|v_tto_edss_increase_harrms_mu.csv | Severity increase HA RRMS event rates | MS Registry analysis 2024  
+|m_tto_edss_increase_harrms_sigma.csv | Severity increase HA RRMS event VCOV | MS Registry analysis 2024 
+|v_tto_edss_decrease_spms_mu.csv | Severity decrease SPMS event rates | MS Registry analysis 2024  
+|m_tto_edss_decrease_spms_sigma.csv | Severity decrease SPMS event VCOV | MS Registry analysis 2024 
+|v_tto_edss_increase_rrms_mu.csv | Severity increase All RRMS event rates | MS Registry analysis 2024  
+|m_tto_edss_increase_rrms_sigma.csv | Severity increase All RRMS event VCOV | MS Registry analysis 2024 
+|v_tto_edss_increase_spms_mu.csv | Severity increase SPMS event rates | MS Registry analysis 2024  
+|m_tto_edss_increase_spms_sigma.csv | Severity increase SPMS event VCOV | MS Registry analysis 2024 
+|v_tto_relapse_harrms_mu.csv | Relapse HA RRMS event rates | MS Registry analysis 2024  
+|m_tto_relapse_harrms_sigma.csv | Relapse HA RRMS event VCOV | MS Registry analysis 2024 
+|v_tto_relapse_rrms_mu.csv | Relapse All RRMS event rates | MS Registry analysis 2024  
+|m_tto_relapse_rrms_sigma.csv | Relapse All RRMS event VCOV | MS Registry analysis 2024 
+|v_tto_relapse_spms_mu.csv | Relapse SPMS event rates | MS Registry analysis 2024  
+|m_tto_relapse_spms_sigma.csv         | Relapse SPMS event VCOV | MS Registry analysis 2024 
+|v_tto_sp_conversion_harrms_mu.csv    | Progression to SPMS, HA RRMS event rates | MS Registry analysis 2024  
+|m_tto_sp_conversion_harrms_sigma.csv | Progression to SPMS, HA RRMS event VCOV | MS Registry analysis 2024  
+|v_tto_sp_conversion_rrms_mu.csv      | Progression to SPMS, All RRMS event rates | MS Registry analysis 2024  
+|m_tto_sp_conversion_rrms_sigma.csv   | Progression to SPMS, All RRMS event VCOV | MS Registry analysis 2024 
 |**Costs**|
-|m_c_edss.csv                         | Health state direct medical costs by severity (2022/23 prices) | [Tyas etal. 2007](#ref-130) | public |
-|m_c_relapse.csv                      | Relapse Costs (2022/23 prices)| [Hawton et al 2016](#ref-118) | public |
-|df_c_drugs.csv                       | Treatment acquisition  costs public prices | [BNF](#ref-26) | public |
-|df_c_drugs_admin.csv                 | Treatment Administration Costs updated 07/08/2025 | UoB_TAG analysis (refer to report & Addendum) | public |
-|df_c_drugs_lowest generic.csv        | Lowest Generic Costs | [BNF](#ref-26) | public |
-|df_c_monitoring.csv                  | Treatment Monitoring Costs | UoB_TAG analysis (refer to report) | public |
-|df_c_retreatment.csv                 | Re treatment schedule years: 3,4,5+ | UoB_TAG analysis (refer to report) | public |
-|df_c_spms.csv                        | SPMS Treatment Administration & Monitoring Costs | UoB_TAG analysis (refer to report) | public |
+|m_c_edss.csv | Health state direct medical costs by severity (2022/23 prices) | [Tyas etal. 2007](#ref-130) 
+|m_c_relapse.csv | Relapse Costs (2022/23 prices)| [Hawton et al 2016](#ref-118) 
+|df_c_drugs.csv | Treatment acquisition  costs public prices | [BNF](#ref-26) 
+|df_c_drugs_admin.csv | Treatment Administration Costs updated 07/08/2025 | UoB_TAG analysis (refer to report & Addendum) 
+|df_c_drugs_lowest generic.csv | Lowest Generic Costs | [BNF](#ref-26) 
+|df_c_monitoring.csv | Treatment Monitoring Costs | UoB_TAG analysis (refer to report) 
+|df_c_retreatment.csv | Re treatment schedule years: 3,4,5+ | UoB_TAG analysis (refer to report) 
+|df_c_spms.csv | SPMS Treatment Administration & Monitoring Costs | UoB_TAG analysis (refer to report) 
 |**Utilities**|
-|df_u_relapse.csv                     | Relapse disutility | [Orme etal. 2007](#ref-128) | public |
-|m_u_carer.csv                        | Caregiver disutilities | [Acaster  etal. 2013](#ref-500) | public |
-|m_u_edss.csv                         | Health State Utilities by Severity | [Orme etal. 2007](#ref-128) | public |
-|m_u_edss_clarity.csv                 | Health State Utilities by Severity | Clarity trial results available in NICE MS technology appraisal committee papers | public |
-|m_u_edss_opera.csv                   | Health State Utilities by Severity | OPERA trial results available in NICE MS technology appraisal committee papers | public |
-|m_u_edss_carer_ta127.csv             | Caregiver disutilities | TA127 analysis available in NICE MS technology appraisal committee papers | public |
-|df_saes_data.csv                     | SAEs weighted costs and Utilities | UoB_TAG analysis (refer to report)  | public |
+|df_u_relapse.csv | Relapse disutility | [Orme etal. 2007](#ref-128) 
+|m_u_carer.csv | Caregiver disutilities | [Acaster  etal. 2013](#ref-500) 
+|m_u_edss.csv | Health State Utilities by Severity | [Orme etal. 2007](#ref-128) 
+|m_u_edss_clarity.csv | Health State Utilities by Severity | Clarity trial results available in NICE MS technology appraisal committee papers 
+|m_u_edss_opera.csv | Health State Utilities by Severity | OPERA trial results available in NICE MS technology appraisal committee papers 
+|m_u_edss_carer_ta127.csv | Caregiver disutilities | TA127 analysis available in NICE MS technology appraisal committee papers 
+|df_saes_data.csv | SAEs weighted costs and Utilities | UoB_TAG analysis (refer to report)  
 |*Files not used in model*|
-|*df_baseline_severity.csv*             | *NA* | *NA*| *NA* |
-|*df_duration_relapse.csv*              | *NA* | *NA*| *NA* |
-|*df_r_all_cause_mortality.csv*         | *NA* | *NA*| *NA* |
-|*r_sae.csv*                            | *NA* | *NA*| *NA* |
+|*df_baseline_severity.csv* | *NA* | *NA*| *NA* |
+|*df_duration_relapse.csv* | *NA* | *NA*| *NA* |
+|*df_r_all_cause_mortality.csv* | *NA* | *NA*| *NA* |
+|*r_sae.csv* | *NA* | *NA*| *NA* |
 
 ## References
 ###### Polman CH, O'Connor PW, Havrdova E, Hutchinson M, Kappos L, Miller DH, et al. A Randomized, Placebo-Controlled Trial of Natalizumab for Relapsing Multiple Sclerosis. The New England journal of medicine 2006;354(9): 899-910 {#ref-77}
