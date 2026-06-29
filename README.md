@@ -7,11 +7,13 @@
 
 **Lists only** are used as its no longer possible to use vectors or matrices within events, the following variables have been split up:
 
-| **Old variable**|**New variables**| 
+| **Old variable** | **New variables** | 
 | :---|:---|
 | v_c_trt_admin       | l_c_trt_admin_yr1   & l_c_trt_admin_yr2 |
 | v_c_trt_monitor     | l_c_trt_monitor_yr1 & l_c_trt_monitor_yr2 |
 |  m_prop_2nd_3rd_trt  | l_prop_2ndline_trt  & l_prop_3rdline_trt |
+|v_u_rrms_edss, v_u_spms_edss, v_u_relapse, v_u_sae_events|l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events|
+|v_c_rrms_edss, v_c_spms_edss, df_c_tx|l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse, l_c_sae_events|
 
 **Now indexing on lists** in the initial and reaction events, this was accomplished using `purrr::pluck()` or custom function `pluck_vector_from_env()`
   
@@ -27,7 +29,7 @@
 | m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]] | pluck_vector_from_env(l_prop_3rdline_trt, names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])) |
 
 | **Remaining variables changed:** |
-| :---                             |
+| :--- |
 | spms_edss_decrease - not used in model? |
 | spms_progression |
 | baseline_harrms_larr  , baseline_spms_larr  , hr_arr |
@@ -37,13 +39,30 @@
 | prop_2ndline_trt - not used in model? |
 
 
-**costs and utilities** to be moved into generate reaction events and will need to use this custom function:
+**costs and utilities** moved into unique patient inputs and reaction events because DESCEM cost and utility functions have been deprecated.
 
-  + l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events
-  + l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse, l_c_sae_events
-  + implement new functionality which allows us to remove annual cycles
+  + Could we implement new functionality which allows us to remove annual cycles and obtain similar results?
 
 **Mortality** using modified function calling hesim, could ask JSA to write a native function
+
+**Validation variables** used help understand natural history.
+
+| **name ** | **description ** | **active in model update? ** |
+| :--- |:--- | :--- |
+|n_relapse | Number of relapses |Yes |
+|n_sae_evts | Number of serious adverse events | Yes |
+|n_edssinc_evts | Number of severity increases | Yes |
+|n_edssdec_evts | Number of severity decreases | Yes |
+|t_2ndline, t_3rdline, t_4thline| Time on treatment on each line | Yes |
+|n_switch | treatment switch counter | Yes |
+|years_on_treatment | annual treatment counter | Yes |
+|t_progression | time to progression | No |
+|tto_dp1, tto_dp2, tto_dp3, tto_dp4, tto_dp5, tto_dp6, tto_dp7 | time to progression for each event upto 7 events | No |
+|tto_rel1, tto_rel2, tto_rel3, tto_rel4, tto_rel5, tto_rel6, tto_rel7 | time to progression for each event upto 7 events| No |
+| yrs_edss_0, yrs_edss_1, yrs_edss_2, yrs_edss_3, yrs_edss_4, yrs_edss_5, yrs_edss_6, yrs_edss_7, yrs_edss_8, yrs_edss_9 |  annual severity state counter | No |
+
+
+
 
 
 # MS-DES repository 

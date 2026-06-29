@@ -39,6 +39,9 @@ source("R/generate_individual_inputs_warden.R")
 source("R/generate_initial_events_warden.R")
 source("R/generate_reaction_events_warden.R")
 
+#functions to generate costs and utilities, WARDEN specific (not complete)
+#source("R/generate_costs_utilities_warden.R")
+
 # Function to summarise the results
 source("R/summarise_samples.R")
 source("R/summarise_ce_results.R")
@@ -101,7 +104,7 @@ n_edss_values <- length(v_edss_values)
 
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
-inputs <- gen_inputs(dmt=v_treatment_names, severity = v_edss_values)
+inputs <- gen_inputs()
 
 ## Standard Deviation for probabilistic analysis when uncertainty not reported
 # assumed 1/10 of mean
@@ -119,75 +122,16 @@ prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
 # Add time to event for each patient for each of the treatments
 # Setting trt to all treatments should mean that the event applies to all treatments
 
-init_event_list <- gen_init_events(RRMS_events=v_event_names)
-evt_react_list <- gen_react_events(RRMS_events=v_event_names)
+init_event_list <- gen_init_events(RRMS_events=v_event_names) #functions do not accept named vectors of EDSS0-9 or dmt names
 
+evt_react_list <- gen_react_events(RRMS_events=v_event_names) #functions do not accept named vectors of EDSS0-9 or dmt names
 
+#util_ongoing_list <- gen_util_ongoing(dmt=v_treatment_names, severity = v_edss_values, RRMS_events=v_event_names)
 
-# # Add ongoing utilities
-# util_ongoing <- add_util(evt = v_event_names,
-#                          trt = v_treatment_names,
-#                          util = (1 - spms_flag) * v_u_rrms_edss[edss_value == v_edss_values] +
-#                            spms_flag * v_u_spms_edss[edss_value == v_edss_values]
-# )
-# 
-# # Add ongoing costs
-# cost_ongoing <- add_cost(evt = v_event_names,
-#                          trt = v_treatment_names,
-#                          cost = (1 - spms_flag) * (v_c_rrms_edss[edss_value == v_edss_values]) +
-#                            spms_flag * v_c_spms_edss[edss_value == v_edss_values])
-# 
-# ##Add instant costs
-# cost_instant <-
-#   add_cost(evt = c("annual_treatment") ,
-#            trt = v_treatment_names,
-#            cost = if(years_on_treatment <= 1) {(1- treatment_stop ) *(
-#              (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
-#                v_c_trt_admin["cost_annual_yr1",current_treatment_code] +
-#                v_c_trt_monitor["cost_annual_yr1",current_treatment_code]) +
-#                spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) + 
-#                               (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
-#            } else if(years_on_treatment == 2){(1- treatment_stop ) * (
-#              (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                v_c_trt_monitor["cost_annual_yr2",current_treatment_code])+
-#                spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-#                               (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-#            } else if(years_on_treatment == 3){(1- treatment_stop ) * (
-#              (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * inputs$df_c_tx_load[3,current_treatment_code])+
-#               spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-#                             (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-#            } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
-#              (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * inputs$df_c_tx_load[4,current_treatment_code])+
-#                spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-#                              (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-#            } else {(1- treatment_stop ) *(
-#              (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_admin["cost_annual_yr2",current_treatment_code] +
-#                 v_c_trt_monitor["cost_annual_yr2",current_treatment_code]) * inputs$df_c_tx_load[5,current_treatment_code])+
-#                spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) + 
-#                              (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-#            }
-#   ) %>% 
-#   add_cost(evt = "relapse" ,
-#            trt = v_treatment_names,
-#            cost = (relapse_hospital_flag * v_c_relapse[6])+
-#              ((1-relapse_hospital_flag) * v_c_relapse[4]) ) %>% 
-#   add_cost(evt = "serious_adverse_event" ,
-#            trt = v_treatment_names,
-#            cost = (1- treatment_stop ) * sum(v_c_sae_events * v_weight_sae)) 
-# 
-# # Add instant utilities
-# util_instant <-   add_util(evt = "relapse" ,
-#                            trt = v_treatment_names,
-#                            util = u_relapse) %>% 
-#   add_util(evt = "serious_adverse_event" ,
-#            trt = v_treatment_names,
-#            util = sum(v_u_sae_events*v_weight_sae)) 
+util_ongoing <- "utilities_disease"
+cost_ongoing <- "costs_disease"
+util_instant <- c("utilities_relapse", "utilities_sae")
+cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 
 indicators <-0
 # Run the simulation
@@ -202,14 +146,14 @@ total_runtime <- system.time({
     #indicators= ? ,
     arm_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
-    #common_pt_inputs = common_pt_inputs,      # inputs that change within a simulation but are not affected by the intervention
+    #common_pt_inputs = common_pt_inputs,     # inputs that change within a simulation but are not affected by the intervention
     unique_pt_inputs = unique_pt_inputs,      # inputs that change within a simulation between interventions
     init_event_list = init_event_list,        # initial event list
     evt_react_list = evt_react_list,          # reaction of events
-    # util_ongoing_list = util_ongoing,
-    # cost_ongoing_list = cost_ongoing,
+    util_ongoing_list = util_ongoing,         # ongoing rrms or spms disease utilities
+    cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
     # util_instant_list = util_instant,
-    # cost_instant_list = cost_instant,
+    cost_instant_list = cost_instant,         # instantaneous treatment costs
     # ncores = 4,                               # number of cores to use, recommended not to use all
     # drc = 0.035,                              # discount rate for costs
     # drq = 0.035,                               # discount rate for qaly/lys

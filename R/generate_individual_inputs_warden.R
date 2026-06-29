@@ -35,5 +35,45 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              n_switch = 0, # treatment switch counter for sense checking
                              years_on_treatment  = 0, #  annual treatment counter for drug acquisition costs
                              treatment_stop = 0, # all patients start on treatment, flag set to 1 when edss is 7+
-                             age = initial_age
+                             age = initial_age,
+                             utilities_disease = (1 - spms_flag) * pluck_vector_from_env(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
+                               spms_flag * pluck_vector_from_env(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values])),
+                             costs_disease =(1 - spms_flag) * pluck_vector_from_env(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
+                               spms_flag *  pluck_vector_from_env(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values])),
+                             costs_treatment = if(years_on_treatment <= 1) {(1- treatment_stop ) *(
+                               (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
+                                                    pluck_vector_from_env(l_c_trt_admin_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                                                    pluck_vector_from_env(l_c_trt_monitor_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) +
+                                 spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) +
+                                                (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
+                             } else if(years_on_treatment == 2){(1- treatment_stop ) * (
+                               (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                                                    pluck_vector_from_env(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                                                    pluck_vector_from_env(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])))+
+                                 spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                                                (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                             } else if(years_on_treatment == 3){(1- treatment_stop ) * (
+                               (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                                                    pluck_vector_from_env(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                                                    pluck_vector_from_env(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[3,current_treatment_code])+
+                                 spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                                               (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                             } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
+                               (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                                                    pluck_vector_from_env(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                                                    pluck_vector_from_env(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[4,current_treatment_code])+
+                                 spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                                               (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                             } else {(1- treatment_stop ) *(
+                               (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                                                    pluck_vector_from_env(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                                                    pluck_vector_from_env(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[5,current_treatment_code])+
+                                 spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                                               (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                             },
+                             utilities_relapse= u_mean_relapse_hospital,
+                             costs_relapse = (relapse_hospital_flag * l_c_relapse[["Relapse_hospital_addmision"]])+
+                               ((1-relapse_hospital_flag) *l_c_relapse[["Relapse_oral_steroids"]]),
+                             utilities_sae= utilities_sae_weighted,
+                             costs_sae = (1- treatment_stop ) * costs_sae_weighted
 )

@@ -2,28 +2,28 @@
 
 #generate model inputs
 #function takes names vectors and severity states
-gen_inputs <- function(dmt , severity){
+gen_inputs <- function(){
   
   ## baseline distribution of EDSS health states (MS Registry)
   m_n_patients_edss <- as.matrix(read.csv("data/m_n_patients_edss.csv", header = T, row.names = 1))
-  colnames(m_n_patients_edss) <- names(severity)
+  colnames(m_n_patients_edss) <- names(v_edss_values)
   
   ##  Annual treatment, administration and monitoring costs 
   #public list prices
   df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
-  df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),dmt)]
+  df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
   df_c_tx[,1:4] <- (df_c_tx[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,1:4]*0.4 # 60% on EID interval dosing
   
   # These are direct medical costs we excluded the indirect medical costs
   df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin_v2.csv", header = T, row.names = 1))
   df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
-  df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),dmt)]
+  df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
   df_c_tx_admin[,1:4] <- (df_c_tx_admin[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:4]*0.4 # 60% on EID interval dosing
   df_c_tx_admin[1,"Natalizumab-SC"] <- (df_c_tx_admin[1,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 1
   df_c_tx_admin[2:3,"Natalizumab-SC"] <- (df_c_tx_admin[2:3,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 2
 
   df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
-  df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),dmt)]
+  df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
   df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) #  free JCV test 
   df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) #  free JCV test 
   df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - 247) #  free JCV test 
@@ -31,17 +31,17 @@ gen_inputs <- function(dmt , severity){
   
   ## Annual treatment scheduled
   df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
-  df_c_tx_load <- df_c_tx_load[,intersect(colnames(df_c_tx_load),dmt)]
+  df_c_tx_load <- df_c_tx_load[,intersect(colnames(df_c_tx_load),v_treatment_names)]
   rownames(df_c_tx_load)<- c(seq(1,5,1))
 
   ## Excess all cause mortality for MS patients HR by severity edss<4 (Jick et al), edss>=4 (Harding et al)
   v_smr_severity_harding <- as.matrix(read.csv("data/v_smr_severity_Harding.csv", header = T, row.names = 1))
   v_smr_severity_harding[,c(9:10)] <- v_smr_severity_harding[,8] # Assuming SMR on EDSS 8 & 9 are equal to EDSS7 
-  dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), severity)
+  dimnames(v_smr_severity_harding) <- list(c("smr", "sd", "logsd"), v_edss_values)
   
   ## proportions on 2nd and 3rd line treatment, assuming Cladribine and Ublituximab are equivalent to Natalizumab
   m_proportion_ontrtline<- read.csv("data/m_proportion_ontrtline.csv", header = T, row.names = 1)
-  colnames(m_proportion_ontrtline) <- dmt
+  colnames(m_proportion_ontrtline) <- v_treatment_names
   
   ## Natural History MS Registry
   ## Vectors of coefficients and matrices of variance and covariance

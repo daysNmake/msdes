@@ -4,7 +4,7 @@
 
 gen_init_events<-function(RRMS_events){
   add_tte(arm = v_treatment_names,
-          evts = v_event_names,
+          evts = RRMS_events,
           input={ 
             initialise <- 0
             annual_treatment <- 0
@@ -81,7 +81,7 @@ gen_init_events<-function(RRMS_events){
               # SAE rates same for all treatments
               # change to include HR from safety NMA
               coef1 = log(purrr::pluck(l_sae_events_rate, "sae_events_rate")),
-              beta_tx= pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes]))
+              beta_tx= pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[v_treatment_codes]))
             )
             treatment_switch <- draw_tte(
               1,

@@ -429,7 +429,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(  
   # Relapse dis-utilities are treatment
-  l_u_relapse <- pick_val_v(
+  pick_val_v(
     base = inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"] ,
     psa = {
       pmin(rnorm(1, mean =  inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"], sd =  inputs$df_u_relapse["Orme etal", "u_sd_relapse_hospital"]),0)
@@ -439,32 +439,33 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"])),    
-    names_out = colnames(inputs$df_u_relapse["u_mean_relapse_hospital"])
+    names_out = "u_mean_relapse_hospital"
   )
   
 ) %>% add_item(
   # costs of serious adverse events
-  l_c_sae_events <- pick_val_v(
-    base = inputs$df_c_sae,
+  pick_val_v(
+    base = sum(inputs$df_c_sae*inputs$v_weight_sae),
     psa = {
       temp <- inputs$df_c_sae
       for(i_sae in 1:inputs$n_sae) {
         temp[i_sae] <- rgamma(1, ((inputs$df_c_sae[i_sae])^2) / ((inputs$df_c_sae[i_sae]/sd_psa)^2),
                               inputs$df_c_sae[i_sae] / ((inputs$df_c_sae[i_sae]/sd_psa)^2))
       }
+      temp <- sum(temp*inputs$v_weight_sae)
       temp
     },
     #sens = , 
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$sae_names)),    
-    names_out = inputs$sae_names
+    indicator = rep(indicators, 1),    
+    names_out = "costs_sae_weighted"
   )
   
 ) %>% add_item(
   # disutilities of serious adverse events
-  l_u_sae_events <- pick_val_v(
-    base = inputs$df_u_sae,
+   pick_val_v(
+    base = sum(inputs$df_u_sae*inputs$v_weight_sae),
     psa = {
       temp <- inputs$df_u_sae
       for(i_sae in 1:inputs$n_sae) {
@@ -472,13 +473,14 @@ common_all_inputs <-add_item(
                                   mean =  inputs$df_u_sae[i_sae], 
                                   sd =  -inputs$df_u_sae[i_sae] / sd_psa), 0)
       }
+      temp <- sum(temp*inputs$v_weight_sae)
       temp
     },
     #sens = , 
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$sae_names)),    
-    names_out = inputs$sae_names
+    indicator = rep(indicators, 1),    
+    names_out = "utilities_sae_weighted"
   )
   
 )  %>% add_item(

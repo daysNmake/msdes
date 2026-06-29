@@ -364,6 +364,10 @@ from: <code>add_item( if(psa_bool) {} else{})</code> to :
 vectors or matrices within events, the following variables have been
 split up:</p>
 <table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left"><strong>Old variable</strong></th>
@@ -382,6 +386,18 @@ split up:</p>
 <tr class="odd">
 <td align="left">m_prop_2nd_3rd_trt</td>
 <td align="left">l_prop_2ndline_trt &amp; l_prop_3rdline_trt</td>
+</tr>
+<tr class="even">
+<td align="left">v_u_rrms_edss, v_u_spms_edss, v_u_relapse,
+v_u_sae_events</td>
+<td align="left">l_u_rrms_edss, l_u_spms_edss, l_u_relapse,
+l_u_sae_events</td>
+</tr>
+<tr class="odd">
+<td align="left">v_c_rrms_edss, v_c_spms_edss, df_c_tx</td>
+<td align="left">l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 ,
+l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2,
+l_c_relapse, l_c_sae_events</td>
 </tr>
 </tbody>
 </table>
@@ -474,18 +490,92 @@ v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 </tr>
 </tbody>
 </table>
-<p><strong>costs and utilities</strong> to be moved into generate
-reaction events and will need to use this custom function:</p>
+<p><strong>costs and utilities</strong> moved into unique patient inputs
+and reaction events because DESCEM cost and utility functions have been
+deprecated.</p>
 <ul>
-<li>l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events</li>
-<li>l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2,
-l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse,
-l_c_sae_events</li>
-<li>implement new functionality which allows us to remove annual
-cycles</li>
+<li>Could we implement new functionality which allows us to remove
+annual cycles and obtain similar results?</li>
 </ul>
 <p><strong>Mortality</strong> using modified function calling hesim,
 could ask JSA to write a native function</p>
+<p><strong>Validation variables</strong> used help understand natural
+history.</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"><strong>name </strong></th>
+<th align="left"><strong>description </strong></th>
+<th align="left"><strong>active in model update? </strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">n_relapse</td>
+<td align="left">Number of relapses</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">n_sae_evts</td>
+<td align="left">Number of serious adverse events</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="left">n_edssinc_evts</td>
+<td align="left">Number of severity increases</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">n_edssdec_evts</td>
+<td align="left">Number of severity decreases</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="left">t_2ndline, t_3rdline, t_4thline</td>
+<td align="left">Time on treatment on each line</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">n_switch</td>
+<td align="left">treatment switch counter</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="odd">
+<td align="left">years_on_treatment</td>
+<td align="left">annual treatment counter</td>
+<td align="left">Yes</td>
+</tr>
+<tr class="even">
+<td align="left">t_progression</td>
+<td align="left">time to progression</td>
+<td align="left">No</td>
+</tr>
+<tr class="odd">
+<td align="left">tto_dp1, tto_dp2, tto_dp3, tto_dp4, tto_dp5, tto_dp6,
+tto_dp7</td>
+<td align="left">time to progression for each event upto 7 events</td>
+<td align="left">No</td>
+</tr>
+<tr class="even">
+<td align="left">tto_rel1, tto_rel2, tto_rel3, tto_rel4, tto_rel5,
+tto_rel6, tto_rel7</td>
+<td align="left">time to progression for each event upto 7 events</td>
+<td align="left">No</td>
+</tr>
+<tr class="odd">
+<td align="left">yrs_edss_0, yrs_edss_1, yrs_edss_2, yrs_edss_3,
+yrs_edss_4, yrs_edss_5, yrs_edss_6, yrs_edss_7, yrs_edss_8,
+yrs_edss_9</td>
+<td align="left">annual severity state counter</td>
+<td align="left">No</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="ms-des-repository" class="section level1">
 <h1>MS-DES repository</h1>
