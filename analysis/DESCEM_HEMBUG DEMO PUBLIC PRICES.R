@@ -50,7 +50,7 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 10
+n_patients <- 1000
 n_samples <- 10
 
 ## Treatments at second line 
@@ -99,7 +99,7 @@ n_edss_values <- length(v_edss_values)
 
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
-inputs <- gen_inputs(dmt=v_treatment_names, severity = v_edss_values)
+inputs <- gen_inputs()
 
 ## Standard Deviation for probabilistic analysis when uncertainty not reported
 # assumed 1/10 of mean
@@ -191,7 +191,7 @@ total_runtime <- system.time({
   results <- RunSim_new(
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
@@ -253,6 +253,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 View(results_table)
+write.csv(results_table, paste0(c("results/results descem determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 #plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]

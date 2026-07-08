@@ -3,6 +3,14 @@
 #generate model inputs
 #function takes names vectors and severity states
 gen_inputs <- function(){
+  ## Standard Deviation for probabilistic analysis when uncertainty not reported
+  # assumed 1/10 of mean
+  sd_psa <- 10
+  
+  ## Baseline population age sex and model time horizon
+  initial_age <- 36  # 36 ± 8 both arms of AFFIRM (N = 942)
+  time_horizon <- 100-initial_age # Years so lifetime
+  prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
   
   ## baseline distribution of EDSS health states (MS Registry)
   m_n_patients_edss <- as.matrix(read.csv("data/m_n_patients_edss.csv", header = T, row.names = 1))
@@ -154,6 +162,11 @@ gen_inputs <- function(){
   m_hr_rrms_discontinuation_fe <- as.matrix(hr_rrms_discontinuation_fe[,c("mean", "sd")]) 
   
   return(list(
+    ## Baseline population age sex and model time horizon
+    initial_age =initial_age,
+    time_horizon = time_horizon,
+    prop_female = prop_female,
+    sd_psa =sd_psa,
     ## baseline distribution of EDSS health states (MS Registry)
     m_n_patients_edss=m_n_patients_edss, 
     ##  Annual treatment, administration and monitoring costs 

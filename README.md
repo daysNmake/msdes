@@ -1,11 +1,15 @@
 
 ## *Current status of update to WARDEN*
 
-**Model is working  using WARDEN** some items pending described below
+**Model is working  using WARDEN** some items pending described below.
+The models appear to be giving similar results in the deterministic both WARDEN and DESCEM (1000 patients x 10 simulations take about aprox. 1100 seconds to run), things to check:
 
-**Generate inputs functions** were updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All variables must  be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
+ + age is going above max age, can we limit this as was the case in DESCEM?
+ 
 
-**Lists only** are used as its no longer possible to use vectors or matrices within events, the following variables have been split up:
+**Generate inputs functions** were updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All vectors must be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
+
+**Lists only** are used as its no longer possible to use vectors or matrices within events, examples of variables that have changed:
 
 | **Old variable** | **New variables** | 
 | :---|:---|
@@ -15,7 +19,7 @@
 |v_u_rrms_edss, v_u_spms_edss, v_u_relapse, v_u_sae_events|l_u_rrms_edss, l_u_spms_edss, l_u_relapse, l_u_sae_events|
 |v_c_rrms_edss, v_c_spms_edss, df_c_tx|l_c_rrms_edss, l_c_spms_edss, l_c_trt_admin_yr1 , l_c_trt_admin_yr2, l_c_trt_monitor_yr1, l_c_trt_monitor_yr2, l_c_relapse, l_c_sae_events|
 
-**Now indexing on lists** in the initial and reaction events, this was accomplished using `purrr::pluck()` or custom function `pluck_vector_from_env()`
+**Now indexing on lists** in the initial and reaction events, this was accomplished using `purrr::pluck()` or custom function `pluck_vector_from_env()` 
   
 | **Old **|**New **| 
 | :---|:---|
@@ -28,19 +32,14 @@
 | v_hr_saes - should be changed to depend on treatment?| pluck_vector_from_env(l_hr_saes, names(v_treatment_codes[ v_treatment_codes])) |
 | m_prop_2nd_3rd_trt["3",current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]] | pluck_vector_from_env(l_prop_3rdline_trt, names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])) |
 
-| **Remaining variables changed:** |
+| **some variables not changed:** |
 | :--- |
 | spms_edss_decrease - not used in model? |
-| spms_progression |
-| baseline_harrms_larr  , baseline_spms_larr  , hr_arr |
-| discontinuation_rate, hr_discontinuation |
-| sae_events_rate |
-| v_hr_pbo |
 | prop_2ndline_trt - not used in model? |
 
 
 **costs and utilities** moved into unique patient inputs and reaction events because DESCEM cost and utility functions have been deprecated.
-
+  + WARDEN vignette stipulated to add ongoing costs and utilities to individual patient level inputs and at every reaction event.
   + Could we implement new functionality which allows us to remove annual cycles and obtain similar results?
 
 **Mortality** using modified function calling hesim, could ask JSA to write a native function
@@ -62,7 +61,12 @@
 | yrs_edss_0, yrs_edss_1, yrs_edss_2, yrs_edss_3, yrs_edss_4, yrs_edss_5, yrs_edss_6, yrs_edss_7, yrs_edss_8, yrs_edss_9 |  annual severity state counter | No |
 
 
+**Modularisation**
 
+  + scripts are now called in from dedicated sheets
+  + limited use of custom functions to errors when arguments are passed through
+  + identify chunks of repetitive code to modularise
+  
 
 
 # MS-DES repository 

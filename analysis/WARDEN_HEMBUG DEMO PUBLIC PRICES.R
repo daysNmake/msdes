@@ -23,21 +23,9 @@ library(ggplot2)
 options(scipen = 999)
 options(tibble.print_max = 50)
 
-#Function to generate inputs, the same for both packages
-source("R/generate_inputs.R")
 
-# Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
-source("R/generate_global_inputs_warden.R")
 
-#Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
-source("R/pluck_vector_from_env.R")
 
-# patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
-source("R/generate_individual_inputs_warden.R")
-
-#functions to generate initial events and reaction events, WARDEN specific (not complete)
-source("R/generate_initial_events_warden.R")
-source("R/generate_reaction_events_warden.R")
 
 #functions to generate costs and utilities, WARDEN specific (not complete)
 #source("R/generate_costs_utilities_warden.R")
@@ -54,7 +42,7 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 10
+n_patients <- 1000
 n_samples <- 10
 
 ## Treatments at second line 
@@ -102,22 +90,24 @@ names(v_edss_values) <- paste("EDSS", v_edss_values)
 # Number of EDSS categories
 n_edss_values <- length(v_edss_values)
 
+#Function to generate inputs, the same for both packages
+source("R/generate_inputs.R")
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
 inputs <- gen_inputs()
 
-## Standard Deviation for probabilistic analysis when uncertainty not reported
-# assumed 1/10 of mean
-sd_psa <- 10
+# Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
+source("R/generate_global_inputs_warden.R")
 
+#Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
+source("R/pluck_vector_from_env.R")
 
-## Baseline population age sex and model time horizon
-initial_age <- 36  # 36 ± 8 both arms of AFFIRM (N = 942)
-time_horizon <- 100-initial_age # Years so lifetime
-prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
+# patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
+source("R/generate_individual_inputs_warden.R")
 
-
-
+#functions to generate initial events and reaction events, WARDEN specific (not complete)
+source("R/generate_initial_events_warden.R")
+source("R/generate_reaction_events_warden.R")
 
 # Add time to event for each patient for each of the treatments
 # Setting trt to all treatments should mean that the event applies to all treatments
@@ -137,10 +127,10 @@ indicators <-0
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <- system.time({
-  results <- run_sim(
+  results <- run_sim_parallel(
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
     #indicators= ? ,
@@ -152,13 +142,12 @@ total_runtime <- system.time({
     evt_react_list = evt_react_list,          # reaction of events
     util_ongoing_list = util_ongoing,         # ongoing rrms or spms disease utilities
     cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
-    # util_instant_list = util_instant,
+    util_instant_list = util_instant,
     cost_instant_list = cost_instant,         # instantaneous treatment costs
     # ncores = 4,                               # number of cores to use, recommended not to use all
-    # drc = 0.035,                              # discount rate for costs
-    # drq = 0.035,                               # discount rate for qaly/lys
-    # input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
-    #             "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
+
+     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
+                 "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
     # v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
     # save_input_matrix = TRUE # Export the input matrix for EVPPI
   )
@@ -167,6 +156,11 @@ total_runtime <- system.time({
 
 
 # Summarise the results
+#results_summary_determenistic <- summary_results_det(results[[1]][[1]]) # only use if 1 simulation
+
+# results_summary_probabalistic <- summary_results_sim(results[[1]]) # use if >1 simulation
+# View(results_summary_probabalistic)
+
 total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
@@ -175,15 +169,15 @@ for(treatment_name in v_treatment_names) {
   for(i_sample in 1:n_samples) {
     for(i_patient in 1:n_patients) {
       # With statement is neater but much slower
-      temp_index <- results$output_psa[[i_sample]]$merged_df$pat_id == i_patient &
-        results$output_psa[[i_sample]]$merged_df$trt == treatment_name &
-        results$output_psa[[i_sample]]$merged_df$evtname == "death"
+      temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
+        results[[1]][[i_sample]]$merged_df$arm == treatment_name & #
+        results[[1]][[i_sample]]$merged_df$evtname == "death"
       
       total_costs_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$total_costs[temp_index]
+        results[[1]][[i_sample]]$merged_df$total_costs[temp_index]
       
       total_qalys_ipd[i_sample, treatment_name, i_patient] <-
-        results$output_psa[[i_sample]]$merged_df$total_qalys[temp_index]
+        results[[1]][[i_sample]]$merged_df$total_qalys[temp_index]
     } # End loop over patients
     # Summarise for just this sample
     
@@ -204,6 +198,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 View(results_table)
+write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 #plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]

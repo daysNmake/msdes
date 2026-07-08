@@ -355,14 +355,20 @@ display: none;
 <div id="current-status-of-update-to-warden" class="section level2">
 <h2><em>Current status of update to WARDEN</em></h2>
 <p><strong>Model is working using WARDEN</strong> some items pending
-described below</p>
+described below. The models appear to be giving similar results in the
+deterministic both WARDEN and DESCEM (1000 patients x 10 simulations
+take about aprox. 1100 seconds to run), things to check:</p>
+<ul>
+<li>age is going above max age, can we limit this as was the case in
+DESCEM?</li>
+</ul>
 <p><strong>Generate inputs functions</strong> were updated to WARDEN,
 from: <code>add_item( if(psa_bool) {} else{})</code> to :
-<code>add_item(pick_val_v())</code>. All variables must be lists (ex:
+<code>add_item(pick_val_v())</code>. All vectors must be lists (ex:
 <code>l_hr_arr[[&quot;Natalizumab-SC&quot;]]</code>).</p>
 <p><strong>Lists only</strong> are used as its no longer possible to use
-vectors or matrices within events, the following variables have been
-split up:</p>
+vectors or matrices within events, examples of variables that have
+changed:</p>
 <table>
 <colgroup>
 <col width="50%" />
@@ -463,7 +469,7 @@ v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 <table>
 <thead>
 <tr class="header">
-<th align="left"><strong>Remaining variables changed:</strong></th>
+<th align="left"><strong>some variables not changed:</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -471,32 +477,16 @@ v_higher_line_treatment_codes[!v_prior_treatment_indices]]))</td>
 <td align="left">spms_edss_decrease - not used in model?</td>
 </tr>
 <tr class="even">
-<td align="left">spms_progression</td>
-</tr>
-<tr class="odd">
-<td align="left">baseline_harrms_larr , baseline_spms_larr , hr_arr</td>
-</tr>
-<tr class="even">
-<td align="left">discontinuation_rate, hr_discontinuation</td>
-</tr>
-<tr class="odd">
-<td align="left">sae_events_rate</td>
-</tr>
-<tr class="even">
-<td align="left">v_hr_pbo</td>
-</tr>
-<tr class="odd">
 <td align="left">prop_2ndline_trt - not used in model?</td>
 </tr>
 </tbody>
 </table>
 <p><strong>costs and utilities</strong> moved into unique patient inputs
 and reaction events because DESCEM cost and utility functions have been
-deprecated.</p>
-<ul>
-<li>Could we implement new functionality which allows us to remove
-annual cycles and obtain similar results?</li>
-</ul>
+deprecated. + WARDEN vignette stipulated to add ongoing costs and
+utilities to individual patient level inputs and at every reaction
+event. + Could we implement new functionality which allows us to remove
+annual cycles and obtain similar results?</p>
 <p><strong>Mortality</strong> using modified function calling hesim,
 could ask JSA to write a native function</p>
 <p><strong>Validation variables</strong> used help understand natural
@@ -576,6 +566,13 @@ yrs_edss_9</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Modularisation</strong></p>
+<ul>
+<li>scripts are now called in from dedicated sheets</li>
+<li>limited use of custom functions to errors when arguments are passed
+through</li>
+<li>identify chunks of repetitive code to modularise</li>
+</ul>
 </div>
 <div id="ms-des-repository" class="section level1">
 <h1>MS-DES repository</h1>

@@ -9,9 +9,11 @@ common_all_inputs <-add_item(
   v_higher_line_treatments = v_higher_line_treatments,
   v_higher_line_treatment_codes = v_higher_line_treatment_codes,
   v_prior_treatment_indices = v_prior_treatment_indices,
-  initial_age = initial_age,
-  time_horizon = time_horizon,
-  prop_female = prop_female,
+  initial_age = inputs[["initial_age"]],
+  time_horizon = inputs[["time_horizon"]],
+  drc = 0.035,                              # discount rate for costs
+  drq = 0.035,                               # discount rate for qaly/lys
+  prop_female = inputs[["prop_female"]],
   v_edss_values = v_edss_values,
   df_c_tx = inputs[["df_c_tx"]], # drug costs are not probabilistic
   p_siponimod = inputs[["p_siponimod"]], 
@@ -38,7 +40,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs[["m_u_edss_rrms"]][,"rrms_mean"])),    
-    names_out = names(v_edss_values)
+    names_out = names(v_edss_values),
+    deploy_env= FALSE
     )
   
 ) %>% add_item(
@@ -57,7 +60,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length((inputs$m_u_edss_spms[,"spms_mean"] + inputs$m_u_carer[, "Mean"]))),    
-    names_out = names(v_edss_values)
+    names_out = names(v_edss_values),
+    deploy_env= FALSE
   )
 ) %>% add_item(
   # List of RRMS EDSS Health state Direct Medical costs for RRMS Tyas et al inflated 
@@ -75,7 +79,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$m_c_edss_rrms[,"rrms_mean" ])),    
-    names_out = names(v_edss_values)
+    names_out = names(v_edss_values),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -94,7 +99,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$m_c_edss_spms[,"spms_mean"])),    
-    names_out = names(v_edss_values)
+    names_out = names(v_edss_values),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -117,7 +123,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$v_smr_severity_harding["smr",])),    
-    names_out = names(v_edss_values)
+    names_out = names(v_edss_values),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -150,7 +157,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(v_treatment_codes)),    
-    names_out = names(v_treatment_codes)
+    names_out = names(v_treatment_codes),
+    deploy_env= FALSE
   )
   
   
@@ -164,7 +172,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$v_tto_edss_increase_harrms_mu)),    
-    names_out = colnames(inputs$v_tto_edss_increase_harrms_mu)
+    names_out = colnames(inputs$v_tto_edss_increase_harrms_mu),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -177,7 +186,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$v_tto_edss_decrease_rrms_mu)),    
-    names_out = colnames(inputs$v_tto_edss_decrease_rrms_mu)
+    names_out = colnames(inputs$v_tto_edss_decrease_rrms_mu),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -190,7 +200,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$v_tto_edss_increase_spms_mu)),    
-    names_out = colnames(inputs$v_tto_edss_increase_spms_mu)
+    names_out = colnames(inputs$v_tto_edss_increase_spms_mu),
+    deploy_env= FALSE
   )
   
   
@@ -217,12 +228,13 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(t(inputs$v_tto_sp_conversion_harrms_mu))),    
-    names_out = rownames(inputs$v_tto_sp_conversion_harrms_mu)
+    names_out = rownames(inputs$v_tto_sp_conversion_harrms_mu),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
   # MS Registry time to relapse HARRMS patients
-  l_baseline_harrms_larr <- pick_val_v(
+    pick_val_v(
     base = t(inputs$v_tto_relapse_harrms_mu),
     psa =  mvrnorm(n = 1, mu = t(inputs$v_tto_relapse_harrms_mu), 
                    Sigma = inputs$tto_relapse_harrms_sigma),
@@ -230,7 +242,7 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(t(inputs$v_tto_relapse_harrms_mu))),    
-    names_out = rownames(inputs$v_tto_relapse_harrms_mu)
+    names_out = paste0(rep("baseline_harrms_larr_", nrow(inputs$v_tto_relapse_harrms_mu)), rownames(inputs$v_tto_relapse_harrms_mu))
   )
   
 ) %>% add_item(
@@ -243,7 +255,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(t(inputs$v_tto_relapse_spms_mu))),    
-    names_out = rownames(inputs$v_tto_relapse_spms_mu)
+    names_out = rownames(inputs$v_tto_relapse_spms_mu),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -275,13 +288,14 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(v_treatment_codes)),    
-    names_out = names(v_treatment_codes)
+    names_out = names(v_treatment_codes),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
     # Treatment switch follows discontinuation rates due to adverse events specific to Natalizumab arm of affirm
   # the discontinuation doesn't depend on line of therapy (E.g., cladribine discontinuation rate is same at 1st and 2nd line)
-  l_discontinuation_rate <- pick_val_v(
+  pick_val_v(
     base = -log(1-(rbeta(1,inputs$m_discontinuation["AFFIRM Natalizumab IV300","alpha"], 
                          inputs$m_discontinuation["AFFIRM Natalizumab IV300","beta"]))
                 )/inputs$m_discontinuation["AFFIRM Natalizumab IV300","follow_up"],
@@ -326,7 +340,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(v_treatment_codes)),    
-    names_out = names(v_treatment_codes)
+    names_out = names(v_treatment_codes),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -336,8 +351,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$df_c_tx_admin["cost_annual_yr1",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / sd_psa)^2),
-                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/sd_psa)^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
     },
@@ -345,7 +360,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_c_tx_admin["cost_annual_yr1",])),    
-    names_out = colnames(inputs$df_c_tx_admin)
+    names_out = colnames(inputs$df_c_tx_admin),
+    deploy_env= FALSE
   )
 
 ) %>% add_item(
@@ -355,8 +371,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$df_c_tx_admin["cost_annual_yr2",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / sd_psa)^2),
-                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/sd_psa)^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
     },
@@ -364,7 +380,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_c_tx_admin["cost_annual_yr2",])),    
-    names_out = colnames(inputs$df_c_tx_admin)
+    names_out = colnames(inputs$df_c_tx_admin),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -374,8 +391,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$df_c_tx_monitor["cost_annual_yr1",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / sd_psa)^2),
-                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/sd_psa)^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
       
@@ -385,7 +402,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_c_tx_monitor["cost_annual_yr1",])),    
-    names_out = colnames(inputs$df_c_tx_monitor)
+    names_out = colnames(inputs$df_c_tx_monitor),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -395,8 +413,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$df_c_tx_monitor["cost_annual_yr2",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / sd_psa)^2),
-                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/sd_psa)^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
       
@@ -405,7 +423,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_c_tx_monitor["cost_annual_yr2",])),    
-    names_out = colnames(inputs$df_c_tx_monitor)
+    names_out = colnames(inputs$df_c_tx_monitor),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(  
@@ -415,8 +434,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$m_c_relapse[, "mean"]
       for(i_cost in 1:length(temp)) {
-        temp[i_cost] <- rgamma(1, ((inputs$m_c_relapse[i_cost,"mean"])^2) / ((inputs$m_c_relapse[i_cost,"sd"]/sd_psa)^2),
-                               inputs$m_c_relapse[i_cost,"mean"] / ((inputs$m_c_relapse[i_cost,"sd"]/sd_psa)^2))
+        temp[i_cost] <- rgamma(1, ((inputs$m_c_relapse[i_cost,"mean"])^2) / ((inputs$m_c_relapse[i_cost,"sd"]/inputs[["sd_psa"]])^2),
+                               inputs$m_c_relapse[i_cost,"mean"] / ((inputs$m_c_relapse[i_cost,"sd"]/inputs[["sd_psa"]])^2))
       }
       temp
     },
@@ -424,7 +443,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, nrow(inputs$m_c_relaps)),    
-    names_out = rownames(inputs$m_c_relapse)
+    names_out = rownames(inputs$m_c_relapse),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(  
@@ -449,8 +469,8 @@ common_all_inputs <-add_item(
     psa = {
       temp <- inputs$df_c_sae
       for(i_sae in 1:inputs$n_sae) {
-        temp[i_sae] <- rgamma(1, ((inputs$df_c_sae[i_sae])^2) / ((inputs$df_c_sae[i_sae]/sd_psa)^2),
-                              inputs$df_c_sae[i_sae] / ((inputs$df_c_sae[i_sae]/sd_psa)^2))
+        temp[i_sae] <- rgamma(1, ((inputs$df_c_sae[i_sae])^2) / ((inputs$df_c_sae[i_sae]/inputs[["sd_psa"]])^2),
+                              inputs$df_c_sae[i_sae] / ((inputs$df_c_sae[i_sae]/inputs[["sd_psa"]])^2))
       }
       temp <- sum(temp*inputs$v_weight_sae)
       temp
@@ -471,7 +491,7 @@ common_all_inputs <-add_item(
       for(i_sae in 1:inputs$n_sae) {
         temp[i_sae] <- pmin(rnorm(1, 
                                   mean =  inputs$df_u_sae[i_sae], 
-                                  sd =  -inputs$df_u_sae[i_sae] / sd_psa), 0)
+                                  sd =  -inputs$df_u_sae[i_sae] / inputs[["sd_psa"]]), 0)
       }
       temp <- sum(temp*inputs$v_weight_sae)
       temp
@@ -485,7 +505,7 @@ common_all_inputs <-add_item(
   
 )  %>% add_item(
   # rates of serious adverse events
-  l_sae_events_rate <- pick_val_v(
+  pick_val_v(
     base = -log(1-(rbeta(1,inputs$m_saes["AFFIRM Natalizumab IV300","alpha"], 
                          inputs$m_saes["AFFIRM Natalizumab IV300","beta"]))
     )/inputs$m_saes["AFFIRM Natalizumab IV300","follow_up"],
@@ -533,11 +553,12 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(v_treatment_codes)),    
-    names_out = names(v_treatment_codes)
+    names_out = names(v_treatment_codes),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
-  l_hr_pbo <- pick_val_v(
+   pick_val_v(
     base = c(exp(inputs$m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_arr_fe["Placebo","mean"]), 
              exp(inputs$m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_saes_fe["Placebo","mean"])),
     psa = {
@@ -562,7 +583,7 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 4),    
-    names_out = c("edss_increase", "arr", "discontinuation","saes")
+    names_out = paste0(rep("hr_pbo_",4),c("edss_increase", "arr", "discontinuation","saes"))
   )
   
 ) %>% add_item(
@@ -585,7 +606,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$m_proportion_ontrtline)),    
-    names_out = colnames(inputs$m_proportion_ontrtline)
+    names_out = colnames(inputs$m_proportion_ontrtline),
+    deploy_env= FALSE
   )
 
 ) %>% add_item(
@@ -608,7 +630,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$m_proportion_ontrtline)),    
-    names_out = colnames(inputs$m_proportion_ontrtline)
+    names_out = colnames(inputs$m_proportion_ontrtline),
+    deploy_env= FALSE
   )
   
 )

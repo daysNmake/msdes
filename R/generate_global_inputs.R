@@ -46,7 +46,7 @@ common_all_inputs <-add_item(
     temp
     
   } else {
-    (inputs$m_u_edss_spms[,"spms_mean"] + inputs$m_u_carer[j_edss, "Mean"])
+    (inputs$m_u_edss_spms[,"spms_mean"] + inputs$m_u_carer[, "Mean"])
   }
 ) %>% add_item(
   # RRMS EDSS Health state Direct Medical costs for RRMS Tyas et al inflated 
@@ -405,21 +405,21 @@ common_all_inputs <-add_item(
                                         mean = inputs$m_hr_rrms_cdp6_fe["Placebo","mean"],
                                         sd = inputs$m_hr_rrms_cdp6_fe["Placebo","sd"]))
     # Annualized relapse rate
-    temp[, "arr"] <- exp(rnorm(1,
+    temp[,"arr"] <- exp(rnorm(1,
                                mean = inputs$m_hr_rrms_arr_fe["Placebo","mean"],
                                sd = inputs$m_hr_rrms_arr_fe["Placebo","sd"]))
     # discontinuation due to SAEs
-    temp[, "discontinuation"] <- exp(rnorm(1,
+    temp[,"discontinuation"] <- exp(rnorm(1,
                                            mean = inputs$m_hr_rrms_discontinuation_fe["Placebo","mean"],
                                            sd = inputs$m_hr_rrms_discontinuation_fe["Placebo","sd"]))
     #SAEs
-    temp[, "saes"] <- exp(rnorm(1,
+    temp[,"saes"] <- exp(rnorm(1,
                                 mean = inputs$m_hr_rrms_saes_fe["Placebo","mean"],
                                 sd = inputs$m_hr_rrms_saes_fe["Placebo","sd"]))
     temp
   }else {matrix(c(exp(inputs$m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_arr_fe["Placebo","mean"]), 
-                  exp(inputs$m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_saes_fe["Placebo","mean"]), 
-                  nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes"))))}
+                  exp(inputs$m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_saes_fe["Placebo","mean"])), 
+                  nrow = 1, ncol = 4, dimnames = list(NULL, c("edss_increase", "arr", "discontinuation","saes")))}
   
 ) %>% add_item(
   #proportions on 2nd and 3rd line treatments
