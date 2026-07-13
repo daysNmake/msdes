@@ -65,38 +65,59 @@ gen_react_events <- function(RRMS_events){
                    costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
                      spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
 
-                   # Instantaneous treatment costs
-                   costs_treatment = if(years_on_treatment <= 1) {(1- treatment_stop ) *(
+                   # Instantaneous treatment costs 
+                   costs_treatment[years_on_treatment <= 1] <- (1- treatment_stop ) *(
                      (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
                                           purrr::pluck(l_c_trt_admin_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
                                           purrr::pluck(l_c_trt_monitor_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) +
                        spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) +
                                       (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
-                   } else if(years_on_treatment == 2){(1- treatment_stop ) * (
+                   
+                   costs_treatment[years_on_treatment >= 2 & years_on_treatment <= 4] <- (1- treatment_stop ) * (
                      (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
                                           purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
                                           purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])))+
                        spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
                                       (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   } else if(years_on_treatment == 3){(1- treatment_stop ) * (
-                     (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                                          purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                                          purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[3,current_treatment_code])+
-                       spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                                     (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
-                     (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                                          purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                                          purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[4,current_treatment_code])+
-                       spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                                     (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   } else {(1- treatment_stop ) *(
+    
+                   costs_treatment[years_on_treatment >= 5] <- (1- treatment_stop ) *(
                      (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
                                           purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
                                           purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[5,current_treatment_code])+
                        spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
                                      (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   }
+                   #  costs_treatment = 
+                   # if(years_on_treatment <= 1) {(1- treatment_stop ) *(
+                   #   (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
+                   #                        purrr::pluck(l_c_trt_admin_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                   #                        purrr::pluck(l_c_trt_monitor_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) +
+                   #     spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) +
+                   #                    (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
+                   # } else if(years_on_treatment == 2){(1- treatment_stop ) * (
+                   #   (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])))+
+                   #     spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                   #                    (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                   # } else if(years_on_treatment == 3){(1- treatment_stop ) * (
+                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[3,current_treatment_code])+
+                   #     spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                   # } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
+                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[4,current_treatment_code])+
+                   #     spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                   # } else {(1- treatment_stop ) *(
+                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
+                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
+                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[5,current_treatment_code])+
+                   #     spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
+                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
+                   # }
                  }
     ) %>%
     add_reactevt(name_evt = "relapse",

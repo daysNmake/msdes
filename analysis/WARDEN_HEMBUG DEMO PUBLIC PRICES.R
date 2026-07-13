@@ -43,7 +43,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 1000
-n_samples <- 10
+n_samples <- 1
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -127,7 +127,7 @@ indicators <-0
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <- system.time({
-  results <- run_sim_parallel(
+  results <- run_sim(                                  # use run_sim_parallel() for more than 1 simulation
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
