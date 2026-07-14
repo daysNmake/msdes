@@ -1,37 +1,17 @@
-#### RRMS DES using the WARDN package??? ####
+#### RRMS DES using the WARDN package ####
 ## Authored: Howard Thom & Ayman Sadek ###
 ## Validated: Javier Sanchez Alvarez ####
 ## ACM2 Committee preferred assumptions##
 # Public Prices  #############
 
-# death excluded for now till we figure out how to model
 
-rm(list = ls())
+#model saved as a function
 
-library(WARDEN)
-#library(descem)
-library(MASS)
-library(VGAM)
-library(dplyr)
-library(flexsurv)
-library(ggplot2)
-library(kableExtra)
-library(purrr)
-library(tidyr)
-library(BCEA)
-library(ggplot2)
-options(scipen = 999)
-options(tibble.print_max = 50)
+rrmsdesmodel<- function(n_patients, n_samples){
+  
+  options(scipen = 999)
+  options(tibble.print_max = 50)
 
-
-runmodel<- function(){
-
-#functions to generate costs and utilities, WARDEN specific (not complete)
-#source("R/generate_costs_utilities_warden.R")
-
-# Function to summarise the results
-source("R/summarise_samples.R")
-source("R/summarise_ce_results.R")
 
 ## create New functions to draw from piece wise exponential distribution (ask JSA for help)
 source("R/draw_tte_new_warden.R")
@@ -41,8 +21,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 1
-n_samples <- 1
+n_patients <- n_patients
+n_samples <- n_samples
 
 ## Treatments at second line 
 v_treatment_names <<- c("Natalizumab-IV",
@@ -156,74 +136,4 @@ total_runtime <<- system.time({
   )
 })
 }
-
-
-runmodel()
-
-
-# Summarise the results
-#results_summary_determenistic <- summary_results_det(results[[1]][[1]]) # only use if 1 simulation
-
-# results_summary_probabalistic <- summary_results_sim(results[[1]]) # use if >1 simulation
-# View(results_summary_probabalistic)
-
-total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
-                                            dimnames = list(NULL, v_treatment_names, NULL))
-
-# Below is not very efficient but only needs to be run once at end of simulation
-for(treatment_name in v_treatment_names) {
-  for(i_sample in 1:n_samples) {
-    for(i_patient in 1:n_patients) {
-      # With statement is neater but much slower
-      temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
-        results[[1]][[i_sample]]$merged_df$arm == treatment_name & #
-        results[[1]][[i_sample]]$merged_df$evtname == "death"
-      
-      total_costs_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$total_costs[temp_index]
-      
-      total_qalys_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$total_qalys[temp_index]
-    } # End loop over patients
-    # Summarise for just this sample
-    
-  }
-}
-
-options(scipen = 999)
-total_costs <- apply(total_costs_ipd, c(1, 2), mean)
-total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
-
-
-#drop natalizumab-biosimilar-SC and cladrebiene
-total_costs <- total_costs[,-c(4,5)]
-total_qalys <- total_qalys[,-c(4,5)]
-
-results_table <- summarise_ce_results(total_qalys = total_qalys, 
-                                      total_costs = total_costs,
-                                      reference = "Natalizumab-IV")
-
-View(results_table)
-write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
-
-#plot results
-v_results_treatment_names<- v_treatment_names[-c(4,5)]
-
-# Create a BCEA object
-des_bcea <- bcea(eff = total_qalys,
-                 cost = total_costs,
-                 ref = 1,
-                 interventions = v_results_treatment_names)
-ceplane.plot(des_bcea, wtp = 30000,
-             graph = "ggplot2")
-
-#plot a CEAC
-des_multi_ce <- multi.ce(des_bcea)
-ceac.plot(des_multi_ce, graph = "ggplot2",
-          line = list(color = c("darkorange", "palegreen3", "blue", "grey",
-                                "cyan3", "black"),
-                      size=2 ),
-          #ylim=c(0, 0.5),
-          pos = c(1, 1)
-)
 
