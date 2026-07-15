@@ -1,8 +1,8 @@
-#### RRMS DES using the WARDN package ####
-## Authored: Howard Thom & Ayman Sadek ###
-## Validated: Javier Sanchez Alvarez ####
-## ACM2 Committee preferred assumptions##
-# Public Prices  #############
+#============ RRMS DES in WARDN  ====================================#
+#== Authored: Ayman Sadek & Howard Thom ============================#
+#== Validated: Javier Sanchez Alvarez =============================#
+#= ACM2 Committee preferred assumptions(Public Prices) ===========#
+
 
 rm(list = ls())
 
@@ -29,16 +29,29 @@ source("R/summarise_ce_results.R")
 
 # Shiny App User Interface
 ui <- 
+  
   #Project Page
   fluidPage(      
-  
-    #Project title
-    titlePanel( "MS-DES Model"),
+  #navigation bar  
+  navbarPage(title = div(img(src="https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png", 
+                             id ="logo", height="50px", width="180px"))),
+ 
+  tabsetPanel( 
     
+    #Introduction tab panel
+    tabPanel(  
+      title =  "Project info",
+      uiOutput("uo_readme")
+    ), #Introduction tab panel
+
+   #MS-Model tab panel
+   tabPanel(  
+    
+    title =  "MS-DES Model",
     #Page layout
     sidebarLayout(
       
-      #Side bar panel
+      #Side bar panel for model inputs
       sidebarPanel(
         #slider for number of patients
         sliderInput(
@@ -53,31 +66,41 @@ ui <-
         #button to run model
         actionButton(
           inputId = "ab_run_model", label = "Run DES Model")
-        ),
+        ), #sidebar panel
         
-      #Main panel
+      #Main panel for model run
       mainPanel(
-        #Heading
-        h3("Results Table"),
+      tabsetPanel(
+        tabPanel(  #Heading
+        title = "Results Table",
         #Output
-        tableOutput(outputId = "to_results_table"),
-        #Heading 2
-        h3("Cost Effectiveness Plane"),
+        tableOutput(outputId = "to_results_table")),
+        
+        tabPanel(#Heading 2
+        title = "Cost Effectiveness Plane",
         #Output 2
-        plotOutput(outputId = "po_ce_plane"),
-        #Heading 3
-        h3("Cost Effectiveness Acceptability Curve"),
+        plotOutput(outputId = "po_ce_plane")),
+        
+        tabPanel(#Heading 3
+        title = "Cost Effectiveness Acceptability Curve",
         #Output 3
-        plotOutput(outputId = "po_ceac")
-      )  
-    )
-  )
+        plotOutput(outputId = "po_ceac"))
+        ))#main panel  
+    ) #sidebar layout
+  )#tab panel 1
+  
+) #tab set panel
+  )# fluid page
 
 # Shiny App Server
 server <- 
   # server function with inputs and outputs
   function(input, output){
-    
+    # #render readme file
+    output$uo_readme <- renderUI({
+      includeMarkdown("README.md")
+    })
+
     #Action triggered when button is pressed
     observeEvent(input$ab_run_model,  {
 
@@ -183,7 +206,7 @@ shinyApp(ui, server)
 # View(results_summary_probabalistic)
 
 
-write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+#write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 
 
