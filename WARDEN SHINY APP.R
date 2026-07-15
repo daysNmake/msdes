@@ -129,7 +129,7 @@ server <-
       message = function(m) {
         html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
         i<<- ifelse(exists("i"), (i+1) , 1 )
-      updateProgressBar(session = session, id = "pb4", value = ((i/input$si_n_samples)*100)/2.4 )
+      updateProgressBar(session = session, id = "pb4", value = (i/((input$si_n_samples*2)+4))*100 )
               }
       
       )
