@@ -9,6 +9,7 @@
 
 rrmsdesmodel<- function(n_patients, n_samples){
   
+  
   options(scipen = 999)
   options(tibble.print_max = 50)
 
