@@ -18,7 +18,8 @@ library(tidyr)
 library(BCEA)
 library(ggplot2)
 library(shiny)
-
+library(shinyjs)
+library(shinyWidgets)
 
 
 # call model function
@@ -31,7 +32,11 @@ source("R/summarise_ce_results.R")
 ui <- 
   
   #Project Page
-  fluidPage(      
+  fluidPage(    
+    
+    
+    
+    
   #navigation bar  
   navbarPage(title = div(img(src="https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png", 
                              id ="logo", height="50px", width="180px"))),
@@ -57,16 +62,18 @@ ui <-
         sliderInput(
           inputId = "si_n_patients" , 
           label = "Number of simulated patients",
-          value = 2, min=1, max=1000),
+          value = 10, min=1, max=100),
         #slider for number of simulations
         sliderInput(
           inputId = "si_n_samples" , 
           label = "Number of simulations to run",
-          value = 2, min=1, max=1000),
+          value = 10, min=1, max=100),
+        #progress bar
+        column(4,progressBar(id = "pb4", value = 0, display_pct = T)),
         #button to run model
         actionButton(
           inputId = "ab_run_model", label = "Run DES Model"),
-        shinyjs::useShinyjs(),
+        useShinyjs(),
         textOutput("progress_text")
         ), #sidebar panel
       
@@ -99,7 +106,7 @@ ui <-
 # Shiny App Server
 server <- 
   # server function with inputs and outputs
-  function(input, output){
+  function(input, output, session){
     # #render readme file
     output$uo_readme <- renderUI({
       includeMarkdown("README.md")
@@ -111,16 +118,23 @@ server <-
       #Run model
       withCallingHandlers({
       
-      shinyjs::html("progress_text", "")
-        
+      html("progress_text", "")
+       
+      
       #Run model  
       rrmsdesmodel(n_patients = input$si_n_patients , n_samples = input$si_n_samples)
+
         
       },
       message = function(m) {
-        shinyjs::html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
-      })
-
+        html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
+        i<<- ifelse(exists("i"), (i+1) , 1 )
+      updateProgressBar(session = session, id = "pb4", value = ((i/2.4)/input$si_n_samples)*100) 
+              }
+      
+      )
+      
+      
       #create output
       output$to_results_table <- renderTable({
 

@@ -113,7 +113,7 @@ total_runtime <<- system.time({
   results <<- run_sim(                                  # use run_sim_parallel() for more than 1 simulation
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
     #indicators= ? ,
