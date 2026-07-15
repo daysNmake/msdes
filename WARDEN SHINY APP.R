@@ -65,11 +65,15 @@ ui <-
           value = 2, min=1, max=1000),
         #button to run model
         actionButton(
-          inputId = "ab_run_model", label = "Run DES Model")
+          inputId = "ab_run_model", label = "Run DES Model"),
+        shinyjs::useShinyjs(),
+        textOutput("progress_text")
         ), #sidebar panel
+      
         
       #Main panel for model run
       mainPanel(
+        
       tabsetPanel(
         tabPanel(  #Heading
         title = "Results Table",
@@ -105,7 +109,17 @@ server <-
     observeEvent(input$ab_run_model,  {
 
       #Run model
+      withCallingHandlers({
+      
+      shinyjs::html("progress_text", "")
+        
+      #Run model  
       rrmsdesmodel(n_patients = input$si_n_patients , n_samples = input$si_n_samples)
+        
+      },
+      message = function(m) {
+        shinyjs::html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
+      })
 
       #create output
       output$to_results_table <- renderTable({
@@ -186,6 +200,10 @@ server <-
       })
 
       #save results
+      
+      #write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+      
+      
 
     })
     
@@ -195,18 +213,6 @@ server <-
 shinyApp(ui, server)
 
 
-# run model function
-#rrmsdesmodel(n_patients =1 , n_samples = 1)
-
-
-# Summarise the results
-#results_summary_determenistic <- summary_results_det(results[[1]][[1]]) # only use if 1 simulation
-
-# results_summary_probabalistic <- summary_results_sim(results[[1]]) # use if >1 simulation
-# View(results_summary_probabalistic)
-
-
-#write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 
 
