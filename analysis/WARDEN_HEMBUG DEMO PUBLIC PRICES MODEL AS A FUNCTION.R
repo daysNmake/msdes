@@ -4,8 +4,63 @@
 ## ACM2 Committee preferred assumptions##
 # Public Prices  #############
 
+#model setup with inputs allowing for reactive changes to take place in shiny
+rrmsdessetup <- function(){
+  ## Treatments at second line 
+  v_treatment_names <<- c("Natalizumab-IV",
+                          "Natalizumab-SC",
+                          "Natalizumab biosimilar-IV",
+                          "Natalizumab biosimilar-SC",
+                          "Cladribine", 
+                          "Ublituximab" ,
+                          "Ofatumumab",
+                          "Ocrelizumab")
+  
+  ## number of treatments
+  n_treatments <<- length(v_treatment_names)
+  
+  ## specify codes for the treatments
+  v_treatment_codes <<- c(seq(1, n_treatments))
+  names(v_treatment_codes) <<- v_treatment_names
+  
+  ## Treatments that patients can move to at 3rd and higher line 
+  v_higher_line_treatments <<- c("Natalizumab-IV",
+                                 "Natalizumab-SC",
+                                 "Natalizumab biosimilar-IV",
+                                 "Natalizumab biosimilar-SC",
+                                 "Cladribine",
+                                 "Ublituximab",
+                                 "Ofatumumab",
+                                 "Ocrelizumab"
+  )
+  v_higher_line_treatment_codes <<- c(seq(1, length(v_higher_line_treatments)))
+  names(v_higher_line_treatment_codes) <<- v_higher_line_treatments
+  
+  ## prior treatment index
+  v_prior_treatment_indices <<- c(rep(0, length(v_higher_line_treatments)))
+  names(v_prior_treatment_indices) <<- v_higher_line_treatments
+  
+  ## Model event states
+  v_event_names <<- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death"
+  )
+  
+  ## Define the possible EDSS values
+  v_edss_values <<-  c(0:9)
+  names(v_edss_values) <<- paste("EDSS", v_edss_values)
+  
+  # Number of EDSS categories
+  n_edss_values <<- length(v_edss_values)
+  
+  #Function to generate inputs, the same for both packages
+  source("R/generate_inputs.R")
+  ## Model inputs generated using the generate inputs function
+  # saves the input in a list
+  #environment(gen_inputs) <- environment()
+  inputs <<- gen_inputs()
+}
 
-#model saved as a function
+
+#model setup and run saved as a function for use in shiny
 
 rrmsdesmodel<- function(n_patients, n_samples){
   
@@ -25,57 +80,7 @@ set.seed(n_seed)
 n_patients <- n_patients
 n_samples <- n_samples
 
-## Treatments at second line 
-v_treatment_names <<- c("Natalizumab-IV",
-                       "Natalizumab-SC",
-                       "Natalizumab biosimilar-IV",
-                       "Natalizumab biosimilar-SC",
-                       "Cladribine", 
-                       "Ublituximab" ,
-                       "Ofatumumab",
-                       "Ocrelizumab")
 
-## number of treatments
-n_treatments <<- length(v_treatment_names)
-
-## specify codes for the treatments
-v_treatment_codes <<- c(seq(1, n_treatments))
-names(v_treatment_codes) <<- v_treatment_names
-
-## Treatments that patients can move to at 3rd and higher line 
-v_higher_line_treatments <<- c("Natalizumab-IV",
-                              "Natalizumab-SC",
-                              "Natalizumab biosimilar-IV",
-                              "Natalizumab biosimilar-SC",
-                              "Cladribine",
-                              "Ublituximab",
-                              "Ofatumumab",
-                              "Ocrelizumab"
-                              )
-v_higher_line_treatment_codes <<- c(seq(1, length(v_higher_line_treatments)))
-names(v_higher_line_treatment_codes) <<- v_higher_line_treatments
-
-## prior treatment index
-v_prior_treatment_indices <<- c(rep(0, length(v_higher_line_treatments)))
-names(v_prior_treatment_indices) <<- v_higher_line_treatments
-
-## Model event states
-v_event_names <<- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death"
-                   )
-
-## Define the possible EDSS values
-v_edss_values <<-  c(0:9)
-names(v_edss_values) <<- paste("EDSS", v_edss_values)
-
-# Number of EDSS categories
-n_edss_values <<- length(v_edss_values)
-
-#Function to generate inputs, the same for both packages
-source("R/generate_inputs.R")
-## Model inputs generated using the generate inputs function
-# saves the input in a list
-#environment(gen_inputs) <- environment()
-inputs <<- gen_inputs()
 
 # Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
 source("R/generate_global_inputs_warden.R")
