@@ -4,7 +4,9 @@
 **Model is working  using WARDEN** some items pending described below.
 The models appear to be giving similar results in the deterministic both WARDEN and DESCEM (1000 patients x 10 simulations take about aprox. 1100 seconds to run), things to check:
 
- + age is going above max age, can we limit this as was the case in DESCEM?
+ + age is going above max age, can we limit this as was the case in DESCEM? check to see if this has been resolved
+ 
+ + annual treatment stops when edss >6, but then will not restart if edss drops =<6
  
 
 **Generate inputs functions** were updated to WARDEN, from: `add_item( if(psa_bool) {} else{})`  to : `add_item(pick_val_v())`. All vectors must be lists (ex: `l_hr_arr[["Natalizumab-SC"]]`).
