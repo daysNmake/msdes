@@ -3,22 +3,20 @@
 
 
 
-## ipd arrays for key model outputs of interest (final when patients are dead)
+### ipd arrays for key model outputs of interest (final when patients are dead)
 
 n_spms_ipd <- n_relapse_ipd <-  n_edssincrease_ipd<- n_edssdecrease_ipd<- n_sae_ipd<- 
-     final_edss_value_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
+     final_edss_value_ipd <- death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
-# this works for WARDEN to run for DESCEM replace results[[1]][[i_sample]] with results$output_psa[[i_sample]]
+#  results[[1]][[i_sample]] and $arm works for WARDEN to run for DESCEM replace  with results$output_psa[[i_sample]] and $trt
 for(treatment_name in v_treatment_names) {
   for(i_sample in 1:n_samples) {
     for(i_patient in 1:n_patients) {
       # With statement is neater but much slower
       temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
         results[[1]][[i_sample]]$merged_df$arm == treatment_name &
-        #results[[1]][[i_sample]]$merged_df$evttime == 0 & # conditioning on event time 0 misses the number of relapses and final edss value
-        #results[[1]][[i_sample]]$merged_df$evtname == "initialise"
         results[[1]][[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
       
       n_relapse_ipd[i_sample, treatment_name, i_patient] <-
@@ -38,6 +36,9 @@ for(treatment_name in v_treatment_names) {
       
       final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
         results[[1]][[i_sample]]$merged_df$edss_value[temp_index]
+      
+      death_ipd[i_sample, treatment_name, i_patient] <-
+        results[[1]][[i_sample]]$merged_df$evttime[temp_index]
       
     } # End loop over patients
     # Summarise for just this sample
@@ -70,13 +71,62 @@ key_events_trt_grps <- as.data.frame(cbind(n_spms_trt, n_rel_trt, n_edssincrease
 )
 View(key_events_trt_grps)
 
+## mortality by treatment group
+# Sort death times ascending
+for (i_sample in 1:n_samples){
+  for(treatment_name in v_treatment_names){
+    death_ipd[i_sample, treatment_name,] <- sort(death_ipd[i_sample, treatment_name,])
+  }}
 
+
+# save event times in a list
+for (i in 1:n_treatments){
+  assign(paste("V", i, sep=""), matrix(rep(0, n_patients* n_samples) , nrow = n_patients, ncol =  n_samples))
+  assign(paste("V", i, sep=""), tibble::as_tibble(death_ipd[,i,]))
+  
+}
+
+xyz<-list(V1, V2, V3, V4, V5, V6, V7, V8) #xyz <- list(c(noquote(paste("V", 1:n_treatments, "," , sep="")),n_treatments)) 
+remove(V1, V2, V3, V4, V5, V6, V7, V8)
+
+library(tidyverse)
+#model the overall survial 
+for (i in 1:length(xyz)){
+  xyz[[i]] <- data.frame(xyz[[i]]) %>%
+    mutate(event = 1) %>%
+    pivot_longer(cols=starts_with("V"), values_to = "time")
+  xyz[[i]] <- data.frame(xyz[[i]][-2])
+  xyz[[i]] <- sort_by.data.frame(xyz[[i]], xyz[[i]][["time"]])
+  xyz[["model"]][[i]] <- survival::survfit(Surv(time, event)~1, data =xyz[[i]] , type="kaplan-meier")
+  xyz[["plot"]][[i]] <- data.frame(xyz[["model"]][[i]][["time"]], xyz[["model"]][[i]][["surv"]])
+  #xyz[[i]] <- xyz[[i]]
+}
+
+
+# plot overall survival by treatment
+plot_mortality<- 
+  ggplot()+
+  geom_step(size=1)+
+  geom_step(data=xyz[["plot"]][[1]], aes(xyz[["plot"]][[1]][[1]], xyz[["plot"]][[1]][[2]], col=v_treatment_names[1]), size=1) +
+  geom_step(data=xyz[["plot"]][[2]], aes(xyz[["plot"]][[2]][[1]], xyz[["plot"]][[2]][[2]], col=v_treatment_names[2]), size=1)+
+  geom_step(data=xyz[["plot"]][[3]], aes(xyz[["plot"]][[3]][[1]], xyz[["plot"]][[3]][[2]], col=v_treatment_names[3]), size=1)+
+  geom_step(data=xyz[["plot"]][[4]], aes(xyz[["plot"]][[4]][[1]], xyz[["plot"]][[4]][[2]], col=v_treatment_names[4]), size=1)+
+  geom_step(data=xyz[["plot"]][[5]], aes(xyz[["plot"]][[5]][[1]], xyz[["plot"]][[5]][[2]], col=v_treatment_names[5]), linetype ="longdash")+
+  geom_step(data=xyz[["plot"]][[6]], aes(xyz[["plot"]][[6]][[1]], xyz[["plot"]][[6]][[2]], col=v_treatment_names[6]))+
+  geom_step(data=xyz[["plot"]][[7]], aes(xyz[["plot"]][[7]][[1]], xyz[["plot"]][[7]][[2]], col=v_treatment_names[7]), linetype ="dotted")+
+  geom_step(data=xyz[["plot"]][[8]], aes(xyz[["plot"]][[8]][[1]], xyz[["plot"]][[8]][[2]], col=v_treatment_names[8]), linetype ="dotdash") +
+  labs(title ="Predicted mortality over time - HARRMS Model ", y = "Survival (probability)", x = "Time (years)") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+  
+plot_mortality
 
 ### ipd arrays for key model outputs of interest at years  5, 10 & 15
 ### I could not replicate this analysis by conditioning on event times as it is missing some entries (ex 757/800) so throws up an error
 ### crude solution is to average for each drug over all patients and simulations combined (i.e not in aloop)
 
 # move ipd into data table (default)
+# results[[1]] works for WARDEN to run  DESCEM replace with results$output_psa
 psa_ipd <- bind_rows(map(results[[1]], "merged_df"))
 
 # create ipd by event time
@@ -106,6 +156,7 @@ v_treatment_names
 
 
 # summarise ipd for outcomes, years 05, 10, 15
+#_ipd$arm works for WARDEN to run with DESCEM replace with _ipd$trt
 
 for (i  in 1:length(v_treatment_names)) {
   p_spms_yr05[i] <- summarise_samples(evttime05_ipd$spms_flag[evttime05_ipd$arm == names(p_spms_yr05[i])])
@@ -149,8 +200,20 @@ View(edssdecrease_over_time)
 View(saes_over_time)
 View(average_edss_over_time)
 
+#save validation output
 
-#### This is validation for years spent in edss states, but is not activated within model script ( to add)
+write.csv(key_events_trt_grps, paste0(c("results/keyeventstrtgrps warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(spms_over_time, paste0(c("results/spmsovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(relapses_over_time, paste0(c("results/relapsesovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(edssincrease_over_time, paste0(c("results/edssincreaseovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(edssdecrease_over_time, paste0(c("results/edssdecreaseovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(saes_over_time, paste0(c("results/saesovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(average_edss_over_time, paste0(c("results/averageedssovertime warden probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+ggsave(paste0(c("results/mortalityovertime warden probabilistic", n_samples, "x", n_patients, ".png"), collapse = " "),
+       plot=plot_mortality, dpi=1200)
+
+
+#### This is validation for years spent in edss states, but is not activated within model script ( to add if requested)
 
 ## ipd arrays for key model outputs of interest (final when patients are dead)
 

@@ -25,21 +25,21 @@ options(tibble.print_max = 50)
 source("R/generate_inputs.R")
 
 # Global parameters of the model as they are common to all patients and treatments, DESCEM specific
-source("R/generate_global_inputs.R")
+source("R/DESCEM/generate_global_inputs.R")
 
 # patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
-source("R/generate_individual_inputs.R")
+source("R/DESCEM/generate_individual_inputs.R")
 
 #functions to generate initial events and reaction events, DESCEM specific
-source("R/generate_initial_events.R")
-source("R/generate_reaction_events.R")
+source("R/DESCEM/generate_initial_events.R")
+source("R/DESCEM/generate_reaction_events.R")
 
 # Function to summarise the results, package agnostic
 source("R/summarise_samples.R")
 source("R/summarise_ce_results.R")
 
 ## New functions to draw from piece wise exponential distribution, DESCEM specific
-source("R/draw_tte_new.R")
+source("R/DESCEM/draw_tte_new.R")
 
 ## New function to run the simulation saving input parameters, DESCEM specific
 # and with arbitrary random seeds
@@ -50,8 +50,8 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 1000
-n_samples <- 10
+n_patients <- 100
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -191,7 +191,7 @@ total_runtime <- system.time({
   results <- RunSim_new(
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = FALSE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = TRUE,
     trt_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
@@ -253,7 +253,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 View(results_table)
-write.csv(results_table, paste0(c("results/results descem determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+write.csv(results_table, paste0(c("results/results descem probabilistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 #plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]
@@ -271,7 +271,7 @@ des_multi_ce <- multi.ce(des_bcea)
 ceac.plot(des_multi_ce, graph = "ggplot2",
           line = list(color = c("darkorange", "palegreen3", "blue", "grey",
                                 "cyan3", "black"),
-                      size=2 ),
+                      size=6 ),
           #ylim=c(0, 0.5),
           pos = c(1, 1)
 )

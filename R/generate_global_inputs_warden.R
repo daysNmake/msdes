@@ -234,7 +234,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(
   # MS Registry time to relapse HARRMS patients
-    pick_val_v(
+   l_baseline_harrms_larr<- pick_val_v(
     base = t(inputs$v_tto_relapse_harrms_mu),
     psa =  mvrnorm(n = 1, mu = t(inputs$v_tto_relapse_harrms_mu), 
                    Sigma = inputs$tto_relapse_harrms_sigma),
@@ -242,7 +242,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(t(inputs$v_tto_relapse_harrms_mu))),    
-    names_out = paste0(rep("baseline_harrms_larr_", nrow(inputs$v_tto_relapse_harrms_mu)), rownames(inputs$v_tto_relapse_harrms_mu))
+    names_out = rownames(inputs$v_tto_relapse_harrms_mu),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -295,7 +296,7 @@ common_all_inputs <-add_item(
 ) %>% add_item(
     # Treatment switch follows discontinuation rates due to adverse events specific to Natalizumab arm of affirm
   # the discontinuation doesn't depend on line of therapy (E.g., cladribine discontinuation rate is same at 1st and 2nd line)
-  pick_val_v(
+  discontinuation_rate <- pick_val_v(
     base = -log(1-(rbeta(1,inputs$m_discontinuation["AFFIRM Natalizumab IV300","alpha"], 
                          inputs$m_discontinuation["AFFIRM Natalizumab IV300","beta"]))
                 )/inputs$m_discontinuation["AFFIRM Natalizumab IV300","follow_up"],
@@ -309,7 +310,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 1),    
-    names_out = "discontinuation_rate"
+    names_out = "discontinuation_rate",
+    deploy_env= FALSE
   )
 )%>% add_item(
   # List of Hazard ratios for treatment discontinuation due to SAEs
@@ -449,7 +451,7 @@ common_all_inputs <-add_item(
   
 ) %>% add_item(  
   # Relapse dis-utilities are treatment
-  pick_val_v(
+  l_u_mean_relapse_hospital <- pick_val_v(
     base = inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"] ,
     psa = {
       pmin(rnorm(1, mean =  inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"], sd =  inputs$df_u_relapse["Orme etal", "u_sd_relapse_hospital"]),0)
@@ -459,12 +461,13 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, length(inputs$df_u_relapse["Orme etal", "u_mean_relapse_hospital"])),    
-    names_out = "u_mean_relapse_hospital"
+    names_out = "utility",
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
   # costs of serious adverse events
-  pick_val_v(
+  l_costs_sae_weighted <- pick_val_v(
     base = sum(inputs$df_c_sae*inputs$v_weight_sae),
     psa = {
       temp <- inputs$df_c_sae
@@ -479,12 +482,13 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 1),    
-    names_out = "costs_sae_weighted"
+    names_out = "costs",
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
   # disutilities of serious adverse events
-   pick_val_v(
+   l_utilities_sae_weighted <- pick_val_v(
     base = sum(inputs$df_u_sae*inputs$v_weight_sae),
     psa = {
       temp <- inputs$df_u_sae
@@ -500,12 +504,13 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 1),    
-    names_out = "utilities_sae_weighted"
+    names_out = "utility",
+    deploy_env= FALSE
   )
   
 )  %>% add_item(
   # rates of serious adverse events
-  pick_val_v(
+  l_sae_events_rate <- pick_val_v(
     base = -log(1-(rbeta(1,inputs$m_saes["AFFIRM Natalizumab IV300","alpha"], 
                          inputs$m_saes["AFFIRM Natalizumab IV300","beta"]))
     )/inputs$m_saes["AFFIRM Natalizumab IV300","follow_up"],
@@ -522,7 +527,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 1),    
-    names_out = "sae_events_rate"
+    names_out = "rate",
+    deploy_env= FALSE
   )
   
 ) %>% add_item(
@@ -558,7 +564,7 @@ common_all_inputs <-add_item(
   )
   
 ) %>% add_item(
-   pick_val_v(
+   l_hr_pbo <- pick_val_v(
     base = c(exp(inputs$m_hr_rrms_cdp6_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_arr_fe["Placebo","mean"]), 
              exp(inputs$m_hr_rrms_discontinuation_fe["Placebo","mean"]), exp(inputs$m_hr_rrms_saes_fe["Placebo","mean"])),
     psa = {
@@ -583,7 +589,8 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 4),    
-    names_out = paste0(rep("hr_pbo_",4),c("edss_increase", "arr", "discontinuation","saes"))
+    names_out = paste0(c("edss_increase", "arr", "discontinuation","saes")),
+    deploy_env= FALSE
   )
   
 ) %>% add_item(

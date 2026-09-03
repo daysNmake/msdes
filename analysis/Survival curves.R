@@ -1,15 +1,20 @@
+
+### Validation for mortality Ayman Sadek 25-0802026
+
 ## dataset for survival curves
-psa_ipd <- bind_rows(map(results$output_psa, "merged_df")) 
-death_ipd<- os<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+psa_ipd <- bind_rows(map(results[[1]], "merged_df")) #WARDEN
+# psa_ipd <- bind_rows(map(results$output_psa, "merged_df")) # DESCEM
+death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
                             dimnames = list(NULL, v_treatment_names, NULL))
-dim(death_ipd)
+
 ## extract eventtimes  for death by sample and treatment
 for (treatment_name in v_treatment_names){
-for (i_patient in 1:n_patients){
-  for(i_sample in 1:n_samples){
-    death_ipd[i_sample, treatment_name, i_patient] <-  psa_ipd$evttime[psa_ipd$pat_id == i_patient & 
-                              psa_ipd$simulation == i_sample & 
-                              psa_ipd$trt == treatment_name & psa_ipd$evtname == "death"]
+for (i_sample in 1:n_samples){
+  for(i_patient in 1:n_patients){
+    death_ipd[i_sample, treatment_name, i_patient] <-  psa_ipd$evttime[psa_ipd$arm == treatment_name
+                              & psa_ipd$simulation == i_sample   
+                              & psa_ipd$pat_id == i_patient 
+                              & psa_ipd$evtname == "death"]
    # death_ipd[isample, treatment_name, i_patient] <- psa_ipd$evttime[temp]
   
     }}
@@ -23,9 +28,9 @@ for (i_sample in 1:n_samples){
     }}
 
 dim(death_ipd)
-setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
+#setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/too large for git")
 
-saveRDS(death_ipd, file ="results/death_ipd.RDS")
+#saveRDS(death_ipd, file ="results/death_ipd.RDS")
 
 
 ########

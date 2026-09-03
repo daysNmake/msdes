@@ -132,7 +132,7 @@ gen_react_events <- function(RRMS_events){
                      spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
 
                    # instantaneous costs and utilities
-                   utilities_relapse <- u_mean_relapse_hospital
+                   utilities_relapse <- l_u_mean_relapse_hospital$utility
                    costs_relapse <- (relapse_hospital_flag * l_c_relapse[["Relapse_hospital_addmision"]])+
                      ((1-relapse_hospital_flag) *l_c_relapse[["Relapse_oral_steroids"]])
                    
@@ -141,14 +141,14 @@ gen_react_events <- function(RRMS_events){
                      "relapse" = curtime + draw_tte(
                        1, 
                        dist = "exp", 
-                       coef1 = (1 - spms_flag) * (baseline_harrms_larr_rate +
-                                                    (baseline_harrms_larr_BaselineWebEDSS * edss_value) +
-                                                    baseline_harrms_larr_DMTNatalizumab ) +
+                       coef1 = (1 - spms_flag) * (purrr::pluck(l_baseline_harrms_larr, "rate")  +
+                                                    (purrr::pluck(l_baseline_harrms_larr, "BaselineWebEDSS") * edss_value) +
+                                                    purrr::pluck(l_baseline_harrms_larr, "DMTNatalizumab") ) +
                          # MS registry time to relapse SPMS log rate
                          spms_flag * (purrr::pluck(l_baseline_spms_larr, "rate") +
                                         (purrr::pluck(l_baseline_spms_larr, "BaselineWebEDSS") * edss_value)),
                        beta_tx =  (1 - spms_flag) * ((1 - treatment_stop) * (purrr::pluck(l_hr_arr, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))*(1 - waning)) +
-                                                 treatment_stop * hr_pbo_arr ) + spms_flag
+                                                 treatment_stop * l_hr_pbo$arr ) + spms_flag
                      )))
                  }) %>%
     add_reactevt(name_evt = "edss_increase",
@@ -177,7 +177,7 @@ gen_react_events <- function(RRMS_events){
                          spms_flag * (purrr::pluck(l_spms_edss_increase, "rate") +
                                       purrr::pluck(l_spms_edss_increase, "BaselineWebEDSS") * (edss_value)),  
                        beta_tx =  (1 - spms_flag ) * ((1 - treatment_stop) * (purrr::pluck(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1 - waning)) + 
-                                                  treatment_stop * hr_pbo_edss_increase ) + spms_flag
+                                                  treatment_stop * l_hr_pbo$edss_increase ) + spms_flag
                      )
                    ))}
                  }) %>%
@@ -248,8 +248,8 @@ gen_react_events <- function(RRMS_events){
                      spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
 
                    # instantaneous weighted sum of adverse events costs
-                   utilities_sae <- utilities_sae_weighted
-                   costs_sae <- (1- treatment_stop ) * costs_sae_weighted
+                   utilities_sae <- l_utilities_sae_weighted[["utility"]]
+                   costs_sae <- (1- treatment_stop ) * l_costs_sae_weighted$costs
           
                    
                    # Sample next serious event. T
@@ -259,8 +259,8 @@ gen_react_events <- function(RRMS_events){
                        dist = "exp",
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
-                       coef1 = log(sae_events_rate),
-                       beta_tx = ((1 - treatment_stop) * purrr::pluck(l_hr_saes, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop *  hr_pbo_saes )
+                       coef1 = log(l_sae_events_rate[["rate"]]),
+                       beta_tx = ((1 - treatment_stop) * purrr::pluck(l_hr_saes, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop *  l_hr_pbo$saes )
                      )
                    ))
                  }) %>%
@@ -268,12 +268,13 @@ gen_react_events <- function(RRMS_events){
     add_reactevt(name_evt = "treatment_switch",
                  input = {
                    treatment_line <- treatment_line + 1
-                   # discontinuation_rate <- (treatment_line < 4) *  discontinuation_rate
+                   # discontinuation_rate$discontinuation_rate <- (treatment_line < 4) *  discontinuation_rate$discontinuation_rate
                    v_prior_treatment_indices[current_treatment_code] <- 1
                    n_switch <- n_switch + 1
                    if(n_switch == 1) {
                      current_treatment <- sample(x=v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]], 
-                                                size=1, prob = pluck_vector_from_env(l_prop_3rdline_trt, names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])))
+                                                size=1, prob = l_prop_3rdline_trt[names(v_higher_line_treatment_codes[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]])]
+                                                                            )
                    } else if (n_switch >= 2) {
                      current_treatment <- sample(x = v_higher_line_treatments[current_treatment_code != v_higher_line_treatment_codes[!v_prior_treatment_indices]],
                                                 size = 1) 
@@ -295,7 +296,7 @@ gen_react_events <- function(RRMS_events){
                      "treatment_switch" = curtime + draw_tte(
                        1,
                        dist = "exp",
-                       coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+                       coef1 = ((1 - treatment_stop)  * log(discontinuation_rate$discontinuation_rate)) + (treatment_stop * log(0.01)),
                        beta_tx =  ((1 - treatment_stop)  * purrr::pluck(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
                      )
                    ))

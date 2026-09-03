@@ -15,9 +15,9 @@ gen_init_events<-function(RRMS_events){
               # Current treatment code allows treatment switching 
               # (i.e., not the trt which is only initial assignment)
               # MS registry time to relapse HA RRMS log rate on natalizumab
-              coef1 = (1 - spms_flag) * (baseline_harrms_larr_rate +
-                                           (baseline_harrms_larr_BaselineWebEDSS * edss_value) +
-                                           baseline_harrms_larr_DMTNatalizumab ) +
+              coef1 = (1 - spms_flag) * (purrr::pluck(l_baseline_harrms_larr, "rate")  +
+                                           (purrr::pluck(l_baseline_harrms_larr, "BaselineWebEDSS") * edss_value) +
+                                           purrr::pluck(l_baseline_harrms_larr, "DMTNatalizumab") ) +
                 # MS registry time to relapse SPMS log rate
                 spms_flag * (purrr::pluck(l_baseline_spms_larr, "rate") +
                                (purrr::pluck(l_baseline_spms_larr, "BaselineWebEDSS") * edss_value)),
@@ -25,7 +25,7 @@ gen_init_events<-function(RRMS_events){
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
               beta_tx = (1 - spms_flag) * ((1 - treatment_stop) * (purrr::pluck(l_hr_arr, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))*(1-waning)) +
-                                        treatment_stop * hr_pbo_arr ) + spms_flag
+                                        treatment_stop * l_hr_pbo$arr ) + spms_flag
             )
             edss_increase <- draw_tte(
               1, 
@@ -41,7 +41,7 @@ gen_init_events<-function(RRMS_events){
               # No treatment effect if SPMS
               # placebo ARR HR from NMA applied when treatment stopped 
               beta_tx = (1 - spms_flag ) * ((1 - treatment_stop) * (purrr::pluck(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1-waning)) + 
-                                         treatment_stop * hr_pbo_edss_increase ) + spms_flag
+                                         treatment_stop * l_hr_pbo$edss_increase ) + spms_flag
             )
             edss_decrease <- draw_tte(
               1, 
@@ -80,14 +80,14 @@ gen_init_events<-function(RRMS_events){
               dist = "exp",
               # SAE rates same for all treatments
               # change to include HR from safety NMA
-              coef1 = log(sae_events_rate),
+              coef1 = log(l_sae_events_rate[["rate"]]),
               beta_tx= purrr::pluck(l_hr_saes, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))
             )
             treatment_switch <- draw_tte(
               1,
               dist = "exp",
               # Discontinuation rates depend on current treatment
-              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate)) + (treatment_stop * log(0.01)),
+              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate$discontinuation_rate)) + (treatment_stop * log(0.01)),
               beta_tx= ((1 - treatment_stop)  * purrr::pluck(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
             )
           })
