@@ -57,7 +57,11 @@ There are ...n... functions in the "R" folder
 
 ## Notes for developers only 
 #### Issues identified d to be addressed:
-Please refer to the  validation-of-descem-to-warden.html file.
+Please refer to the  **validation-of-descem-to-warden.html** file for details
+Things to check or address urgently:
+
+ + fatal error: probabilistic warden version of the model does not run the full 100 simulations (throws up an error by sim no.66, traceback() indicates there might be an issue with sampling next treatment when switching)
+
 
 #### MS-SHINY APP:
 Can be run from WARDEN SHINY_v2.R
@@ -66,6 +70,7 @@ Pending to add scenarios and validation outputs
 #### Documentation:
 + Write model user guide
 + oxegenise scripts
++ update refrences where applicable.
 
 
 ## Model inputs 
