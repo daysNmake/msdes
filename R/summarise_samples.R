@@ -1,6 +1,12 @@
-# Function to summarise PSA samples
-# Howard Thom 10-Oct-2024
-
+#'
+#' @description
+#' Function to summarise PSA samples
+#' 
+#' @details
+#' 'summarise_samples()'returns the mean and 95% Credible Intervals
+#' 
+#' @param x data to be supplied
+#' @export
 summarise_samples <- function(x, n_digits = 2) {
   return(
     paste0(format(mean(x), digits = n_digits, nsmall = n_digits, big.mark=","), 

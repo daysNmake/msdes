@@ -1,4 +1,17 @@
-# Functions to tabulate the PSA results
+#'
+#' @description
+#' Functions to tabulate the PSA results at WTP20k and 30k
+#' 
+#' @details
+#' 'summarise_ce_results()'returns the incremental cost and qalys
+#' calculates the expected incremental cost effectiveness ratio 
+#' calculates the expected incremental net benefit ratio 
+#' returns the probability of treatment arms being cost effective
+#' 
+#' @param total_qalys the average total quality adjusted life years per treatment arm
+#' @param total_costs the average total costs per treatment arm
+#' @param reference The treatment arm specified as the reference for the comparison
+#' @export
 summarise_ce_results <- function(total_qalys, total_costs,
                                  reference = "Natalizumab-IV") {
   
@@ -60,3 +73,5 @@ summarise_ce_results <- function(total_qalys, total_costs,
   
   return(results_table)
 }
+
+

@@ -24,15 +24,12 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 
-
-
-
-#functions to generate costs and utilities, WARDEN specific (not complete)
-#source("R/generate_costs_utilities_warden.R")
-
-# Function to summarise the results
-source("R/summarise_samples.R")
-source("R/summarise_ce_results.R")
+#load the functions required for the analysis
+#devtools::load_all() # does not work there seems to be an issue with having scripts (global and individual inputs) not function in R folder (can we turn them into functions?)
+#summarise_ce_results() # Function to summarise the cost effectiveness results
+#summarise_samples() # Function to summarise any data
+source("R/summarise_ce_results")
+source("R/summarise_samples")
 
 ## create New functions to draw from piece wise exponential distribution (ask JSA for help)
 source("R/draw_tte_new_warden.R")

@@ -1,0 +1,5 @@
+Package: MS-DES
+Title: CE Model
+Config/roxygen2/version: 8.0.0
+Version: 1.0.0
+Roxygen: list(markdown = TRUE)
