@@ -310,7 +310,7 @@ common_all_inputs <-add_item(
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
     indicator = rep(indicators, 1),    
-    names_out = "discontinuation_rate",
+    names_out = "rate",
     deploy_env= FALSE
   )
 )%>% add_item(

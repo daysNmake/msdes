@@ -9,6 +9,7 @@ gen_init_events<-function(RRMS_events){
             initialise <- 0
             annual_treatment <- 0
             age <-0
+            discontinuation <- discontinuation_rate[["rate"]]
             relapse <- draw_tte(
               1, 
               dist = "exp", 
@@ -87,7 +88,7 @@ gen_init_events<-function(RRMS_events){
               1,
               dist = "exp",
               # Discontinuation rates depend on current treatment
-              coef1 = ((1 - treatment_stop)  * log(discontinuation_rate$discontinuation_rate)) + (treatment_stop * log(0.01)),
+              coef1 = ((1 - treatment_stop)  * log(discontinuation)) + (treatment_stop * log(0.01)),
               beta_tx= ((1 - treatment_stop)  * purrr::pluck(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
             )
           })

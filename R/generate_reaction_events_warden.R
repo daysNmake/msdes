@@ -268,7 +268,7 @@ gen_react_events <- function(RRMS_events){
     add_reactevt(name_evt = "treatment_switch",
                  input = {
                    treatment_line <- treatment_line + 1
-                   # discontinuation_rate$discontinuation_rate <- (treatment_line < 4) *  discontinuation_rate$discontinuation_rate
+                   discontinuation <- ((treatment_line < 4) *  discontinuation_rate[["rate"]])+0.01
                    v_prior_treatment_indices[current_treatment_code] <- 1
                    n_switch <- n_switch + 1
                    if(n_switch == 1) {
@@ -296,7 +296,7 @@ gen_react_events <- function(RRMS_events){
                      "treatment_switch" = curtime + draw_tte(
                        1,
                        dist = "exp",
-                       coef1 = ((1 - treatment_stop)  * log(discontinuation_rate$discontinuation_rate)) + (treatment_stop * log(0.01)),
+                       coef1 = ((1 - treatment_stop)  * log(discontinuation)) + (treatment_stop * log(0.01)),
                        beta_tx =  ((1 - treatment_stop)  * purrr::pluck(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
                      )
                    ))

@@ -28,8 +28,8 @@ options(tibble.print_max = 50)
 #devtools::load_all() # does not work there seems to be an issue with having scripts (global and individual inputs) not function in R folder (can we turn them into functions?)
 #summarise_ce_results() # Function to summarise the cost effectiveness results
 #summarise_samples() # Function to summarise any data
-source("R/summarise_ce_results")
-source("R/summarise_samples")
+source("R/summarise_ce_results.R")
+source("R/summarise_samples.R")
 
 ## create New functions to draw from piece wise exponential distribution (ask JSA for help)
 source("R/draw_tte_new_warden.R")
@@ -40,7 +40,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 60
+n_samples <- 100
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
