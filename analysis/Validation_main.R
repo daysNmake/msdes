@@ -5,8 +5,8 @@
 
 ### ipd arrays for key model outputs of interest (final when patients are dead)
 
-n_spms_ipd <- n_relapse_ipd <-  n_edssincrease_ipd<- n_edssdecrease_ipd<- n_sae_ipd<- 
-     final_edss_value_ipd <- death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+ n_spms_ipd <- n_relapse_ipd <-  n_edssincrease_ipd<- n_edssdecrease_ipd<- n_sae_ipd<- 
+      final_edss_value_ipd <-  array(NA, dim = c(n_samples, n_treatments, n_patients),
                                             dimnames = list(NULL, v_treatment_names, NULL))
 
 # Below is not very efficient but only needs to be run once at end of simulation
@@ -21,24 +21,21 @@ for(treatment_name in v_treatment_names) {
       
       n_relapse_ipd[i_sample, treatment_name, i_patient] <-
       results[[1]][[i_sample]]$merged_df$n_relapse[temp_index]
-      
+
       n_spms_ipd[i_sample, treatment_name, i_patient] <-
       results[[1]][[i_sample]]$merged_df$spms_flag[temp_index]
-      
+
       n_edssincrease_ipd[i_sample, treatment_name, i_patient] <-
       results[[1]][[i_sample]]$merged_df$n_edssinc_evts[temp_index]
-      
+
       n_edssdecrease_ipd[i_sample, treatment_name, i_patient] <-
       results[[1]][[i_sample]]$merged_df$n_edssdec_evts[temp_index]
-      
+
       n_sae_ipd[i_sample, treatment_name, i_patient] <-
        results[[1]][[i_sample]]$merged_df$n_sae_evts[temp_index]
-      
+
       final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
         results[[1]][[i_sample]]$merged_df$edss_value[temp_index]
-      
-      death_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$evttime[temp_index]
       
     } # End loop over patients
     # Summarise for just this sample
@@ -72,6 +69,28 @@ key_events_trt_grps <- as.data.frame(cbind(n_spms_trt, n_rel_trt, n_edssincrease
 View(key_events_trt_grps)
 
 ## mortality by treatment group
+death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+                  dimnames = list(NULL, v_treatment_names, NULL))
+
+# Below is not very efficient but only needs to be run once at end of simulation
+#  results[[1]][[i_sample]] and $arm works for WARDEN to run for DESCEM replace  with results$output_psa[[i_sample]] and $trt
+for(treatment_name in v_treatment_names) {
+  for(i_sample in 1:n_samples) {
+    for(i_patient in 1:n_patients) {
+      # With statement is neater but much slower
+      temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
+        results[[1]][[i_sample]]$merged_df$arm == treatment_name &
+        results[[1]][[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
+    
+      
+      death_ipd[i_sample, treatment_name, i_patient] <-
+        results[[1]][[i_sample]]$merged_df$evttime[temp_index]
+      
+    } # End loop over patients
+    # Summarise for just this sample
+    
+  }
+}
 # Sort death times ascending
 for (i_sample in 1:n_samples){
   for(treatment_name in v_treatment_names){

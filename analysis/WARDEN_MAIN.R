@@ -40,7 +40,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 100
-n_samples <- 100
+n_samples <- 10
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
