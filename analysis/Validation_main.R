@@ -135,6 +135,8 @@ plot_mortality<-
   geom_step(data=xyz[["plot"]][[7]], aes(xyz[["plot"]][[7]][[1]], xyz[["plot"]][[7]][[2]], col=v_treatment_names[7]), linetype ="dotted")+
   geom_step(data=xyz[["plot"]][[8]], aes(xyz[["plot"]][[8]][[1]], xyz[["plot"]][[8]][[2]], col=v_treatment_names[8]), linetype ="dotdash") +
   labs(title ="Predicted mortality over time - HARRMS Model ", y = "Survival (probability)", x = "Time (years)") +
+  xlim(0.01,100) +
+  ylim(0.001,1) +
   theme_bw() +
   theme(legend.position = "bottom")
   

@@ -114,8 +114,8 @@ common_all_inputs <-add_item(
         temp[j_edss] <- exp(
           rnorm(1, mean= log(inputs$v_smr_severity_harding["smr",j_edss]) - log(inputs$v_smr_severity_harding["smr",5]) , 
                 sd=inputs$v_smr_severity_harding["logsd",j_edss]) 
-        ) + rnorm(1, mean=  log(inputs$v_smr_severity_harding["smr",1]), sd=inputs$v_smr_severity_harding["logsd",1]
-        )
+         + rnorm(1, mean=  log(inputs$v_smr_severity_harding["smr",1]), sd=inputs$v_smr_severity_harding["logsd",1]
+        ))
       } 
       temp 
     },
