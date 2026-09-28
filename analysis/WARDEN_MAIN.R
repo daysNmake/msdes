@@ -28,6 +28,8 @@ options(tibble.print_max = 50)
 #devtools::load_all() # does not work there seems to be an issue with having scripts (global and individual inputs) not function in R folder (can we turn them into functions?)
 #summarise_ce_results() # Function to summarise the cost effectiveness results
 #summarise_samples() # Function to summarise any data
+#run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI
+source("R/run_sim_parallel_new.R")
 source("R/summarise_ce_results.R")
 source("R/summarise_samples.R")
 
@@ -39,7 +41,7 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- 100
+n_patients <- 10
 n_samples <- 10
 
 ## Treatments at second line 
@@ -91,7 +93,10 @@ n_edss_values <- length(v_edss_values)
 source("R/generate_inputs.R")
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
-inputs <- gen_inputs()
+inputs <- gen_inputs(
+  # change assumptions used in scenario analyses
+  p_eid=0.6 # proportion of patients on external interval dosing
+                     )
 
 # Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
 indicators <-1
@@ -125,7 +130,7 @@ cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <- system.time({
-  results <- run_sim_parallel(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
+  results <- run_sim_parallel_new(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
@@ -141,12 +146,10 @@ total_runtime <- system.time({
     cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
     util_instant_list = util_instant,
     cost_instant_list = cost_instant,         # instantaneous treatment costs
-    # ncores = 4,                               # number of cores to use, recommended not to use all
-
-     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
                  "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
     # v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
-    # save_input_matrix = TRUE # Export the input matrix for EVPPI
+     #save_input_matrix = FALSE # Export the input matrix for EVPPI
   )
 })
 

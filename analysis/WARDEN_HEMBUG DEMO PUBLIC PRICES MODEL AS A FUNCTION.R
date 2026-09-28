@@ -5,7 +5,7 @@
 # Public Prices  #############
 
 #model setup with inputs allowing for reactive changes to take place in shiny
-rrmsdessetup <- function(){
+rrmsdessetup <- function(p_eid=p_eid){
   ## Treatments at second line 
   v_treatment_names <<- c("Natalizumab-IV",
                           "Natalizumab-SC",
@@ -56,7 +56,7 @@ rrmsdessetup <- function(){
   ## Model inputs generated using the generate inputs function
   # saves the input in a list
   #environment(gen_inputs) <- environment()
-  inputs <<- gen_inputs()
+  inputs <<- gen_inputs(p_eid=p_eid)
 }
 
 

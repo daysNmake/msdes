@@ -43,7 +43,7 @@ source("R/DESCEM/draw_tte_new.R")
 
 ## New function to run the simulation saving input parameters, DESCEM specific
 # and with arbitrary random seeds
- source("R/RunSim_new.R")
+ source("R/DESCEM/RunSim_new.R")
 
 ## set a seed 
 n_seed<-243523452
