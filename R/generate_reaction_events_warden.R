@@ -13,10 +13,10 @@ gen_react_events <- function(RRMS_events){
                  current_treatment <- arm
                  current_treatment_code <- v_treatment_codes[arm]
                  # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                 utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                                      spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                 costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                                    spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                 utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                                      spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                 costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                                    spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                  modify_event(
                    c("death"= abs(min(get_event("death") , inputs[["time_horizon"]]) - inputs[["initial_age"]])) 
@@ -31,10 +31,10 @@ gen_react_events <- function(RRMS_events){
                  input = {
                    age <- initial_age + round(curtime)
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                  }) %>%
     
@@ -60,64 +60,33 @@ gen_react_events <- function(RRMS_events){
                    ))}
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    # Instantaneous treatment costs 
                    costs_treatment[years_on_treatment <= 1] <- (1- treatment_stop ) *(
                      (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
-                                          purrr::pluck(l_c_trt_admin_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                                          purrr::pluck(l_c_trt_monitor_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) +
+                                          l_c_trt_admin_yr1[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]] +
+                                          l_c_trt_monitor_yr1[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]]) +
                        spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) +
                                       (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
                    
                    costs_treatment[years_on_treatment >= 2 & years_on_treatment <= 4] <- (1- treatment_stop ) * (
                      (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                                          purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                                          purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])))+
+                                          l_c_trt_admin_yr2[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]] +
+                                          l_c_trt_monitor_yr2[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]])+
                        spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
                                       (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
     
                    costs_treatment[years_on_treatment >= 5] <- (1- treatment_stop ) *(
                      (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                                          purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                                          purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[5,current_treatment_code])+
+                                          l_c_trt_admin_yr2[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]] +
+                                          l_c_trt_monitor_yr2[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]]) * inputs$df_c_tx_load[5,current_treatment_code])+
                        spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
                                      (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   #  costs_treatment = 
-                   # if(years_on_treatment <= 1) {(1- treatment_stop ) *(
-                   #   (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr1",current_treatment_code] +
-                   #                        purrr::pluck(l_c_trt_admin_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                   #                        purrr::pluck(l_c_trt_monitor_yr1, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) +
-                   #     spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr1","PegIFN-β-1 SC 125μg"]) +
-                   #                    (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr1","Siponimod"])))
-                   # } else if(years_on_treatment == 2){(1- treatment_stop ) * (
-                   #   (1 - spms_flag) * (inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])))+
-                   #     spms_flag * (((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                   #                    (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   # } else if(years_on_treatment == 3){(1- treatment_stop ) * (
-                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[3,current_treatment_code])+
-                   #     spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   # } else if(years_on_treatment == 4){ (1- treatment_stop ) *(
-                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[4,current_treatment_code])+
-                   #     spms_flag *(((1-inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   # } else {(1- treatment_stop ) *(
-                   #   (1 - spms_flag) *((inputs$df_c_tx["cost_annual_yr2",current_treatment_code] +
-                   #                        purrr::pluck(l_c_trt_admin_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) +
-                   #                        purrr::pluck(l_c_trt_monitor_yr2, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) * inputs$df_c_tx_load[5,current_treatment_code])+
-                   #     spms_flag *(((1 - inputs$p_siponimod) * inputs$df_c_spms["cost_annual_yr2","PegIFN-β-1 SC 125μg"]) +
-                   #                   (inputs$p_siponimod * inputs$df_c_spms["cost_annual_yr2","Siponimod"])))
-                   # }
+                   
                  }
     ) %>%
     add_reactevt(name_evt = "relapse",
@@ -126,10 +95,10 @@ gen_react_events <- function(RRMS_events){
                    age <- initial_age + round(curtime)
                    
                    # # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    # instantaneous costs and utilities
                    utilities_relapse <- l_u_mean_relapse_hospital$utility
@@ -141,13 +110,13 @@ gen_react_events <- function(RRMS_events){
                      "relapse" = curtime + draw_tte(
                        1, 
                        dist = "exp", 
-                       coef1 = (1 - spms_flag) * (purrr::pluck(l_baseline_harrms_larr, "rate")  +
-                                                    (purrr::pluck(l_baseline_harrms_larr, "BaselineWebEDSS") * edss_value) +
-                                                    purrr::pluck(l_baseline_harrms_larr, "DMTNatalizumab") ) +
+                       coef1 = (1 - spms_flag) * (l_baseline_harrms_larr[["rate"]]  +
+                                                    (l_baseline_harrms_larr[["BaselineWebEDSS"]] * edss_value) +
+                                                    l_baseline_harrms_larr[["DMTNatalizumab"]] ) +
                          # MS registry time to relapse SPMS log rate
-                         spms_flag * (purrr::pluck(l_baseline_spms_larr, "rate") +
-                                        (purrr::pluck(l_baseline_spms_larr, "BaselineWebEDSS") * edss_value)),
-                       beta_tx =  (1 - spms_flag) * ((1 - treatment_stop) * (purrr::pluck(l_hr_arr, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))*(1 - waning)) +
+                         spms_flag * (l_baseline_spms_larr[["rate"]] +
+                                        (l_baseline_spms_larr[["BaselineWebEDSS"]] * edss_value)),
+                       beta_tx =  (1 - spms_flag) * ((1 - treatment_stop) * (l_hr_arr[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]]*(1 - waning)) +
                                                  treatment_stop * l_hr_pbo$arr ) + spms_flag
                      )))
                  }) %>%
@@ -158,10 +127,10 @@ gen_react_events <- function(RRMS_events){
                    n_edssinc_evts <- n_edssinc_evts + 1
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
                    
                    if (edss_value > 6 & treatment_stop == 0) {treatment_stop <- 1}
                    
@@ -171,12 +140,12 @@ gen_react_events <- function(RRMS_events){
                      "edss_increase" = curtime + draw_tte(
                        1, 
                        dist = "exp",
-                       coef1 = (1 - spms_flag) * (purrr::pluck(l_baseline_harrms_edss_increase, "rate") +
-                                                 (purrr::pluck(l_baseline_harrms_edss_increase, "BaselineWebEDSS") * (edss_value)) + 
-                                                  purrr::pluck(l_baseline_harrms_edss_increase, "DMTNatalizumab")) +
-                         spms_flag * (purrr::pluck(l_spms_edss_increase, "rate") +
-                                      purrr::pluck(l_spms_edss_increase, "BaselineWebEDSS") * (edss_value)),  
-                       beta_tx =  (1 - spms_flag ) * ((1 - treatment_stop) * (purrr::pluck(l_hr_edss_increase, names(v_treatment_codes[current_treatment_code == v_treatment_codes])) *(1 - waning)) + 
+                       coef1 = (1 - spms_flag) * (l_baseline_harrms_edss_increase[["rate"]] +
+                                                 (l_baseline_harrms_edss_increase[["BaselineWebEDSS"]] * (edss_value)) + 
+                                                  l_baseline_harrms_edss_increase[["DMTNatalizumab"]]) +
+                         spms_flag * (l_spms_edss_increase[["rate"]] +
+                                      l_spms_edss_increase[["BaselineWebEDSS"]] * (edss_value)),  
+                       beta_tx =  (1 - spms_flag ) * ((1 - treatment_stop) * (l_hr_edss_increase[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]] *(1 - waning)) + 
                                                   treatment_stop * l_hr_pbo$edss_increase ) + spms_flag
                      )
                    ))}
@@ -190,10 +159,10 @@ gen_react_events <- function(RRMS_events){
                    if (edss_value > 6 & treatment_stop == 0) {treatment_stop <- 1}
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    #  next time to EDSS decrease
                    if (edss_value > 0) {new_event(list(
@@ -201,8 +170,8 @@ gen_react_events <- function(RRMS_events){
                        1, 
                        dist = "exp",
                        # EDSS decrease  
-                       coef1 = (1 - spms_flag) * (purrr::pluck(l_rrms_edss_decrease, "rate") +
-                                                  purrr::pluck(l_rrms_edss_decrease, "BaselineWebEDSS")*(edss_value) )  + 
+                       coef1 = (1 - spms_flag) * (l_rrms_edss_decrease[["rate"]] +
+                                                  l_rrms_edss_decrease[["BaselineWebEDSS"]]*(edss_value) )  + 
                          #setting a very high event time to edss decrease for SPMS patients
                          (spms_flag * -10 )
                      )
@@ -215,10 +184,10 @@ gen_react_events <- function(RRMS_events){
                    spms_flag <- 1
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    
                  }) %>%
@@ -230,10 +199,10 @@ gen_react_events <- function(RRMS_events){
                    curtime <- Inf
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                  }) %>%
     add_reactevt(name_evt = "serious_adverse_event",
@@ -242,10 +211,10 @@ gen_react_events <- function(RRMS_events){
                    n_sae_evts <- n_sae_evts + 1
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    # instantaneous weighted sum of adverse events costs
                    utilities_sae <- l_utilities_sae_weighted[["utility"]]
@@ -260,7 +229,7 @@ gen_react_events <- function(RRMS_events){
                        # SAE rates same for all treatments
                        # change to include HR from safety NMA
                        coef1 = log(l_sae_events_rate[["rate"]]),
-                       beta_tx = ((1 - treatment_stop) * purrr::pluck(l_hr_saes, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop *  l_hr_pbo$saes )
+                       beta_tx = ((1 - treatment_stop) * l_hr_saes[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]]) + (treatment_stop *  l_hr_pbo$saes )
                      )
                    ))
                  }) %>%
@@ -286,10 +255,10 @@ gen_react_events <- function(RRMS_events){
                    years_on_treatment <- 0
                    
                    # Ongoing costs and utilities added to all reaction events as per vignette, but not clear if this is necessary
-                   utilities_disease <-  (1 - spms_flag) * purrr::pluck(l_u_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag * purrr::pluck(l_u_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
-                   costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
-                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
+                   utilities_disease <-  (1 - spms_flag) * l_u_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag * l_u_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
+                   costs_disease <- (1 - spms_flag) * l_c_rrms_edss[[names(v_edss_values[edss_value == v_edss_values])]] +
+                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                    # Sample next discontinuation event. This will be zero if treatment_line >=4
                    new_event(list(
@@ -297,7 +266,7 @@ gen_react_events <- function(RRMS_events){
                        1,
                        dist = "exp",
                        coef1 = ((1 - treatment_stop)  * log(discontinuation)) + (treatment_stop * log(0.01)),
-                       beta_tx =  ((1 - treatment_stop)  * purrr::pluck(l_hr_discontinuation, names(v_treatment_codes[current_treatment_code == v_treatment_codes]))) + (treatment_stop * 0.01)
+                       beta_tx =  ((1 - treatment_stop)  * l_hr_discontinuation[[names(v_treatment_codes[current_treatment_code == v_treatment_codes])]]) + (treatment_stop * 0.01)
                      )
                    ))
                    
