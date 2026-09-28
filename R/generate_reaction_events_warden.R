@@ -18,9 +18,9 @@ gen_react_events <- function(RRMS_events){
                  costs_disease <- (1 - spms_flag) * purrr::pluck(l_c_rrms_edss, names(v_edss_values[edss_value == v_edss_values])) +
                                     spms_flag *  purrr::pluck(l_c_spms_edss, names(v_edss_values[edss_value == v_edss_values]))
 
-                 # modify_event(
-                 #   c("death"= max(get_event("death")  -age , inputs[["time_horizon"]]   )) # don't need to  or - inputs[["initial_age"]] as it is already done so for time horizon in the inputs page
-                 # )
+                 modify_event(
+                   c("death"= abs(min(get_event("death") , inputs[["time_horizon"]]) - inputs[["initial_age"]])) 
+                 )
                  
                  # annual cost events
                  new_event(list(

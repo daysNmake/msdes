@@ -2,15 +2,21 @@
 
 #generate model inputs
 #function takes names vectors and severity states
-gen_inputs <- function(){
+gen_inputs <- function(p_eid=p_eid){
   ## Standard Deviation for probabilistic analysis when uncertainty not reported
   # assumed 1/10 of mean
   sd_psa <- 10
   
   ## Baseline population age sex and model time horizon
-  initial_age <- 36  # 36 ± 8 both arms of AFFIRM (N = 942)
-  time_horizon <- 100-initial_age # Years so lifetime
+  initial_age <- rnorm(1,36, 8/36)  # 36 ± 8 both arms of AFFIRM (N = 942)
+  time_horizon <- 100.0000 # Years so lifetime
   prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
+  p_eid <- p_eid # proportion on extended interval dosing
+  s_c_tx_adminyr1_natsc <-0.5 # scenario reducing admin cost of natalizumab sc year 1, default is 0.5
+  s_c_tx_adminyr2_natsc <-0.5 # scenario reducing admin cost of natalizumab sc year 2, default is 0?
+  s_c_jcv_tx <- 247 #scenario reducing the JCV testing cost to zero
+  
+  #add sensitivities for NMA here or in generate_global_inputs_warden.R
   
   ## baseline distribution of EDSS health states (MS Registry)
   m_n_patients_edss <- as.matrix(read.csv("data/m_n_patients_edss.csv", header = T, row.names = 1))
@@ -20,22 +26,22 @@ gen_inputs <- function(){
   #public list prices
   df_c_tx <-t(read.csv("data/df_c_drugs.csv", header = T, row.names = 1))
   df_c_tx <- df_c_tx[,intersect(colnames(df_c_tx),v_treatment_names)]
-  df_c_tx[,1:4] <- (df_c_tx[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx[,1:4]*0.4 # 60% on EID interval dosing
+  df_c_tx[,1:4] <- (df_c_tx[,1:4]*p_eid*(round(52/5.55, 2)/13)) + df_c_tx[,1:4]*(1-p_eid) # 60% on EID interval dosing
   
   # These are direct medical costs we excluded the indirect medical costs
   df_c_tx_admin <- t(read.csv("data/df_c_drugs_admin_v2.csv", header = T, row.names = 1))
   df_c_tx_admin[df_c_tx_admin==0] <-0.1 # set zero costs to positive number stops generating NaNs
   df_c_tx_admin <- df_c_tx_admin[,intersect(colnames(df_c_tx_admin),v_treatment_names)]
-  df_c_tx_admin[,1:4] <- (df_c_tx_admin[,1:4]*0.6*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:4]*0.4 # 60% on EID interval dosing
-  df_c_tx_admin[1,"Natalizumab-SC"] <- (df_c_tx_admin[1,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 1
-  df_c_tx_admin[2:3,"Natalizumab-SC"] <- (df_c_tx_admin[2:3,"Natalizumab-SC"] * 0.5) # Scenario for reduced admin cost for Nat SC year 2
+  df_c_tx_admin[,1:4] <- (df_c_tx_admin[,1:4]*p_eid*(round(52/5.55, 2)/13)) + df_c_tx_admin[,1:4]*(1-p_eid) # 60% on EID interval dosing
+  df_c_tx_admin[1,"Natalizumab-SC"] <- (df_c_tx_admin[1,"Natalizumab-SC"] * s_c_tx_adminyr1_natsc) # Scenario for reduced admin cost for Nat SC year 1
+  df_c_tx_admin[2:3,"Natalizumab-SC"] <- (df_c_tx_admin[2:3,"Natalizumab-SC"] * s_c_tx_adminyr2_natsc) # Scenario for reduced admin cost for Nat SC year 2
 
   df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
   df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
-  df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - 247) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - 247) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - 247) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab biosimilar-SC"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-SC"] - 247) #  free JCV test
+  df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - s_c_jcv_tx) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - s_c_jcv_tx) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - s_c_jcv_tx) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab biosimilar-SC"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-SC"] - s_c_jcv_tx) #  free JCV test
   
   ## Annual treatment scheduled
   df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
@@ -50,28 +56,29 @@ gen_inputs <- function(){
   ## proportions on 2nd and 3rd line treatment, assuming Cladribine and Ublituximab are equivalent to Natalizumab
   m_proportion_ontrtline<- read.csv("data/m_proportion_ontrtline.csv", header = T, row.names = 1)
   colnames(m_proportion_ontrtline) <- v_treatment_names
+  m_proportion_ontrtline <- as.matrix(m_proportion_ontrtline)
   
   ## Natural History MS Registry
   ## Vectors of coefficients and matrices of variance and covariance
-  v_tto_edss_increase_harrms_mu <- t(read.csv("data/v_tto_edss_increase_harrms_mu.csv", header = T, row.names = 1))
-  m_tto_edss_increase_harrms_sigma <- read.csv( file="data/m_tto_edss_increase_harrms_sigma.csv", header = T, row.names = 1)
-  v_tto_edss_increase_rrms_mu <- t(read.csv("data/v_tto_edss_increase_rrms_mu.csv", header = T, row.names = 1))
-  m_tto_edss_increase_rrms_sigma <- read.csv( file="data/m_tto_edss_increase_rrms_sigma.csv", header = T, row.names = 1)
-  v_tto_edss_increase_spms_mu <- t(read.csv("data/v_tto_edss_increase_spms_mu.csv", header = T, row.names = 1))
-  m_tto_edss_increase_spms_sigma <- read.csv("data/m_tto_edss_increase_spms_sigma.csv", header = T, row.names = 1)
+  v_tto_edss_increase_harrms_mu <- t(as.matrix(read.csv("data/v_tto_edss_increase_harrms_mu.csv", header = T, row.names = 1)))
+  m_tto_edss_increase_harrms_sigma <- as.matrix(read.csv( file="data/m_tto_edss_increase_harrms_sigma.csv", header = T, row.names = 1))
+  v_tto_edss_increase_rrms_mu <- t(as.matrix(read.csv("data/v_tto_edss_increase_rrms_mu.csv", header = T, row.names = 1)))
+  m_tto_edss_increase_rrms_sigma <- as.matrix(read.csv( file="data/m_tto_edss_increase_rrms_sigma.csv", header = T, row.names = 1))
+  v_tto_edss_increase_spms_mu <- t(as.matrix(read.csv("data/v_tto_edss_increase_spms_mu.csv", header = T, row.names = 1)))
+  m_tto_edss_increase_spms_sigma <- as.matrix(read.csv("data/m_tto_edss_increase_spms_sigma.csv", header = T, row.names = 1))
   
-  v_tto_edss_decrease_rrms_mu <- t(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1))
-  m_tto_edss_decrease_rrms_sigma <- read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1)
-  v_tto_edss_decrease_spms_mu <- t(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1))
-  m_tto_edss_decrease_spms_sigma <- read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1)
+  v_tto_edss_decrease_rrms_mu <- t(as.matrix(read.csv("data/v_tto_edss_decrease_rrms_mu.csv", header = T, row.names = 1)))
+  m_tto_edss_decrease_rrms_sigma <- as.matrix(read.csv("data/m_tto_edss_decrease_rrms_sigma.csv", header = T, row.names = 1))
+  v_tto_edss_decrease_spms_mu <- t(as.matrix(read.csv("data/v_tto_edss_decrease_spms_mu.csv", header = T, row.names = 1)))
+  m_tto_edss_decrease_spms_sigma <- as.matrix(read.csv("data/m_tto_edss_decrease_spms_sigma.csv", header = T, row.names = 1))
   
-  v_tto_relapse_harrms_mu <- read.csv("data/v_tto_relapse_harrms_mu.csv", header = T, row.names = 1)
-  tto_relapse_harrms_sigma<- read.csv("data/m_tto_relapse_harrms_sigma.csv", header = T, row.names = 1)
-  v_tto_relapse_spms_mu <- read.csv("data/v_tto_relapse_spms_mu.csv", header = T, row.names = 1)
-  m_tto_relapse_spms_sigma<- read.csv("data/m_tto_relapse_spms_sigma.csv", header = T, row.names = 1)
+  v_tto_relapse_harrms_mu <- as.matrix(read.csv("data/v_tto_relapse_harrms_mu.csv", header = T, row.names = 1))
+  tto_relapse_harrms_sigma<- as.matrix(read.csv("data/m_tto_relapse_harrms_sigma.csv", header = T, row.names = 1))
+  v_tto_relapse_spms_mu <- as.matrix(read.csv("data/v_tto_relapse_spms_mu.csv", header = T, row.names = 1))
+  m_tto_relapse_spms_sigma<- as.matrix(read.csv("data/m_tto_relapse_spms_sigma.csv", header = T, row.names = 1))
   
-  v_tto_sp_conversion_harrms_mu <- read.csv("data/v_tto_sp_conversion_harrms_mu.csv", header = T, row.names = 1)
-  m_tto_sp_conversion_harrms_sigma<- read.csv("data/m_tto_sp_conversion_harrms_sigma.csv", header = T, row.names = 1)
+  v_tto_sp_conversion_harrms_mu <- as.matrix(read.csv("data/v_tto_sp_conversion_harrms_mu.csv", header = T, row.names = 1))
+  m_tto_sp_conversion_harrms_sigma<- as.matrix(read.csv("data/m_tto_sp_conversion_harrms_sigma.csv", header = T, row.names = 1))
   
   ## baseline proportion of patients with SPMS
   initial_spms_prop <- 0
@@ -94,7 +101,7 @@ gen_inputs <- function(){
   m_saes <- as.matrix(read.csv("data/m_saes.csv", header = T, row.names = 1))
   
   ## Excess all cause mortality for MS patients Jick 2014 
-  v_smr <- read.csv("data/v_smr.csv", header = T, row.names = 1)
+  v_smr <- as.matrix(read.csv("data/v_smr.csv", header = T, row.names = 1))
   
   ##rates of mortality, ONS
   m_r_mortality <- as.matrix(read.csv("data/df_all_cause_mortality.csv", header = T, row.names = 1))
@@ -103,38 +110,42 @@ gen_inputs <- function(){
   dimnames(m_r_mortality) <-  list(NULL, c("time" ,"male", "female"))
   
   ## edss costs direct medical costs Tyas etal. 2005 inflated to 2022/2023 
-  m_c_edss <- read.csv("data/m_c_edss.csv", header = T, row.names = 1) 
+  m_c_edss <- as.matrix(read.csv("data/m_c_edss.csv", header = T, row.names = 1)) 
   m_c_edss_rrms <- m_c_edss[,c("rrms_mean","rrms_se")]
   m_c_edss_spms <- m_c_edss[,c("spms_mean","spms_se")]
   
   # SPMS Costs
   df_c_spms<- read.csv("data/df_c_spms.csv", header = T, row.names = 1)
   colnames(df_c_spms)[1] <- "PegIFN-β-1 SC 125μg"
+  df_c_spms<- as.matrix(df_c_spms)
   
   p_siponimod <-0.556962025 #proportion treated with Siponimod based on MS registry data
   
   ## Relapse Costs inflated Hawton 2016 to 2023
   m_c_relapse <-read.csv("data/m_c_relapse.csv", header = T, row.names = 1)
   m_c_relapse <- m_c_relapse * 2 # Annualised these 6 months costs
+  m_c_relapse <- as.matrix(m_c_relapse)
   
   ## Adverse events costs MS-MTA report
   df_c_sae <- saes_data[,4]
   names(df_c_sae)<-sae_names
+  df_c_sae <- as.matrix(df_c_sae)
   
   ## RRMS & SPMS edss utilities Orme 
-  u_edss <- read.csv("data/m_u_edss.csv", header = T, row.names = 1)
+  u_edss <- as.matrix(read.csv("data/m_u_edss.csv", header = T, row.names = 1))
   m_u_edss_rrms <- u_edss[,c("rrms_mean","rrms_sd")]
   m_u_edss_spms <- u_edss[,c("spms_mean","spms_sd")]
   
   ## Relapse utilities
-  df_u_relapse <-read.csv("data/df_u_relapse.csv", header = T, row.names = 1)
+  df_u_relapse <- as.matrix(read.csv("data/df_u_relapse.csv", header = T, row.names = 1))
   
   ## Carer disutilities # add to costs calculation
-  m_u_carer <- read.csv("data/m_u_carer.csv", header = T, row.names = 1)
+  m_u_carer <- as.matrix(read.csv("data/m_u_carer.csv", header = T, row.names = 1))
   
   ## Adverse events dis-utilities MS-MTA report
   df_u_sae <- saes_data[,5]
   names(df_u_sae)<-sae_names
+  df_u_sae <- as.matrix(df_u_sae)
   
   ## baseline discontinuation AFFIRM and Antilope
   m_discontinuation <- as.matrix(read.csv("data/m_discontinuation.csv", header = T, row.names = 1))
@@ -144,18 +155,25 @@ gen_inputs <- function(){
   hr_rrms_cdp3_fe <- read.csv("data/Releff_RRMS_CDP3_FE.csv",
                               header = TRUE, row.names=1)
   m_hr_rrms_cdp3_fe  <- hr_rrms_cdp3_fe[,c("mean", "sd")]
+  m_hr_rrms_cdp3_fe  <- as.matrix(m_hr_rrms_cdp3_fe)
+  
   # CDP6 NMA
   hr_rrms_cdp6_fe <- read.csv("data/Releff_RRMS_CDP6_FE.csv",
                               header = TRUE, row.names=1)
   m_hr_rrms_cdp6_fe  <- hr_rrms_cdp6_fe[,c("mean", "sd")] 
+  m_hr_rrms_cdp6_fe <- as.matrix(m_hr_rrms_cdp6_fe)
+  
   # ARR NMA
   hr_rrms_arr_fe <- read.csv("data/Releff_RRMS_ARR_FE.csv",
                              header = TRUE, row.names=1)
   m_hr_rrms_arr_fe  <- hr_rrms_arr_fe[,c("mean", "sd")] 
+  m_hr_rrms_arr_fe <- as.matrix(m_hr_rrms_arr_fe)
+  
   # Serious Adverse Events NMA
   hr_rrms_saes_fe <- read.csv("data/Releff_RRMS_SeriousAEs_FE.csv",
                               header = TRUE, row.names=1)
   m_hr_rrms_saes_fe  <- as.matrix(hr_rrms_saes_fe[,c("mean", "sd")] )
+  
   # Discontinuation NMA
   hr_rrms_discontinuation_fe <- read.csv("data/Releff_RRMS_Discontinuation_FE.csv",
                                          header = TRUE, row.names=1)

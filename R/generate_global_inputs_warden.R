@@ -612,7 +612,7 @@ common_all_inputs <-add_item(
     #sens = , 
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$m_proportion_ontrtline)),    
+    indicator = rep(indicators, ncol(inputs[["m_proportion_ontrtline"]])),    
     names_out = colnames(inputs$m_proportion_ontrtline),
     deploy_env= FALSE
   )
@@ -636,7 +636,7 @@ common_all_inputs <-add_item(
     #sens = , 
     psa_ind = psa_bool,
     sens_ind = sensitivity_bool,    
-    indicator = rep(indicators, length(inputs$m_proportion_ontrtline)),    
+    indicator = rep(indicators, ncol(inputs[["m_proportion_ontrtline"]])),    
     names_out = colnames(inputs$m_proportion_ontrtline),
     deploy_env= FALSE
   )
