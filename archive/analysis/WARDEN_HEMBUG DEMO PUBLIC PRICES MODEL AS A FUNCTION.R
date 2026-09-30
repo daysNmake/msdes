@@ -54,8 +54,6 @@ rrmsdessetup <- function(p_eid=p_eid){
   #Function to generate inputs, the same for both packages
   source("R/generate_inputs.R")
   ## Model inputs generated using the generate inputs function
-  # saves the input in a list
-  #environment(gen_inputs) <- environment()
   inputs <<- gen_inputs(p_eid=p_eid)
 }
 
@@ -70,7 +68,7 @@ rrmsdesmodel<- function(n_patients, n_samples){
 
 
 ## create New functions to draw from piece wise exponential distribution (ask JSA for help)
-source("R/draw_tte_new_warden.R")
+#source("R/draw_tte_new_warden.R")
 
 ## set a seed 
 n_seed<-243523452
@@ -82,18 +80,21 @@ n_samples <- n_samples
 
 
 
-# Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
-source("R/generate_global_inputs_warden.R")
+# Global parameters of the model as they are common to all patients and treatments, WARDEN specific
+indicators <<-1
+#source("R/generate_global_inputs_warden.R")
+common_all_inputs <- gen_common_all_inputs()
 
 #Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
-source("R/pluck_vector_from_env.R")
+#source("R/pluck_vector_from_env.R")
 
 # patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
-source("R/generate_individual_inputs_warden.R")
+#source("R/generate_individual_inputs_warden.R")
+unique_pt_inputs <- gen_unique_pt_inputs()
 
-#functions to generate initial events and reaction events, WARDEN specific (not complete)
-source("R/generate_initial_events_warden.R")
-source("R/generate_reaction_events_warden.R")
+#functions to generate initial events and reaction events, WARDEN specific
+#source("R/generate_initial_events_warden.R")
+#source("R/generate_reaction_events_warden.R")
 
 # Add time to event for each patient for each of the treatments
 # Setting trt to all treatments should mean that the event applies to all treatments
@@ -109,7 +110,7 @@ cost_ongoing <<- "costs_disease"
 util_instant <<- c("utilities_relapse", "utilities_sae")
 cost_instant <<- c("costs_treatment", "costs_relapse", "costs_sae")
 
-indicators <<-0
+#indicators <<-0
 
 
 
