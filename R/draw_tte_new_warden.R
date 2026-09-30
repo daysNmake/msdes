@@ -1,14 +1,18 @@
-# Adaptation of draw_tte_new to include piecewise exponential distributions
-# Howard Thom 4-Sep-2024, updated Ayman Sadek 08-Mar-2026 to work in WARDEN 
-# coef1 should be a vector of log-rates over time intervals
-# time should be the start times of the intervals (last is assumed to go to infinity)
-# coef2 is a vector of hazard ratios over the time intervals
-
-# Utilises the hesim package
-# hesim::rpwexp(1, rate = exp(c(0.0004, 0.02, 1.0)), time = c(0, 30, 50))
-# Example usage:
-# draw_tte_new(n_chosen = 1, dist = "pwexp", coef1 = c(0.0004, 0.02, 1.0), time = c(0, 30, 50))
-
+#'
+#' @description
+#' Adaptation of draw_tte_new to include piecewise exponential distributions Utilising the hesim package
+#' Howard Thom 4-Sep-2024, updated Ayman Sadek 08-Mar-2026 to work in WARDEN 
+#' 
+#' @details
+#' called internally in the model when specifying distributions
+#' hesim::rpwexp(1, rate = exp(c(0.0004, 0.02, 1.0)), time = c(0, 30, 50))
+#' Example usage:
+#' draw_tte_new(n_chosen = 1, dist = "pwexp", coef1 = c(0.0004, 0.02, 1.0), time = c(0, 30, 50))
+#' 
+#' @param dcoef1 should be a vector of log-rates over time intervals
+#' @param time should be the start times of the intervals (last is assumed to go to infinity)
+#' @param coef2 is a vector of hazard ratios over the time interval
+#' @export
 draw_tte_new_warden <- function (n_chosen, dist, coef1 = NULL, coef2 = NULL, coef3 = NULL, hr = 1, time = NULL, 
           ..., beta_tx = 1, seed = NULL) 
 {

@@ -1,8 +1,11 @@
-
-## WARDEN implementation of reaction events
-# need to ask for JSA for review implementation of death
-# reaction events run on treatment codes
-
+#'
+#' @description
+#' WARDEN implementation of reaction events
+#' 
+#' @details
+#' reaction events run on treatment codes
+#' 
+#' @export
 gen_react_events <- function(RRMS_events){
   
   

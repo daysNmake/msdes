@@ -1,10 +1,18 @@
-# This is called for each new patient so sample 1 from a distribution of choice
-# for heterogeneous characteristics
-
-
-# Objects that depend on treatment
-# Note that the current treatment is later initialised to trt
-unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,  
+#'
+#' @description
+#' Individual patient parameters of the model as they are unique patients and history including treatments
+#' 
+#' @details
+#' These are called for each new patient so sampled from distribution specified
+#' for heterogeneous characteristics and may depend on treatment
+#' Note that the current treatment is later initialised to trt
+#' 
+#' @param sex individual patient sex
+#' @param n_relapse number of relapses  counter
+#' @param n_edssinc_evts number of edss increases counter
+#' @export
+gen_unique_pt_inputs <- function(){
+  add_item(edss_value = sample(size = 1, x = v_edss_values,  
                                                  # rrms larger sample size, option to use harrms
                                                  prob = rdiric(1, inputs[["m_n_patients_edss"]]["harrms",])),
                              #(male=0, female=1)
@@ -43,3 +51,4 @@ unique_pt_inputs <- add_item(edss_value = sample(size = 1, x = v_edss_values,
                              utilities_sae = 0,
                              costs_sae = 0
 )
+}

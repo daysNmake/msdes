@@ -8,7 +8,6 @@ library(MASS)
 library(VGAM)
 library(dplyr)
 library(flexsurv)
-library(ggplot2)
 library(kableExtra)
 library(purrr)
 library(tidyr)
@@ -28,12 +27,10 @@ library(bslib)
 
 
 rm(list = ls())
-# call model function
-source("analysis/WARDEN_HEMBUG DEMO PUBLIC PRICES MODEL AS A FUNCTION.R")
-# Function to summarise the results
-source("R/summarise_samples.R")
-source("R/summarise_ce_results.R")
-# model as function run once to load inputs for ui first (best to automate?)
+devtools::load_all()
+
+
+# call model as function run once to load inputs for ui first (best to automate?)
 P_eid_default <- 0.0
 rrmsdessetup(
   p_eid=0 # proportion of patients on external interval dosing 

@@ -1,7 +1,14 @@
-
-
-#generate model inputs
-#function takes names vectors and severity states
+#'
+#' @description
+#' generate model inputs
+#' 
+#' @details
+#' Put all input here that will be called and processed by the other warden functions
+#' 
+#' @param initial_age average age of patients entering the model
+#' @param time_horizon the duration of the patient's life in the model
+#' @param prop_female baseline characteristics
+#' @export
 gen_inputs <- function(p_eid=p_eid){
   ## Standard Deviation for probabilistic analysis when uncertainty not reported
   # assumed 1/10 of mean

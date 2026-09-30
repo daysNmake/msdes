@@ -1,4 +1,4 @@
-#### RRMS DES using the WARDN package??? ####
+#### RRMS DES using the WARDN package  ####
 ## Authored: Howard Thom & Ayman Sadek ###
 ## Validated: Javier Sanchez Alvarez ####
 ## ACM2 Committee preferred assumptions##
@@ -9,7 +9,6 @@
 rm(list = ls())
 
 library(WARDEN)
-#library(descem)
 library(MASS)
 library(VGAM)
 library(dplyr)
@@ -25,16 +24,11 @@ options(tibble.print_max = 50)
 
 
 #load the functions required for the analysis
-#devtools::load_all() # does not work there seems to be an issue with having scripts (global and individual inputs) not function in R folder (can we turn them into functions?)
+devtools::load_all() # load all functions
+
 #summarise_ce_results() # Function to summarise the cost effectiveness results
 #summarise_samples() # Function to summarise any data
 #run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI
-source("R/run_sim_parallel_new.R")
-source("R/summarise_ce_results.R")
-source("R/summarise_samples.R")
-
-## create New functions to draw from piece wise exponential distribution (ask JSA for help)
-source("R/draw_tte_new_warden.R")
 
 ## set a seed 
 n_seed<-243523452
@@ -90,7 +84,7 @@ names(v_edss_values) <- paste("EDSS", v_edss_values)
 n_edss_values <- length(v_edss_values)
 
 #Function to generate inputs, the same for both packages
-source("R/generate_inputs.R")
+#source("R/generate_inputs.R")
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
 inputs <- gen_inputs(
@@ -98,26 +92,20 @@ inputs <- gen_inputs(
   p_eid=0.6 # proportion of patients on external interval dosing
                      )
 
-# Global parameters of the model as they are common to all patients and treatments, WARDEN specific (not complete)
+# Global parameters of the model as they are common to all patients and treatments
 indicators <-1
-source("R/generate_global_inputs_warden.R")
+common_all_inputs <- gen_common_all_inputs()
 
-#Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
-source("R/pluck_vector_from_env.R")
+# patient parameters reflecting heterogeneous characteristics that depend on treatment
+unique_pt_inputs <- gen_unique_pt_inputs()
 
-# patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
-source("R/generate_individual_inputs_warden.R")
-
-#functions to generate initial events and reaction events, WARDEN specific (not complete)
-source("R/generate_initial_events_warden.R")
-source("R/generate_reaction_events_warden.R")
-
+# Generate initial events and reaction events
 # Add time to event for each patient for each of the treatments
 # Setting trt to all treatments should mean that the event applies to all treatments
 
-init_event_list <- gen_init_events(RRMS_events=v_event_names) #functions do not accept named vectors of EDSS0-9 or dmt names
+init_event_list <- gen_init_events(RRMS_events=v_event_names)
 
-evt_react_list <- gen_react_events(RRMS_events=v_event_names) #functions do not accept named vectors of EDSS0-9 or dmt names
+evt_react_list <- gen_react_events(RRMS_events=v_event_names)
 
 #util_ongoing_list <- gen_util_ongoing(dmt=v_treatment_names, severity = v_edss_values, RRMS_events=v_event_names)
 
@@ -130,7 +118,7 @@ cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <- system.time({
-  results <- run_sim_parallel_new(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
+  results <- run_sim_parallel(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  

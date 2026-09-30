@@ -1,9 +1,16 @@
-
-# Global parameters of the model as they are common to all patients and treatments
-#Put objects here that do not change as we loop through treatments for a patient
-
-#inputs that go into a psa are now lists, they cannot go in as vectors or matrices
-common_all_inputs <-add_item(
+#'
+#' @description
+#' Global parameters of the model as they are common to all patients and treatments
+#' 
+#' @details
+#' Put objects here that do not change as we loop through treatments for a patient
+#' 
+#' @param drc discount rate for costs
+#' @param drq discount rate for qalys
+#' @param reference The treatment arm specified as the reference for the comparison
+#' @export
+gen_common_all_inputs <- function() {
+  add_item(
   v_treatment_names = v_treatment_names,
   v_treatment_codes = v_treatment_codes,
   v_higher_line_treatments = v_higher_line_treatments,
@@ -642,3 +649,4 @@ common_all_inputs <-add_item(
   )
   
 )
+  }

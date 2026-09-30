@@ -1,7 +1,11 @@
-
-## WARDEN implementation of initial events
-# need to ask for help with death
-
+#'
+#' @description
+#' WARDEN implementation of initial events
+#' 
+#' @details
+#' reaction events run on treatment codes
+#' 
+#' @export
 gen_init_events<-function(RRMS_events){
   add_tte(arm = v_treatment_names,
           evts = RRMS_events,
