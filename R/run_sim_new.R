@@ -296,7 +296,10 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
                                  #01# Save the random parameter inputs for use in EVPPI
                                  # Utilities
                                  #input_matrix[simulation,] <- as.vector(t(as.matrix(input_list[["l_u_rrms_edss"]])))
-                                 x<<-as.list(input_list)
+                                 #saved_input_list<<-input_list
+                                 #x<<-pluck_vector_from_env(input_list[["l_u_rrms_edss"]],names(v_edss_values))
+                                 #x<<-as.list(purrr::pluck(input_list,"l_u_rrms_edss"))
+                                 
                           
                                  input_list$n_sens_before <- .n_before_offsets[2L]
                                  set.seed(simulation * 1007 * seed)
