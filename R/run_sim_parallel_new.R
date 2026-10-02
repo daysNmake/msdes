@@ -1,4 +1,12 @@
-
+#'
+#' @description
+#' modified run_sim_parallel() function 
+#' 
+#' @details
+#' 'this runs the model to allow for extra functionality
+#' 
+#' @param x data to be supplied
+#' @export
 run_sim_parallel_new<- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL, 
           common_all_inputs = NULL, common_pt_inputs = NULL, unique_pt_inputs = NULL, 
           init_event_list = NULL, evt_react_list = evt_react_list, 
@@ -8,7 +16,8 @@ run_sim_parallel_new<- function (arm_list = c("int", "noint"), sensitivity_input
           n_sim = 1, psa_bool = NULL, sensitivity_bool = FALSE, sensitivity_names = NULL, 
           n_sensitivity = 1, ncores = 1, input_out = character(), 
           ipd = 1, constrained = FALSE, timed_freq = NULL, debug = FALSE, 
-          accum_backwards = FALSE, continue_on_error = FALSE, seed = NULL) 
+          accum_backwards = FALSE, continue_on_error = FALSE, seed = NULL,
+          save_input_matrix = FALSE) 
 {
   .warden_ctx <- new.env(parent = emptyenv())
   .warden_ctx$last <- NULL
@@ -67,6 +76,62 @@ run_sim_parallel_new<- function (arm_list = c("int", "noint"), sensitivity_input
   categories_utilities_cycle <- util_cycle_list
   categories_other_ongoing <- other_ongoing_list
   categories_other_instant <- other_instant_list
+  
+  # Create an input parameter matrix
+  # Count up the number of random input parameters
+  input_matrix <- matrix(nrow = n_sim,
+                         ncol = 2 * 10 + 1 + 9 + # Utilities
+                           2 * 10 + 6 * length(arm_list) + 6 + 9 + # Costs
+                           4 * length(arm_list) + # NMA HRs
+                           3 * 3 + 4 * 2 + # MS Registry
+                           2) # Misc
+  colnames(input_matrix) <- c(paste0("u_rrms_edss_", c(0:9)),
+                              paste0("u_spms_edss_", c(0:9)),
+                              "u_relapse",
+                              paste0("u_sae_", c("Cholelithiasis", "Need for rehabilitation therapy",
+                                                 "Urinary tract infection", "Depression",                     
+                                                 "Anaphylactic reaction", "Hypersensitivity reaction",      
+                                                 "Breast cancer", "Gastritis",                   
+                                                 "PML")),
+                              paste0("c_rrms_edss_", c(0:9)),
+                              paste0("c_spms_edss_", c(0:9)),
+                              paste0("admin_cost_annual_yr1_", arm_list),
+                              paste0("admin_cost_annual_yr2_", arm_list),
+                              paste0("admin_average_annual_cost_", arm_list),
+                              paste0("monitor_cost_annual_yr1_", arm_list),
+                              paste0("monitor_cost_annual_yr2_", arm_list),
+                              paste0("monitor_average_annual_cost_", arm_list),
+                              "c_relapse_none", "c_relapse_untreated",
+                              "c_relapse_limit_daily_activity",
+                              "c_relapse_oral_steroids",
+                              "c_relapse_intravenous_steroids",
+                              "c_relapse_hospital_admission",
+                              paste0("c_sae_", c("Cholelithiasis", "Need for rehabilitation therapy",
+                                                 "Urinary tract infection", "Depression",                     
+                                                 "Anaphylactic reaction", "Hypersensitivity reaction",      
+                                                 "Breast cancer", "Gastritis",                   
+                                                 "PML")),
+                              paste0("v_hr_edss_increase_", arm_list),
+                              paste0("v_hr_arr_", arm_list),
+                              paste0("v_hr_discontinuation_", arm_list),
+                              paste0("v_hr_saes_", arm_list),
+                              paste0("v_baseline_harrms_edss_increase_", 
+                                     c("rate", "EDSS","Natalizumab")),
+                              paste0("v_rrms_edss_decrease_", 
+                                     c("rate", "EDSS")),
+                              paste0("v_spms_edss_increase_", 
+                                     c("rate", "EDSS")),
+                              paste0("v_spms_edss_decrease_", 
+                                     c("rate", "EDSS")),
+                              paste0("v_spms_progression_", 
+                                     c("rate", "EDSS","Natalizumab")),
+                              paste0("v_baseline_harrms_larr_", 
+                                     c("rate", "EDSS","Natalizumab")),
+                              paste0("v_baseline_spms_larr_", 
+                                     c("rate", "EDSS")),
+                              "discontinuation_rate",
+                              "sae_events_rate")
+  
   categories_for_export <- unique(c(if (!is.null(categories_costs_ongoing)) {
     categories_costs_ongoing
   }, if (!is.null(categories_costs_instant)) {
@@ -362,7 +427,8 @@ run_sim_parallel_new<- function (arm_list = c("int", "noint"), sensitivity_input
                                                   start_time[3], 2), "s"))
     results <- output_sim
     class(results) <- c("warden_results", "list")
-  }, enable = TRUE, cleanup = TRUE)
+  }, enable = FALSE, cleanup = FALSE)
   .set_last_ctx(stage = "Simulation finalized", .warden_ctx = .warden_ctx)
+  if(save_input_matrix) results$input_matrix <- input_matrix
   return(results)
 }
