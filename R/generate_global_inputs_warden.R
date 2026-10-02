@@ -360,8 +360,8 @@ gen_common_all_inputs <- function() {
     psa = {
       temp <- inputs$df_c_tx_admin["cost_annual_yr1",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / inputs[["sd_psa"]])^2),
-                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/inputs[["sd_psa"]])^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin["cost_annual_yr1",i_trt])^2) / ((inputs$df_c_tx_admin["cost_annual_yr1",i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_admin["cost_annual_yr1",i_trt] / ((inputs$df_c_tx_admin["cost_annual_yr1",i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
     },
@@ -380,8 +380,8 @@ gen_common_all_inputs <- function() {
     psa = {
       temp <- inputs$df_c_tx_admin["cost_annual_yr2",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin[i_trt])^2) / ((inputs$df_c_tx_admin[i_trt] / inputs[["sd_psa"]])^2),
-                              inputs$df_c_tx_admin[i_trt] / ((inputs$df_c_tx_admin[i_trt]/inputs[["sd_psa"]])^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_admin["cost_annual_yr2",i_trt])^2) / ((inputs$df_c_tx_admin["cost_annual_yr2",i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_admin["cost_annual_yr2",i_trt] / ((inputs$df_c_tx_admin["cost_annual_yr2",i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
     },
@@ -400,8 +400,8 @@ gen_common_all_inputs <- function() {
     psa = {
       temp <- inputs$df_c_tx_monitor["cost_annual_yr1",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / inputs[["sd_psa"]])^2),
-                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/inputs[["sd_psa"]])^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor["cost_annual_yr1",i_trt])^2) / ((inputs$df_c_tx_monitor["cost_annual_yr1",i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_monitor["cost_annual_yr1",i_trt] / ((inputs$df_c_tx_monitor["cost_annual_yr1",i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
       
@@ -422,8 +422,8 @@ gen_common_all_inputs <- function() {
     psa = {
       temp <- inputs$df_c_tx_monitor["cost_annual_yr2",]
       for(i_trt in 1:n_treatments) {
-        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor[i_trt])^2) / ((inputs$df_c_tx_monitor[i_trt] / inputs[["sd_psa"]])^2),
-                              inputs$df_c_tx_monitor[i_trt] / ((inputs$df_c_tx_monitor[i_trt]/inputs[["sd_psa"]])^2))
+        temp[i_trt] <- rgamma(1, ((inputs$df_c_tx_monitor["cost_annual_yr2",i_trt])^2) / ((inputs$df_c_tx_monitor["cost_annual_yr2",i_trt] / inputs[["sd_psa"]])^2),
+                              inputs$df_c_tx_monitor["cost_annual_yr2",i_trt] / ((inputs$df_c_tx_monitor["cost_annual_yr2",i_trt]/inputs[["sd_psa"]])^2))
       }
       temp
       
