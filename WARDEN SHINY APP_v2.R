@@ -17,6 +17,7 @@ library(shiny)
 library(shinyjs)
 library(shinyWidgets)
 library(bslib)
+library(reactable)
 
 ##TODO
 
@@ -147,7 +148,7 @@ ui <-
               
             card_body(
               card_title(class="bg-light text-primary","Total annual treatment administration costs"),
-              tableOutput(outputId = "to_administration_costs")),
+              reactableOutput(outputId = "to_administration_costs")),
             
             card_body(
               card_title(class="bg-light text-primary","Total annual treatment monitoring costs"),
@@ -321,10 +322,10 @@ server <-
     output$uo_costs_readme <- renderUI({
       includeMarkdown("README.md")})
     
-    output$to_administration_costs <- renderTable({
-      inputs[["df_c_tx_admin"]]
+    output$to_administration_costs <- renderReactable({
+      reactable(inputs[["df_c_tx_admin"]])
       
-    },rownames=TRUE)
+    }) #,rownames=TRUE
     
     output$to_monitoring_costs <- renderTable({
 

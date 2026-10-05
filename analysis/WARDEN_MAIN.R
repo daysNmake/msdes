@@ -36,7 +36,7 @@ set.seed(n_seed)
 
 ## number of patients and samples
 n_patients <- 10
-n_samples <- 2
+n_samples <- 10
 
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
@@ -116,6 +116,7 @@ cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 
 #environment(run_sim_parallel_new) <- asNamespace("WARDEN") 
 environment(run_sim_new) <- asNamespace("WARDEN") 
+
 
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.

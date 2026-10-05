@@ -3,9 +3,9 @@
 #' modified run_sim() function 
 #' 
 #' @details
-#' 'this runs the model to allow for extra functionality
+#' This runs the model to allow for extra functionality for VOI analysis
+#' Appends input_matrix to results, this contains the paramters sampled per simulation
 #' 
-#' @param x data to be supplied
 #' @export
 run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL, 
           common_all_inputs = NULL, common_pt_inputs = NULL, unique_pt_inputs = NULL, 
@@ -19,6 +19,58 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
           continue_on_error = FALSE, seed = NULL,
           save_input_matrix = FALSE) 
 {
+  #customcode:
+  # Create an input parameter matrix
+  # Count up the number of random input parameters (n=125)                  
+  # parameters to be added in? "l_hr_pbo" "l_hr_smr_edss" "l_prop_2ndline_trt""l_prop_3rdline_trt"
+  input_matrix <- matrix(nrow = n_samples,
+                         ncol = 
+                           length(inputs[["m_u_edss_rrms" ]][,"rrms_mean"]) 
+                         +length(inputs[["m_u_edss_spms" ]][,"spms_mean"]) 
+                         + length(inputs[["m_c_edss_rrms"]][,"rrms_mean"]) 
+                         + length(inputs[["m_c_edss_spms"]][,"spms_mean"]) 
+                         + length(inputs[["df_c_tx_admin"]]["cost_annual_yr1",]) 
+                         + length(inputs[["df_c_tx_admin"]]["cost_annual_yr2",])
+                         + length(inputs[["df_c_tx_monitor"]]["cost_annual_yr1",]) 
+                         + length(inputs[["df_c_tx_monitor"]]["cost_annual_yr2",])
+                         + 4 * length(v_treatment_names) # NMA HRs: "m_hr_rrms_cdp6_fe""m_hr_rrms_arr_fe" "m_hr_rrms_saes_fe" "m_hr_rrms_discontinuation_fe" 
+                         + length(inputs[["v_tto_edss_increase_harrms_mu"]])
+                         + length(inputs[["v_tto_edss_decrease_rrms_mu"]]) 
+                         + length(inputs[["v_tto_edss_increase_spms_mu"]]) 
+                         + length(inputs[["v_tto_sp_conversion_harrms_mu"]]) 
+                         + length(inputs[["v_tto_relapse_harrms_mu"]])
+                         + length(inputs[["v_tto_relapse_spms_mu"]])
+                         + length(inputs[["df_u_relapse"]]["Orme etal","u_mean_relapse_hospital"]) 
+                         + 5 #weighted u_sae,  cost relapse hospitalisation, weighted cost_sae, discontinuation rate, sae event rate
+  ) 
+  
+  colnames(input_matrix) <- c(paste0("u_rrms_edss_", v_edss_values), #1:10
+                              paste0("u_spms_edss_", v_edss_values), #11:20
+                              paste0("c_rrms_edss_", v_edss_values), #21:30
+                              paste0("c_spms_edss_", v_edss_values), #31:40
+                              paste0("admin_cost_annual_yr1_", v_treatment_names), #41:48
+                              paste0("admin_cost_annual_yr2_", v_treatment_names), #49:56
+                              paste0("monitor_cost_annual_yr1_", v_treatment_names), #57:64
+                              paste0("monitor_cost_annual_yr2_", v_treatment_names), #65:72
+                              paste0("hr_CDP6_fe_edss_increase_", v_treatment_names), #73:80
+                              paste0("hr_arr_fe_", v_treatment_names), #81:88
+                              paste0("hr_discontinuation_fe_", v_treatment_names), #89:96
+                              paste0("hr_saes_fe_", v_treatment_names) , #97:104
+                              paste0("baseline_harrms_edss_increase_", colnames(inputs[["v_tto_edss_increase_harrms_mu"]])) , # 105:107
+                              paste0("baseline_rrms_edss_decrease_", colnames(inputs[["v_tto_edss_decrease_rrms_mu"]])) , #108:109
+                              paste0("baseline_spms_edss_increase_", colnames(inputs[["v_tto_edss_increase_spms_mu"]])) , #110:111
+                              paste0("baseline_spms_conversion_", rownames(inputs[["v_tto_sp_conversion_harrms_mu"]])) , #112:114
+                              paste0("baseline_harrms_larr_", rownames(inputs[["v_tto_relapse_harrms_mu"]])) , #115:117
+                              paste0("baseline_spms_larr_", rownames(inputs[["v_tto_relapse_spms_mu" ]])) , #118:119
+                              "u_relapse" ,  #120  
+                              "u_sae" ,#121 
+                              "c_relapse" ,#122 
+                              "c_sae" ,#123 
+                              "discontinuation_rate", #124
+                              "sae_events_rate" #125
+  )
+
+  
   .warden_ctx <- new.env(parent = emptyenv())
   .warden_ctx$last <- NULL
   .set_last_ctx(stage = "Error in setup:initial code setup", 
@@ -67,12 +119,6 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
     stop("Duplicate reaction(s) found for event(s): ", paste(dupes, 
                                                              collapse = ", "), ". Make sure that only one reaction has been defined for each event")
   }
-  # Create an input parameter matrix
-  #01# Count up the number of random input parameters
-  input_matrix <- matrix(nrow = n_sim,
-                         ncol = length(inputs$m_u_edss_rrms[,"rrms_mean"])) # Misc
-  colnames(input_matrix) <- c(paste0("u_rrms_edss_", c(0:9)))
-  
   arm_list <- arm_list
   categories_costs_ongoing <- cost_ongoing_list
   categories_costs_instant <- cost_instant_list
@@ -292,16 +338,6 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
                                  input_list <- new.env(parent = input_list_sens)
                                  list2env(as.list(input_list_sens), input_list)
                                  input_list$simulation <- simulation
-                                 
-                                 #01# Save the random parameter inputs for use in EVPPI
-                                 # Utilities
-                                 #input_matrix[simulation,] <- as.vector(t(as.matrix(input_list[["l_u_rrms_edss"]])))
-                                 #input_matrix[simulation,] <- pluck_vector_from_env(input_list[["l_u_rrms_edss"]],names(v_edss_values))
-                                 assign(paste("saved_input_list", simulation, sep=""), input_list, envir = .GlobalEnv)
-                                 #saved_input_list<<-pluck_vector_from_env(input_list[["l_u_rrms_edss"]],names(v_edss_values))
-                                 #x<<-as.list(purrr::pluck(input_list,"l_u_rrms_edss"))
-                                 
-                          
                                  input_list$n_sens_before <- .n_before_offsets[2L]
                                  set.seed(simulation * 1007 * seed)
                                  .set_last_ctx(stage = "setup:common_all_inputs", 
@@ -358,9 +394,42 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
                                  }
                                  final_output <- c(list(sensitivity_name = sens_name_used), 
                                                    final_output)
+                                 
                                  if (debug) 
                                    final_output$log_list <- log_sink$entries
                                  output_sim[[sens]][[simulation]] <- final_output
+                                 
+                                 #custom code modify here:
+                                 #print(exists("l_u_rrms_edss", envir = input_list, inherits = FALSE))
+                                 #print(ls(input_list))
+                                 input_matrix[simulation,     1:10] <- purrr::list_simplify(rlang::env_get(input_list, "l_u_rrms_edss"))
+                                 input_matrix[simulation,    11:20] <- purrr::list_simplify(rlang::env_get(input_list, "l_u_spms_edss"))
+                                 input_matrix[simulation,    21:30] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_rrms_edss"))
+                                 input_matrix[simulation,    31:40] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_spms_edss"))
+                                 input_matrix[simulation,    41:48] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_trt_admin_yr1"))
+                                 input_matrix[simulation,    49:56] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_trt_admin_yr2"))
+                                 input_matrix[simulation,    57:64] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_trt_monitor_yr1"))
+                                 input_matrix[simulation,    65:72] <- purrr::list_simplify(rlang::env_get(input_list, "l_c_trt_monitor_yr2"))
+                                 input_matrix[simulation,    73:80] <- purrr::list_simplify(rlang::env_get(input_list, "l_hr_edss_increase"))
+                                 input_matrix[simulation,    81:88] <- purrr::list_simplify(rlang::env_get(input_list, "l_hr_arr"))
+                                 input_matrix[simulation,    89:96] <- purrr::list_simplify(rlang::env_get(input_list, "l_hr_discontinuation"))
+                                 input_matrix[simulation,   97:104] <- purrr::list_simplify(rlang::env_get(input_list, "l_hr_saes"))
+                                 input_matrix[simulation,  105:107] <- purrr::list_simplify(rlang::env_get(input_list, "l_baseline_harrms_edss_increase"))
+                                 input_matrix[simulation,  108:109] <- purrr::list_simplify(rlang::env_get(input_list, "l_rrms_edss_decrease"))
+                                 input_matrix[simulation,  110:111] <- purrr::list_simplify(rlang::env_get(input_list, "l_spms_edss_increase"))
+                                 input_matrix[simulation,  112:114] <- purrr::list_simplify(rlang::env_get(input_list, "l_spms_progression"))
+                                 input_matrix[simulation,  115:117] <- purrr::list_simplify(rlang::env_get(input_list, "l_baseline_harrms_larr"))
+                                 input_matrix[simulation,  118:119] <- purrr::list_simplify(rlang::env_get(input_list, "l_baseline_spms_larr"))
+                                 input_matrix[simulation,      120] <- purrr::list_simplify(rlang::env_get(input_list, "l_u_mean_relapse_hospital"))
+                                 input_matrix[simulation,      121] <- purrr::list_simplify(rlang::env_get(input_list, "l_utilities_sae_weighted")) 
+                                 temp                               <- purrr::list_simplify(rlang::env_get(input_list, "l_c_relapse")) 
+                                 input_matrix[simulation,      122] <- temp["Relapse_hospital_addmision"] 
+                                 input_matrix[simulation,      123] <- purrr::list_simplify(rlang::env_get(input_list, "l_costs_sae_weighted"))
+                                 input_matrix[simulation,      124] <- purrr::list_simplify(rlang::env_get(input_list, "discontinuation_rate"))
+                                 input_matrix[simulation,      125] <- purrr::list_simplify(rlang::env_get(input_list, "l_sae_events_rate"))
+                                 
+                                 
+                                 
                                  message(paste0("Time to run simulation ", 
                                                 simulation, ": ", round(proc.time()[3] - 
                                                                           start_time_sim[3], 2), "s"))
@@ -376,5 +445,6 @@ run_sim_new <- function (arm_list = c("int", "noint"), sensitivity_inputs = NULL
                            })
   .set_last_ctx(stage = "Simulation finalized", .warden_ctx = .warden_ctx)
   if(save_input_matrix) results$input_matrix <- input_matrix
+
   return(results)
 }
