@@ -11,14 +11,11 @@ rm(list = ls())
 library(WARDEN)
 library(MASS)
 library(VGAM)
-library(dplyr)
 library(flexsurv)
-library(ggplot2)
-library(kableExtra)
-library(purrr)
-library(tidyr)
+library(tidyverse)
 library(BCEA)
-library(ggplot2)
+library(voi)
+
 options(scipen = 999)
 options(tibble.print_max = 50)
 
@@ -189,7 +186,7 @@ results_table <- summarise_ce_results(total_qalys = total_qalys,
                                       reference = "Natalizumab-IV")
 
 View(results_table)
-write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+#write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 #plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]
@@ -212,3 +209,22 @@ ceac.plot(des_multi_ce, graph = "ggplot2",
           pos = c(1, 1)
 )
 
+#  VOI analysis
+df_inputs <- as.data.frame(results[["input_matrix"]])
+parameters <- c(colnames(df_inputs))
+
+total_evpi <- voi::evpi(outputs = list(c = total_costs,
+                                       e = total_qalys,
+                                       k = c(20000, 30000)))
+
+View(total_evpi)
+
+# All  parameters
+total_evppi <- voi::evppi(outputs = list(c = total_costs,
+                                         e = total_qalys,
+                                         k = c(20000, 30000)),
+                          inputs = df_inputs,
+                          pars = parameters,
+                          method = "bart")
+
+View(total_evppi)
