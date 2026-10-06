@@ -6,13 +6,10 @@
 library(WARDEN)
 library(MASS)
 library(VGAM)
-library(dplyr)
 library(flexsurv)
-library(kableExtra)
-library(purrr)
-library(tidyr)
+library(tidyverse)
 library(BCEA)
-library(ggplot2)
+library(voi)
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
@@ -321,7 +318,7 @@ server <-
     
     output$uo_costs_readme <- renderUI({
       includeMarkdown("README.md")})
-    
+    #renderReactable, do we need to make the input into a reactable varible?
     output$to_administration_costs <- renderReactable({
       reactable(inputs[["df_c_tx_admin"]])
       
