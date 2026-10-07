@@ -3,3 +3,4 @@ Title: CE Model
 Config/roxygen2/version: 8.1.0
 Version: 1.0.0
 Roxygen: list(markdown = TRUE)
+Encoding: UTF-8
