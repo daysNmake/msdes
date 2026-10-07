@@ -81,22 +81,22 @@ n_seed<-243523452
 set.seed(n_seed)
 
 ## number of patients and samples
-n_patients <- n_patients
-n_samples <- n_samples
+n_patients <<- n_patients
+n_samples <<- n_samples
 
 
 
 # Global parameters of the model as they are common to all patients and treatments, WARDEN specific
 indicators <<-1
 #source("R/generate_global_inputs_warden.R")
-common_all_inputs <- gen_common_all_inputs()
+common_all_inputs <<- gen_common_all_inputs()
 
 #Function to extract data from environments containing lists while indexing on a vector of treatments or severity states
 #source("R/pluck_vector_from_env.R")
 
 # patient parameters reflecting heterogeneous characteristics that depend on treatment, the same for both packages
 #source("R/generate_individual_inputs_warden.R")
-unique_pt_inputs <- gen_unique_pt_inputs()
+unique_pt_inputs <<- gen_unique_pt_inputs()
 
 #functions to generate initial events and reaction events, WARDEN specific
 #source("R/generate_initial_events_warden.R")
@@ -116,20 +116,19 @@ cost_ongoing <<- "costs_disease"
 util_instant <<- c("utilities_relapse", "utilities_sae")
 cost_instant <<- c("costs_treatment", "costs_relapse", "costs_sae")
 
+#environment(run_sim_parallel_new) <- asNamespace("WARDEN") 
 environment(run_sim_new) <- asNamespace("WARDEN") 
-
 
 
 # Run the simulation
 #Logic is: per patient, per intervention, per event, react to that event.
 total_runtime <<- system.time({
-  results <<- run_sim(                                  # use run_sim_parallel() for more than 1 simulation
+  results <<- run_sim_new(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
     npats = n_patients,                               # number of patients to be simulated
     n_sim = n_samples,                                  # number of simulations to run
     psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
-    #indicators= ? ,
     arm_list = v_treatment_names,             # intervention list
     common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
     #common_pt_inputs = common_pt_inputs,     # inputs that change within a simulation but are not affected by the intervention
@@ -140,12 +139,10 @@ total_runtime <<- system.time({
     cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
     util_instant_list = util_instant,
     cost_instant_list = cost_instant,         # instantaneous treatment costs
-    # ncores = 4,                               # number of cores to use, recommended not to use all
-
-     input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
-                 "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
+                "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
     # v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
-    # save_input_matrix = TRUE # Export the input matrix for EVPPI
+    save_input_matrix = TRUE # Export the input matrix for EVPPI
   )
 })
 }
