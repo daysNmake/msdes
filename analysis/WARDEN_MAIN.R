@@ -196,7 +196,7 @@ des_bcea <- bcea(eff = total_qalys,
                  cost = total_costs,
                  ref = 1,
                  interventions = v_results_treatment_names)
-ceplane.plot(des_bcea, wtp = 30000,
+ceplane.plot(des_bcea, wtp = 35000,
              graph = "ggplot2")
 
 #plot a CEAC
@@ -210,21 +210,49 @@ ceac.plot(des_multi_ce, graph = "ggplot2",
 )
 
 #  VOI analysis
-df_inputs <- as.data.frame(results[["input_matrix"]])
-parameters <- c(colnames(df_inputs))
+#total EVPI
 
 total_evpi <- voi::evpi(outputs = list(c = total_costs,
                                        e = total_qalys,
-                                       k = c(20000, 30000)))
+                                       k = c(0, 25000, 50000, 75000, 100000)))
 
 View(total_evpi)
+plot(x=total_evpi$k, y=total_evpi$evpi, type="l")
 
-# All  parameters
+# Total EVPPI
+# All  parameters excluding hazard ratios that are constant as it causes errors
+df_inputs <- as.data.frame(results[["input_matrix"]][,-c(73:76,81:84,89:92,79:101)])
+parameters <- as.list(colnames(df_inputs))
+
 total_evppi <- voi::evppi(outputs = list(c = total_costs,
                                          e = total_qalys,
-                                         k = c(20000, 30000)),
+                                         k = c(25000, 35000)),
                           inputs = df_inputs,
                           pars = parameters,
                           method = "bart")
 
 View(total_evppi)
+#plot in base R
+total_evppi_25k <- total_evppi$evppi[total_evppi$k ==25000]
+names(total_evppi_25k) <- total_evppi$pars[total_evppi$k ==25000]
+
+barplot(
+  sort(total_evppi_25k, decreasing=FALSE), horiz = TRUE, las=1, cex.names=0.5, xlim=c(0,12000)
+  )
+
+
+total_evppi_35k <- total_evppi$evppi[total_evppi$k ==35000]
+names(total_evppi_35k) <- total_evppi$pars[total_evppi$k ==35000]
+
+barplot(
+  sort(total_evppi_35k, decreasing=FALSE), horiz = TRUE, las=1, cex.names=0.5, xlim=c(0,18000)
+)
+
+#plot with tidyverse #not able to sort as above
+total_evppi_w <-  pivot_wider(total_evppi, names_from = k, values_from = evppi, names_glue = "{.value}_{k}")
+#total_evppi_w <- column_to_rownames(total_evppi_w, "pars") # this does not plot as y is missing so need some other graph type?
+ggplot(total_evppi_w$evppi_25000) +  geom_bar()
+
+ggplot(total_evppi_w, aes(y=pars,x=evppi_25000)) +  geom_col()
+ggplot(total_evppi_w, aes(y=pars,x=evppi_35000)) +  geom_col()
+
