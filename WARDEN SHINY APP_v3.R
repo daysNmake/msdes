@@ -41,7 +41,7 @@ ui <-
   #Project Page
   page_fillable(    
     
-    title = NULL,
+    title = "Project title",
     
     # set model assumptions needed for the UI to run
   
@@ -56,17 +56,22 @@ ui <-
       # nav panel 1 Introduction : displays model diagram and model description
       nav_panel(  
         title =  "Model Info",
-        
+        # side by side column layout:
        layout_column_wrap( 
+         
+         #model description and treatment sequence diagram:
+         card(
+           card_header(class = "bg-light text-primary","Model Description"),
+           card_body(markdown(uiOutput("uo_modedescription"))),
+           card_image("shiny/trtsq_diagram.png")
+         ),
+         #model diagram:
         card(
-          card_header(class = "bg-light text-primary", "Diagram"),
+          card_header(class = "bg-light text-primary", "Model Diagram"),
+          "Figure-1",
           card_image("shiny/model_diagram.png")
-        ),
-        
-        card(
-          card_header(class = "bg-light text-primary","Description"),
-          card_body(markdown(uiOutput("uo_modedescription")))
-          )
+        )
+
         
       ) #Layout is column wrap
       ),# nav panel 1 Introduction
@@ -83,33 +88,48 @@ ui <-
           #model inputs Relative Treatment Effects
           nav_panel(
             title = "Treatment Effects",
-            #CDP6
-            card(
-              card_header(class="bg-light text-primary",
-                          "Relative treatment effects relative to Natalizumab, 
-                          assuming equivilence of Natalizumab originator and biosimilar. 
-                          Equivilence of Ublituximab, ofatumumab and ocrelizumab"),
+          layout_column_wrap( 
+            width=1/2,
+            
+          #CDP6
+            #card(
+              
               
               # card body for CDP6
-              card_body(height=200 ,
-              "Confirmed Disability progresssion at 6 months CDP6 Hazard ratios",
+              card(
+                #height=200 ,
+                   card_header(class="bg-light text-primary",
+                               "Confirmed Disability progresssion at 6 months CDP6 Hazard ratios in comparison to Natalizumab as the reference treatment.
+                               Assuming equivilence of Natalizumab originator, and biosimilar.
+                          "),
+              "Assuming equivilence of Ublituximab, ofatumumab and ocrelizumab",
               DTOutput(outputId = "to_CDP6"),
               ), #card body
           
             # card body for ARR
-            card_body(height=200 ,
-              " Annualized Relapse Rates ARR" , 
+            card(
+              #height=200 ,
+              card_header(class="bg-light text-primary",
+                          "Annualized Relapse Rates ARR rate ratios in comparison to Natalizumab as the reference treatment.
+                          Assuming equivilence of Natalizumab originator, and biosimilar.
+                          "),
+              "Assuming equivilence of Ublituximab and ocrelizumab" , 
                       DTOutput(outputId = "to_ARR"),
             ), #card body
             
             # card body for AELtD
-            card_body(height=200 ,
-                      " Adverse Events Leading to Discontinuation AELtD" , 
+            card(
+              #height=200 ,
+              card_header(class="bg-light text-primary",
+                          "Adverse Events Leading to Discontinuation AELtD  rate ratios in comparison to Natalizumab as the reference treatment. 
+                          Assuming equivilence of Natalizumab originator, and biosimilar.
+                          "),
+                      "Assuming equivilence of Ublituximab, ofatumumab and ocrelizumab" , 
                       DTOutput(outputId = "to_AELtD"),
             ), #card body
             
-            
-          ), #card 
+            ), #layout column wrap
+          #), #card 
             ), # navpanel tretament effects
           
           
@@ -124,6 +144,7 @@ ui <-
 
             # card body for treatment costs
             card_body(height=300 ,
+                      "Total annual treatment costs can be updated in place by selecting the individual cells in the table and enetring new values:",     
                   DTOutput(outputId = "to_treatment_costs"),
             ), #card body
            
@@ -145,11 +166,14 @@ ui <-
               
             card_body(
               card_title(class="bg-light text-primary","Total annual treatment administration costs"),
+              "Total annual treatment administration costs can be updated in place by selecting the individual cells in the table and enetring new values:",
               DTOutput(outputId = "to_administration_costs")),
             
             card_body(
               card_title(class="bg-light text-primary","Total annual treatment monitoring costs"),
+              "Total annual treatment monitoring costs can be updated in place by selecting the individual cells in the table and enetring new values:",
               DTOutput(outputId = "to_monitoring_costs"))
+        
             )
             ) #model inputs admin & monitoring costs
           
@@ -263,32 +287,45 @@ server <-
     
     # #render model description file
     output$uo_modedescription <- renderUI({
-      includeMarkdown("shiny/model description.Rmd")
+      includeMarkdown("shiny/model description.md")
     })
     
     #initialize reactive variable with temp model inputs: 
+    temp_cdp6 <- read.csv("data/Releff_RRMS_CDP6_FE.csv",header = TRUE, row.names=1)
+    temp_cdp6 <- round(exp(temp_cdp6[c(3,9),c(3,5,9)]), digits=3)
+    temp_arr <- read.csv("data/Releff_RRMS_ARR_FE.csv",header = TRUE, row.names=1)
+    temp_arr <- round(exp(temp_arr[c(3,12, 13),c(3,5,9)]), digits=3)
+    temp_discontinuation <- read.csv("data/Releff_RRMS_Discontinuation_FE.csv", header = TRUE, row.names=1)
+    temp_discontinuation <- round(exp(temp_discontinuation[c(3,11),c(3,5,9)]), digits=3)
+    
     temp_inputs <- reactiveValues(
       tx_costs={inputs[["df_c_tx"]]},
       tx_admin_costs={inputs[["df_c_tx_admin"]]},
       tx_monitor_costs={inputs[["df_c_tx_monitor"]]},
-      cdp6={matrix(c(1, 1, 1, 1, 
-                     exp(inputs$m_hr_rrms_cdp6_fe["Cladribine O3.5","mean"]), 
-                     exp(inputs$m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
-                     exp(inputs$m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"]), 
-                     exp(inputs$m_hr_rrms_cdp6_fe["Ocrelizumab IV600","mean"])), 
-                   ncol=length(v_treatment_names),dimnames=list("Rate Ratio",c(v_treatment_names)))},
-      arr={matrix(c(1, 1, 1, 1, 
-                     exp(inputs$m_hr_rrms_arr_fe["Cladribine O3.5","mean"]), 
-                     exp(inputs$m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
-                     exp(inputs$m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"]), 
-                     exp(inputs$m_hr_rrms_arr_fe["Ocrelizumab IV600","mean"])), 
-                   ncol=length(v_treatment_names),dimnames=list("Rate Ratio",c(v_treatment_names)))},
-      AELtD={matrix(c(1, 1, 1, 1, 
-                    exp(inputs$m_hr_rrms_discontinuation_fe["Cladribine O3.5","mean"]), 
-                    exp(inputs$m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
-                    exp(inputs$m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"]), 
-                    exp(inputs$m_hr_rrms_discontinuation_fe["Ocrelizumab IV600","mean"])), 
-                  ncol=length(v_treatment_names),dimnames=list("Rate Ratio",c(v_treatment_names)))}
+      cdp6={matrix(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     temp_cdp6["Cladribine O3.5","mean"], temp_cdp6["Cladribine O3.5","X2.5."], temp_cdp6["Cladribine O3.5","X97.5."],
+                     temp_cdp6["Ocrelizumab IV600","mean"], temp_cdp6["Ocrelizumab IV600","X2.5."], temp_cdp6["Ocrelizumab IV600","X97.5."],
+                     temp_cdp6["Ocrelizumab IV600","mean"], temp_cdp6["Ocrelizumab IV600","X2.5."], temp_cdp6["Ocrelizumab IV600","X97.5."],
+                     temp_cdp6["Ocrelizumab IV600","mean"], temp_cdp6["Ocrelizumab IV600","X2.5."], temp_cdp6["Ocrelizumab IV600","X97.5."])
+                   , byrow = TRUE, nrow=length(v_treatment_names),
+                   dimnames=list(c(v_treatment_names),c("CDP6 Hazard Ratio", " (95%", "CrI) "))
+                   )},
+      arr={matrix(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                    temp_arr["Cladribine O3.5","mean"], temp_arr["Cladribine O3.5","X2.5."], temp_arr["Cladribine O3.5","X97.5."],
+                    temp_arr["Ocrelizumab IV600","mean"], temp_arr["Ocrelizumab IV600","X2.5."], temp_arr["Ocrelizumab IV600","X97.5."],
+                    temp_arr["Ofatumumab SC20","mean"], temp_arr["Ofatumumab SC20","X2.5."], temp_arr["Ofatumumab SC20","X97.5."],
+                    temp_arr["Ocrelizumab IV600","mean"], temp_arr["Ocrelizumab IV600","X2.5."], temp_arr["Ocrelizumab IV600","X97.5."])
+                  , byrow = TRUE, nrow=length(v_treatment_names),
+                  dimnames=list(c(v_treatment_names),c("ARR Rate Ratio", " (95%", "CrI) "))
+                  )},
+      AELtD={matrix(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                      temp_discontinuation["Cladribine O3.5","mean"], temp_discontinuation["Cladribine O3.5","X2.5."], temp_discontinuation["Cladribine O3.5","X97.5."],
+                      temp_discontinuation["Ocrelizumab IV600","mean"], temp_discontinuation["Ocrelizumab IV600","X2.5."], temp_discontinuation["Ocrelizumab IV600","X97.5."],
+                      temp_discontinuation["Ocrelizumab IV600","mean"], temp_discontinuation["Ocrelizumab IV600","X2.5."], temp_discontinuation["Ocrelizumab IV600","X97.5."],
+                      temp_discontinuation["Ocrelizumab IV600","mean"], temp_discontinuation["Ocrelizumab IV600","X2.5."], temp_discontinuation["Ocrelizumab IV600","X97.5."])
+                    , byrow = TRUE, nrow=length(v_treatment_names),
+                    dimnames=list(c(v_treatment_names),c("CDP6 Hazard Ratio", " (95%", "CrI) "))
+                  )}
       
     )
 

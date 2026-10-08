@@ -18,7 +18,7 @@ The DES model runs forward in time and updates individual patient attributes whe
 
 #### Figure 2- Treatment Sequence
 
-```{r imager, echo = TRUE}
+```{r imager, echo = FALSE}
 trtsq_diagram<- imager::load.image("trtsq_diagram.png")
 plot(trtsq_diagram, axes=FALSE)
 ```
