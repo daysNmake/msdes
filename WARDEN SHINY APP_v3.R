@@ -48,14 +48,18 @@ ui <-
     #navigation bar style, could opt for navset_card_tab() or navset_card_pill()
     page_navbar(
       
+      #theme = bs_theme(5, "flatly"),
+      navbar_options = navbar_options(bg= "#daddf0", class = "bg-primary", theme = "light"),
+      
       #Navigation bar title displays the logo on the top of all pages
       title = div(img(src="https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png", 
                                id ="logo")),
     
       
-      # nav panel 1 Introduction : displays model diagram and model description
+      # 01 nav panel Introduction : displays model diagram and model description
       nav_panel(  
         title =  "Model Info",
+        
         # side by side column layout:
        layout_column_wrap( 
          
@@ -82,22 +86,17 @@ ui <-
         title =  "Model Inputs",
         
         
-        #Main panel for model inputs
+        #02 nav panel for model inputs
         navset_card_underline(
           
-          #model inputs Relative Treatment Effects
+          #02A nav panel for model inputs Relative Treatment Effects
           nav_panel(
             title = "Treatment Effects",
           layout_column_wrap( 
             width=1/2,
             
-          #CDP6
-            #card(
-              
-              
               # card body for CDP6
               card(
-                #height=200 ,
                    card_header(class="bg-light text-primary",
                                "Confirmed Disability progresssion at 6 months CDP6 Hazard ratios in comparison to Natalizumab as the reference treatment.
                                Assuming equivilence of Natalizumab originator, and biosimilar.
@@ -108,7 +107,6 @@ ui <-
           
             # card body for ARR
             card(
-              #height=200 ,
               card_header(class="bg-light text-primary",
                           "Annualized Relapse Rates ARR rate ratios in comparison to Natalizumab as the reference treatment.
                           Assuming equivilence of Natalizumab originator, and biosimilar.
@@ -119,7 +117,6 @@ ui <-
             
             # card body for AELtD
             card(
-              #height=200 ,
               card_header(class="bg-light text-primary",
                           "Adverse Events Leading to Discontinuation AELtD  rate ratios in comparison to Natalizumab as the reference treatment. 
                           Assuming equivilence of Natalizumab originator, and biosimilar.
@@ -133,7 +130,7 @@ ui <-
             ), # navpanel tretament effects
           
           
-          #model inputs treatment costs
+          #02B nav panel for model inputs treatment costs
           nav_panel(
             title = "Treatment costs",
             
@@ -158,7 +155,7 @@ ui <-
             ) #card layout with header and footer
             ), #nav panel model inputs treatment costs
           
-          #model inputs admin costs
+          #02C nav panel for model inputs admin costs
           nav_panel(
             title = "administration & monitoring costs",
             #Output
@@ -182,7 +179,7 @@ ui <-
       ), ##nav panel 2 Model inputs
       
       
-      #Model set-up navigation panel gives model default settings and options for scenarios
+      #03 nav panel Model set-up navigation panel gives model default settings and options for scenarios
       nav_panel(  
         title =  "Model settings and scenarios",
         
@@ -224,7 +221,7 @@ ui <-
         #) #layout_column_wrap
       ), #model setup nav panel
       
-      #MS-Model run and results navigation panel
+      #04 MS-Model run and results navigation panel
       nav_panel(  
         
         title =  "MS-DES Model",
@@ -233,17 +230,17 @@ ui <-
           title="",
           #Side bar panel for model inputs
           sidebar= sidebar(
-            title="",
+            title="Simulation settings",
             #slider for number of patients
             numericInput(
               inputId = "si_n_patients" , 
               label = "Number of simulated patients",
-              value = 10, min=1, max=100, step=10),
+              value = 10, min=1, max=1000, step=10),
             #slider for number of simulations
             numericInput(
               inputId = "si_n_samples" , 
               label = "Number of simulations to run",
-              value = 10, min=1, max=100, step=10),
+              value = 100, min=1, max=1000, step=10),
             #progress bar
             column(4,progressBar(id = "pb4", value = 0, display_pct = T)),
             #button to run model
@@ -254,7 +251,7 @@ ui <-
           ), #sidebar panel
           
           
-          #Card panel for model results
+          #Card panels for model results
           navset_card_underline(
 
             
@@ -274,7 +271,60 @@ ui <-
                 plotOutput(outputId = "po_ceac"))
             )#card
         ) #sidebar layout
-      )#Ms model results panel 
+      ),#Ms model results panel 
+      
+      #05 Value of Information Analysis and results navigation panel
+      nav_panel(  
+        
+        title =  "Value of Information",
+        #side bar panel has model setup options no. of patients, no. of simulation, and progress bar 
+        layout_sidebar(
+          title="",
+          #Side bar panel for model inputs
+          sidebar= sidebar(
+            title="VOI settings",
+            #progress bar
+            column(4,progressBar(id = "pbvoi", value = 0, display_pct = T)),
+            #button to run VOI model fitting
+            actionButton(
+              inputId = "ab_run_VOI", label = "VOI EVPPI"),
+            useShinyjs(),
+            textOutput("progress_text_voi")
+          ), #sidebar panel
+          
+          
+          #Card panels for model results
+          navset_card_underline(
+            #wtp25k
+            nav_panel(
+              title = "EVPPI at WTP £25,000",
+              card(
+                height = 300,
+                style = "resize:vertical;",
+              card_body(  
+                min_height = 250,
+              plotOutput(outputId = "po_voi_25k_a"),
+              plotOutput(outputId = "po_voi_25k_b")
+              )# card body
+              ) # card
+              ), #wtp 25k
+            
+            #wtp 35k
+            nav_panel(
+              title = "EVPPI at WTP £35,000",
+              card(
+                height = 300,
+                style = "resize:vertical;",
+              card_body(
+                min_height = 250,
+              plotOutput(outputId = "po_voi_35k_a"),
+              plotOutput(outputId = "po_voi_35k_b")
+              ) # card body
+              ) #card
+              ) #wtp 35k
+          )#card
+        ) #sidebar layout
+      )#VOI panel
       
     ) #Page navbar
     
@@ -514,17 +564,89 @@ server <-
                   line = list(color = c("darkorange", "palegreen3", "blue", "grey",
                                         "cyan3", "black"),
                               size=2 ),
-                  #ylim=c(0, 0.5),
+                  xlim=c(-2, 2),
                   pos = c(1, 1)
         )
         
       })
       
-      #save results
-      
-      #write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
       
       
+    })
+    
+    #Action triggered by VOI button pressed
+    observeEvent(input$ab_run_VOI,  {
+      withCallingHandlers({
+        
+        html("progress_text_voi", "")
+        
+      # Total EVPPI
+      # All  parameters excluding hazard ratios that are constant as it causes errors
+      df_inputs <<- as.data.frame(results[["input_matrix"]][,-c(73:76,81:84,89:92,79:101)])
+      parameters <<- as.list(colnames(df_inputs))
+      
+      total_evppi <<- voi::evppi(outputs = list(c = total_costs,
+                                               e = total_qalys,
+                                               k = c(25000, 35000)),
+                                inputs = df_inputs,
+                                pars = parameters,
+                                method = "bart",
+                                verbose = TRUE)
+      
+      },
+      message = function(m) {
+        html(id = "progress_text_voi", html = paste0(m$message, '<br>'), add = TRUE)
+        i<<- ifelse(exists("i"), (i+1) , 1 )
+        updateProgressBar(session = session, id = "pbvoi", value = (
+          ((i/input$si_n_samples)-0.05)*10 # this is not correct: subtract 0.05? then multiply by 100?
+          #(round(i/sum(dim(df_inputs)))-1)*10
+          ) )
+      }
+      )
+      
+      
+      
+      #VOI plots
+      
+      output$po_voi_25k_a <- renderPlot({
+        #plot results
+        total_evppi_25k_a <<- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        names(total_evppi_25k_a) <<- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
+        barplot(
+          sort(total_evppi_25k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.9, xlab= "£"
+        )
+      })
+      
+      output$po_voi_25k_b <- renderPlot({
+        #plot results
+        total_evppi_25k_b <<- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        names(total_evppi_25k_b) <<- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
+        barplot(
+          sort(total_evppi_25k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"
+        )
+      })
+      
+      output$po_voi_35k_a <- renderPlot({
+        #plot results
+        total_evppi_35k_a <<- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        names(total_evppi_35k_a) <<- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
+        barplot(
+          sort(total_evppi_35k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"
+        )
+      })
+      
+      output$po_voi_35k_b <- renderPlot({
+        #plot results
+        total_evppi_35k_b <<- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        names(total_evppi_35k_b) <<- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
+        barplot(
+          sort(total_evppi_35k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"
+        )
+      })
       
     })
     
