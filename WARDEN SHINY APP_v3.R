@@ -255,20 +255,21 @@ ui <-
           navset_card_underline(
 
             
-              nav_panel(  #Heading
-                title = "Results Table",
-                #Output
+              nav_panel(  #04A
+                title = "Cost Effectiveness Results Table",
                 tableOutput(outputId = "to_results_table")),
 
-              nav_panel(#Heading 2
+              nav_panel(#04B
                 title = "Cost Effectiveness Plane",
-                #Output 2
                 plotOutput(outputId = "po_ce_plane")),
 
-              nav_panel(#Heading 3
+              nav_panel(#04C
                 title = "Cost Effectiveness Acceptability Curve",
-                #Output 3
-                plotOutput(outputId = "po_ceac"))
+                plotOutput(outputId = "po_ceac")),
+              
+              nav_panel(#04D
+                title = "Mortality overtime",
+                plotOutput(outputId = "po_mortality"))
             )#card
         ) #sidebar layout
       ),#Ms model results panel 
@@ -485,6 +486,7 @@ server <-
       },
       message = function(m) {
         html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
+        i<<-0
         i<<- ifelse(exists("i"), (i+1) , 1 )
         updateProgressBar(session = session, id = "pb4", value = (i/((input$si_n_samples*2)+4))*100 )
       }
@@ -570,6 +572,82 @@ server <-
         
       })
       
+      output$po_mortality <- renderPlot({
+        ## mortality by treatment group
+        death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),
+                          dimnames = list(NULL, v_treatment_names, NULL))
+        
+        # Below is not very efficient but only needs to be run once at end of simulation
+        #  results[[1]][[i_sample]] and $arm works for WARDEN to run for DESCEM replace  with results$output_psa[[i_sample]] and $trt
+        for(treatment_name in v_treatment_names) {
+          for(i_sample in 1:n_samples) {
+            for(i_patient in 1:n_patients) {
+              # With statement is neater but much slower
+              temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
+                results[[1]][[i_sample]]$merged_df$arm == treatment_name &
+                results[[1]][[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
+              
+              
+              death_ipd[i_sample, treatment_name, i_patient] <-
+                results[[1]][[i_sample]]$merged_df$evttime[temp_index]
+              
+            } # End loop over patients
+            # Summarise for just this sample
+            
+          }
+        }
+        # Sort death times ascending
+        for (i_sample in 1:n_samples){
+          for(treatment_name in v_treatment_names){
+            death_ipd[i_sample, treatment_name,] <- sort(death_ipd[i_sample, treatment_name,])
+          }}
+        
+        
+        # save event times in a list
+        for (i in 1:n_treatments){
+          assign(paste("V", i, sep=""), matrix(rep(0, n_patients* n_samples) , nrow = n_patients, ncol =  n_samples))
+          assign(paste("V", i, sep=""), tibble::as_tibble(death_ipd[,i,]))
+          
+        }
+        
+        xyz<-list(V1, V2, V3, V4, V5, V6, V7, V8) #xyz <- list(c(noquote(paste("V", 1:n_treatments, "," , sep="")),n_treatments)) 
+        remove(V1, V2, V3, V4, V5, V6, V7, V8)
+        
+        library(tidyverse)
+        #model the overall survial 
+        for (i in 1:length(xyz)){
+          xyz[[i]] <- data.frame(xyz[[i]]) %>%
+            mutate(event = 1) %>%
+            pivot_longer(cols=starts_with("V"), values_to = "time")
+          xyz[[i]] <- data.frame(xyz[[i]][-2])
+          xyz[[i]] <- sort_by.data.frame(xyz[[i]], xyz[[i]][["time"]])
+          xyz[["model"]][[i]] <- survival::survfit(Surv(time, event)~1, data =xyz[[i]] , type="kaplan-meier")
+          xyz[["plot"]][[i]] <- data.frame(xyz[["model"]][[i]][["time"]], xyz[["model"]][[i]][["surv"]])
+          #xyz[[i]] <- xyz[[i]]
+        }
+        
+        
+        # plot overall survival by treatment
+        plot_mortality<- 
+          ggplot()+
+          geom_step(size=1)+
+          geom_step(data=xyz[["plot"]][[1]], aes(xyz[["plot"]][[1]][[1]], xyz[["plot"]][[1]][[2]], col=v_treatment_names[1]), size=1) +
+          geom_step(data=xyz[["plot"]][[2]], aes(xyz[["plot"]][[2]][[1]], xyz[["plot"]][[2]][[2]], col=v_treatment_names[2]), size=1)+
+          geom_step(data=xyz[["plot"]][[3]], aes(xyz[["plot"]][[3]][[1]], xyz[["plot"]][[3]][[2]], col=v_treatment_names[3]), size=1)+
+          geom_step(data=xyz[["plot"]][[4]], aes(xyz[["plot"]][[4]][[1]], xyz[["plot"]][[4]][[2]], col=v_treatment_names[4]), size=1)+
+          geom_step(data=xyz[["plot"]][[5]], aes(xyz[["plot"]][[5]][[1]], xyz[["plot"]][[5]][[2]], col=v_treatment_names[5]), linetype ="longdash")+
+          geom_step(data=xyz[["plot"]][[6]], aes(xyz[["plot"]][[6]][[1]], xyz[["plot"]][[6]][[2]], col=v_treatment_names[6]))+
+          geom_step(data=xyz[["plot"]][[7]], aes(xyz[["plot"]][[7]][[1]], xyz[["plot"]][[7]][[2]], col=v_treatment_names[7]), linetype ="dotted")+
+          geom_step(data=xyz[["plot"]][[8]], aes(xyz[["plot"]][[8]][[1]], xyz[["plot"]][[8]][[2]], col=v_treatment_names[8]), linetype ="dotdash") +
+          labs(title ="Predicted mortality over time - HARRMS Model ", y = "Survival (probability)", x = "Time (years)") +
+          xlim(0,65) +
+          ylim(0,1) +
+          theme_bw() +
+          theme(legend.position = "bottom")
+        
+        plot_mortality
+      })
+      
       
       
     })
@@ -596,9 +674,10 @@ server <-
       },
       message = function(m) {
         html(id = "progress_text_voi", html = paste0(m$message, '<br>'), add = TRUE)
+        i<<-0
         i<<- ifelse(exists("i"), (i+1) , 1 )
         updateProgressBar(session = session, id = "pbvoi", value = (
-          ((i/input$si_n_samples)-0.05)*10 # this is not correct: subtract 0.05? then multiply by 100?
+          ((i/input$si_n_samples*5))*10 # this is not correct: subtract 0.05? then multiply by 100?
           #(round(i/sum(dim(df_inputs)))-1)*10
           ) )
       }
