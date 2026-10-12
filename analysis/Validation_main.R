@@ -1,72 +1,7 @@
-### Validation script can be called after Warden model Run and can be integrated with SHINY APP
+### Validation script can be called after Warden model Run 
 ### Ayman Sadek 25-08-2026
 
 
-
-### ipd arrays for key model outputs of interest (final when patients are dead)
-
- n_spms_ipd <- n_relapse_ipd <-  n_edssincrease_ipd<- n_edssdecrease_ipd<- n_sae_ipd<- 
-      final_edss_value_ipd <-  array(NA, dim = c(n_samples, n_treatments, n_patients),
-                                            dimnames = list(NULL, v_treatment_names, NULL))
-
-# Below is not very efficient but only needs to be run once at end of simulation
-#  results[[1]][[i_sample]] and $arm works for WARDEN to run for DESCEM replace  with results$output_psa[[i_sample]] and $trt
-for(treatment_name in v_treatment_names) {
-  for(i_sample in 1:n_samples) {
-    for(i_patient in 1:n_patients) {
-      # With statement is neater but much slower
-      temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
-        results[[1]][[i_sample]]$merged_df$arm == treatment_name &
-        results[[1]][[i_sample]]$merged_df$evtname == "death" # condition on death to count final n relapses and edss value
-      
-      n_relapse_ipd[i_sample, treatment_name, i_patient] <-
-      results[[1]][[i_sample]]$merged_df$n_relapse[temp_index]
-
-      n_spms_ipd[i_sample, treatment_name, i_patient] <-
-      results[[1]][[i_sample]]$merged_df$spms_flag[temp_index]
-
-      n_edssincrease_ipd[i_sample, treatment_name, i_patient] <-
-      results[[1]][[i_sample]]$merged_df$n_edssinc_evts[temp_index]
-
-      n_edssdecrease_ipd[i_sample, treatment_name, i_patient] <-
-      results[[1]][[i_sample]]$merged_df$n_edssdec_evts[temp_index]
-
-      n_sae_ipd[i_sample, treatment_name, i_patient] <-
-       results[[1]][[i_sample]]$merged_df$n_sae_evts[temp_index]
-
-      final_edss_value_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$edss_value[temp_index]
-      
-    } # End loop over patients
-    # Summarise for just this sample
-    
-  }
-}
-
-# Take mean over patients to remove individual variation
-total_n_relapse <- apply(n_relapse_ipd, c(1, 2), mean)
-total_n_spms <- apply(n_relapse_ipd, c(1, 2), mean)
-total_edss_increases <- apply(n_edssincrease_ipd, c(1, 2), mean)
-total_edss_decreases <- apply(n_edssdecrease_ipd, c(1, 2), mean)
-total_saes <- apply(n_sae_ipd, c(1, 2), mean)
-total_final_edss_value <- apply(final_edss_value_ipd, c(1, 2), mean)
-     
-#compare events by treatment groups
-n_spms_trt <- n_rel_trt<- n_edssincrease_trt<- n_edssdecrease_trt<- n_saes_trt<- n_final_edss_value<- c(rep(0, length(v_treatment_names)))
-names(n_rel_trt) <- names(n_edssincrease_trt) <- names(n_edssdecrease_trt) <- names(n_saes_trt) <- names(n_final_edss_value) <- v_treatment_names
-
-# summarise results
-for (i  in 1:length(v_treatment_names)) {
-  n_spms_trt[i] <- summarise_samples(total_n_spms[,i])
-  n_rel_trt[i] <- summarise_samples(total_n_relapse[,i])
-  n_edssincrease_trt[i] <- summarise_samples(total_edss_increases[,i])
-  n_edssdecrease_trt[i] <- summarise_samples(total_edss_decreases[,i])
-  n_saes_trt[i] <- summarise_samples(total_saes[,i])
-  n_final_edss_value[i] <- summarise_samples(total_final_edss_value[,i])
-}
-key_events_trt_grps <- as.data.frame(cbind(n_spms_trt, n_rel_trt, n_edssincrease_trt, n_edssdecrease_trt, n_saes_trt, n_final_edss_value)
-)
-View(key_events_trt_grps)
 
 ## mortality by treatment group
 death_ipd<- array(NA, dim = c(n_samples, n_treatments, n_patients),

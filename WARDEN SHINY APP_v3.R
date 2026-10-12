@@ -268,7 +268,11 @@ ui <-
                 plotOutput(outputId = "po_ceac")),
               
               nav_panel(#04D
-                title = "Mortality overtime",
+                title = "Key Model Events",
+                plotOutput(outputId = "key events")),
+              
+              nav_panel(#04E
+                title = "Mortality Overtime",
                 plotOutput(outputId = "po_mortality"))
             )#card
         ) #sidebar layout
@@ -528,9 +532,7 @@ server <-
         options(scipen = 999)
         total_costs <<- apply(total_costs_ipd, c(1, 2), mean)
         total_qalys <<- apply(total_qalys_ipd, c(1, 2), mean)
-        
-        
-        
+
         
         #drop natalizumab-biosimilar-SC and cladrebiene
         total_costs <<- total_costs[,-c(4,5)]
@@ -569,6 +571,42 @@ server <-
                   xlim=c(-2, 2),
                   pos = c(1, 1)
         )
+        
+      })
+      
+      output$po_keyevents <-  renderPlot({
+        
+        #compare key events by treatment groups
+        modelresults_summarised <- summary_results_sim(results[[1]])
+        proportion_spms  <- modelresults_summarised["spms_flag",]
+        average_numberof_relapses <- modelresults_summarised["n_relapse",] 
+        average_numberof_edssincreases <- modelresults_summarised["n_edssinc_evts",] 
+        average_numberof_edssdecreases<- modelresults_summarised["n_edssdec_evts",] 
+        average_numberof_saes<- modelresults_summarised["n_sae_evts",] 
+        final_edss_value <- modelresults_summarised["edss_value",]
+        average_numberof_treatmentswitches <- modelresults_summarised["n_switch",] 
+        average_numberof_yearsontreatment <- modelresults_summarised["years_on_treatment",] 
+        average_numberof_yearson2ndline<- modelresults_summarised["t_2ndline",] 
+        average_numberof_yearson3rdline<- modelresults_summarised["t_3rdline",] 
+        average_numberof_yearson4thline<- modelresults_summarised["t_4thline",]
+        
+        key_events_trt_grps <- as.data.frame(rbind(
+          proportion_spms,   average_numberof_relapses, 
+          average_numberof_edssincreases,   average_numberof_edssdecreases, 
+          final_edss_value,   average_numberof_saes,
+          average_numberof_treatmentswitches,  average_numberof_yearsontreatment,
+          average_numberof_yearson2ndline,  average_numberof_yearson3rdline,
+          average_numberof_yearson4thline),
+          row.names=c("proportion with spms", "average no. of relapses", 
+                      "average no. of edss increases", "average no. of edss decreases", 
+                      "final edss value", "average no. of SAEs",
+                      "average no. of treatment switches", "average no. of years on treatment",
+                      "average no. of years on 2ndline", "average no. of years on 3rdline",
+                      "average no. of years on 4thline")
+        )
+        
+        key_events_trt_grps
+        
         
       })
       

@@ -208,6 +208,39 @@ ceac.plot(des_multi_ce, graph = "ggplot2",
           pos = c(1, 1)
 )
 
+
+
+#compare key events by treatment groups
+modelresults_summarised <- summary_results_sim(results[[1]])
+proportion_spms  <- modelresults_summarised["spms_flag",]
+average_numberof_relapses <- modelresults_summarised["n_relapse",] 
+average_numberof_edssincreases <- modelresults_summarised["n_edssinc_evts",] 
+average_numberof_edssdecreases<- modelresults_summarised["n_edssdec_evts",] 
+average_numberof_saes<- modelresults_summarised["n_sae_evts",] 
+final_edss_value <- modelresults_summarised["edss_value",]
+average_numberof_treatmentswitches <- modelresults_summarised["n_switch",] 
+average_numberof_yearsontreatment <- modelresults_summarised["years_on_treatment",] 
+average_numberof_yearson2ndline<- modelresults_summarised["t_2ndline",] 
+average_numberof_yearson3rdline<- modelresults_summarised["t_3rdline",] 
+average_numberof_yearson4thline<- modelresults_summarised["t_4thline",]
+
+key_events_trt_grps <- as.data.frame(rbind(
+  proportion_spms,   average_numberof_relapses, 
+  average_numberof_edssincreases,   average_numberof_edssdecreases, 
+  final_edss_value,   average_numberof_saes,
+  average_numberof_treatmentswitches,  average_numberof_yearsontreatment,
+  average_numberof_yearson2ndline,  average_numberof_yearson3rdline,
+  average_numberof_yearson4thline),
+  row.names=c("proportion with spms", "average no. of relapses", 
+              "average no. of edss increases", "average no. of edss decreases", 
+              "final edss value", "average no. of SAEs",
+              "average no. of treatment switches", "average no. of years on treatment",
+              "average no. of years on 2ndline", "average no. of years on 3rdline",
+              "average no. of years on 4thline")
+)
+View(key_events_trt_grps)
+
+
 #  VOI analysis
 #total EVPI
 
@@ -232,27 +265,31 @@ total_evppi <- voi::evppi(outputs = list(c = total_costs,
                           verbose = TRUE)
 
 View(total_evppi)
-#plot in base R
-total_evppi_25k <- total_evppi$evppi[total_evppi$k ==25000]
-names(total_evppi_25k) <- total_evppi$pars[total_evppi$k ==25000]
 
+#plot in base R split ober A and B panels as there are too many parameters to plot
+total_evppi_25k_a <- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
+names(total_evppi_25k_a) <- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
+par(las=1, bg="white", mai=c(0.85, 4, 0.5, 0.5))
 barplot(
-  sort(total_evppi_25k, decreasing=FALSE), horiz = TRUE, las=1, cex.names=0.5, xlim=c(0,12000)
-  )
-
-
-total_evppi_35k <- total_evppi$evppi[total_evppi$k ==35000]
-names(total_evppi_35k) <- total_evppi$pars[total_evppi$k ==35000]
-
-barplot(
-  sort(total_evppi_35k, decreasing=FALSE), horiz = TRUE, las=1, cex.names=0.5, xlim=c(0,18000)
+  sort(total_evppi_25k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.9, main="EVPPI WTP 25,000/QALY (A)", xlab= "£"
 )
 
-#plot with tidyverse #not able to sort as above
-total_evppi_w <-  pivot_wider(total_evppi, names_from = k, values_from = evppi, names_glue = "{.value}_{k}")
-#total_evppi_w <- column_to_rownames(total_evppi_w, "pars") # this does not plot as y is missing so need some other graph type?
-ggplot(total_evppi_w$evppi_25000) +  geom_bar()
+total_evppi_25k_b <- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
+names(total_evppi_25k_b) <- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
+barplot(
+  sort(total_evppi_25k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, main="EVPPI WTP 25,000/QALY (B)", xlab= "£"
+)
 
-ggplot(total_evppi_w, aes(y=pars,x=evppi_25000)) +  geom_col()
-ggplot(total_evppi_w, aes(y=pars,x=evppi_35000)) +  geom_col()
+total_evppi_35k_a <- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
+names(total_evppi_35k_a) <- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
+par(las=1, bg="white", mai=c(0.85, 4, 1, 0.5))
+barplot(
+  sort(total_evppi_35k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.5, main="EVPPI WTP 35,000/QALY (A)", xlab= "£"
+)
 
+total_evppi_35k_b <- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
+names(total_evppi_35k_b) <- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
+par(las=1, bg="white", mai=c(0.85, 4, 1, 0.5))
+barplot(
+  sort(total_evppi_35k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, main="EVPPI WTP 35,000/QALY (B)",xlab= "£"
+)
