@@ -55,7 +55,21 @@ ui <-
       title = div(img(src="https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png", 
                                id ="logo")),
     
-      
+      # 00  nav panel Introduction : displays model diagram and model description
+      nav_panel(  
+        title =  "Project Background",
+        
+        # side by side column layout:
+
+          
+          #Project Background:
+          card(
+            
+            card_body(markdown(uiOutput("uo_projectbackground"))),
+            
+          ),
+
+      ),# nav panel 1 Introduction
       # 01 nav panel Introduction : displays model diagram and model description
       nav_panel(  
         title =  "Model Info",
@@ -339,6 +353,11 @@ ui <-
 server <- 
   # server function with inputs and outputs
   function(input, output, session){
+    
+    # #render project background file
+    output$uo_projectbackground <- renderUI({
+      includeMarkdown("shiny/project background.md")
+    })
     
     # #render model description file
     output$uo_modedescription <- renderUI({
