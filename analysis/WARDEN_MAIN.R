@@ -144,33 +144,32 @@ total_runtime <- system.time({
 
 
 # Summarise the results
-#results_summary_determenistic <- summary_results_det(results[[1]][[1]]) # only use if 1 simulation
 
-# results_summary_probabalistic <- summary_results_sim(results[[1]]) # use if >1 simulation
-# View(results_summary_probabalistic)
+dim_results <- c(n_samples, n_treatments, n_patients)
+trt_idx <- setNames(seq_along(v_treatment_names), v_treatment_names)
+total_costs_ipd <- total_qalys_ipd <-  array(
+  NA_real_,
+  dim = dim_results,
+  dimnames = list(NULL, v_treatment_names, NULL)
+)
 
-total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
-                                            dimnames = list(NULL, v_treatment_names, NULL))
-
-# Below is not very efficient but only needs to be run once at end of simulation
-for(treatment_name in v_treatment_names) {
-  for(i_sample in 1:n_samples) {
-    for(i_patient in 1:n_patients) {
-      # With statement is neater but much slower
-      temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
-        results[[1]][[i_sample]]$merged_df$arm == treatment_name & #
-        results[[1]][[i_sample]]$merged_df$evtname == "death"
-      
-      total_costs_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$total_costs[temp_index]
-      
-      total_qalys_ipd[i_sample, treatment_name, i_patient] <-
-        results[[1]][[i_sample]]$merged_df$total_qalys[temp_index]
-    } # End loop over patients
-    # Summarise for just this sample
-    
-  }
+for (i_sample in seq_len(n_samples)) {
+  
+  df <- results[[1]][[i_sample]]$merged_df
+  
+  # Keep only final ("death") rows
+  df <- df[df$evtname == "death", ]
+  
+  idx <- cbind(
+    i_sample,
+    trt_idx[df$arm],
+    df$pat_id
+  )
+  
+  total_costs_ipd[idx]         <- df$total_costs
+  total_qalys_ipd[idx]         <- df$total_qalys
 }
+
 
 options(scipen = 999)
 total_costs <- apply(total_costs_ipd, c(1, 2), mean)
@@ -229,7 +228,8 @@ total_evppi <- voi::evppi(outputs = list(c = total_costs,
                                          k = c(25000, 35000)),
                           inputs = df_inputs,
                           pars = parameters,
-                          method = "bart")
+                          method = "bart", 
+                          verbose = TRUE)
 
 View(total_evppi)
 #plot in base R

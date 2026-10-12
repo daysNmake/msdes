@@ -486,7 +486,6 @@ server <-
       },
       message = function(m) {
         html(id = "progress_text", html = paste0(m$message, '<br>'), add = TRUE)
-        i<<-0
         i<<- ifelse(exists("i"), (i+1) , 1 )
         updateProgressBar(session = session, id = "pb4", value = (i/((input$si_n_samples*2)+4))*100 )
       }
@@ -497,32 +496,33 @@ server <-
       #create output
       output$to_results_table <- renderTable({
         
-        # WARDEN::summary_results_det(results[[1]][[1]]) , # only use if 1 simulation
         n_patients<- input$si_n_patients
         n_samples <- input$si_n_samples
+        # Summarise the results
         
+        dim_results <- c(n_samples, n_treatments, n_patients)
+        trt_idx <- setNames(seq_along(v_treatment_names), v_treatment_names)
+        total_costs_ipd <- total_qalys_ipd <-  array(
+          NA_real_,
+          dim = dim_results,
+          dimnames = list(NULL, v_treatment_names, NULL)
+        )
         
-        total_costs_ipd <- total_qalys_ipd <- array(NA, dim = c(n_samples, n_treatments, n_patients),
-                                                    dimnames = list(NULL, v_treatment_names, NULL))
-        
-        # Below is not very efficient but only needs to be run once at end of simulation
-        for(treatment_name in v_treatment_names) {
-          for(i_sample in 1:n_samples) {
-            for(i_patient in 1:n_patients) {
-              # With statement is neater but much slower
-              temp_index <- results[[1]][[i_sample]]$merged_df$pat_id == i_patient &
-                results[[1]][[i_sample]]$merged_df$arm == treatment_name & #
-                results[[1]][[i_sample]]$merged_df$evtname == "death"
-              
-              total_costs_ipd[i_sample, treatment_name, i_patient] <-
-                results[[1]][[i_sample]]$merged_df$total_costs[temp_index]
-              
-              total_qalys_ipd[i_sample, treatment_name, i_patient] <-
-                results[[1]][[i_sample]]$merged_df$total_qalys[temp_index]
-            } # End loop over patients
-            # Summarise for just this sample
-            
-          }
+        for (i_sample in seq_len(n_samples)) {
+          
+          df <- results[[1]][[i_sample]]$merged_df
+          
+          # Keep only final ("death") rows
+          df <- df[df$evtname == "death", ]
+          
+          idx <- cbind(
+            i_sample,
+            trt_idx[df$arm],
+            df$pat_id
+          )
+          
+          total_costs_ipd[idx]         <- df$total_costs
+          total_qalys_ipd[idx]         <- df$total_qalys
         }
         
         options(scipen = 999)
@@ -674,10 +674,9 @@ server <-
       },
       message = function(m) {
         html(id = "progress_text_voi", html = paste0(m$message, '<br>'), add = TRUE)
-        i<<-0
         i<<- ifelse(exists("i"), (i+1) , 1 )
         updateProgressBar(session = session, id = "pbvoi", value = (
-          ((i/input$si_n_samples*5))*10 # this is not correct: subtract 0.05? then multiply by 100?
+          ((i/input$si_n_samples))*10 # this is not correct
           #(round(i/sum(dim(df_inputs)))-1)*10
           ) )
       }
