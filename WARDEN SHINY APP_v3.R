@@ -308,7 +308,7 @@ ui <-
               
               nav_panel(#04D
                 title = "Key Model Events",
-                plotOutput(outputId = "key events")),
+                plotOutput(outputId = "po_keyevents")),
               
               nav_panel(#04E
                 title = "Mortality Overtime",
@@ -630,23 +630,23 @@ server <-
         
       })
       
-      output$po_keyevents <-  renderPlot({
+      output$po_keyevents<- renderDT({
         
         #compare key events by treatment groups
-        modelresults_summarised <- summary_results_sim(results[[1]])
-        proportion_spms  <- modelresults_summarised["spms_flag",]
-        average_numberof_relapses <- modelresults_summarised["n_relapse",] 
-        average_numberof_edssincreases <- modelresults_summarised["n_edssinc_evts",] 
-        average_numberof_edssdecreases<- modelresults_summarised["n_edssdec_evts",] 
-        average_numberof_saes<- modelresults_summarised["n_sae_evts",] 
-        final_edss_value <- modelresults_summarised["edss_value",]
-        average_numberof_treatmentswitches <- modelresults_summarised["n_switch",] 
-        average_numberof_yearsontreatment <- modelresults_summarised["years_on_treatment",] 
-        average_numberof_yearson2ndline<- modelresults_summarised["t_2ndline",] 
-        average_numberof_yearson3rdline<- modelresults_summarised["t_3rdline",] 
-        average_numberof_yearson4thline<- modelresults_summarised["t_4thline",]
+        modelresults_summarised <<- summary_results_sim(results[[1]])
+        proportion_spms  <<- modelresults_summarised["spms_flag",]
+        average_numberof_relapses <<- modelresults_summarised["n_relapse",] 
+        average_numberof_edssincreases <<- modelresults_summarised["n_edssinc_evts",] 
+        average_numberof_edssdecreases<<- modelresults_summarised["n_edssdec_evts",] 
+        average_numberof_saes<<- modelresults_summarised["n_sae_evts",] 
+        final_edss_value <<- modelresults_summarised["edss_value",]
+        average_numberof_treatmentswitches <<- modelresults_summarised["n_switch",] 
+        average_numberof_yearsontreatment <<- modelresults_summarised["years_on_treatment",] 
+        average_numberof_yearson2ndline<<- modelresults_summarised["t_2ndline",] 
+        average_numberof_yearson3rdline<<- modelresults_summarised["t_3rdline",] 
+        average_numberof_yearson4thline<<- modelresults_summarised["t_4thline",]
         
-        key_events_trt_grps <- as.data.frame(rbind(
+        key_events_trt_grps <<- as.data.frame(rbind(
           proportion_spms,   average_numberof_relapses, 
           average_numberof_edssincreases,   average_numberof_edssdecreases, 
           final_edss_value,   average_numberof_saes,
@@ -661,7 +661,7 @@ server <-
                       "average no. of years on 4thline")
         )
         
-        key_events_trt_grps
+        datatable(key_events_trt_grps, editable = FALSE, options = list(dom = 't'))
         
         
       })
