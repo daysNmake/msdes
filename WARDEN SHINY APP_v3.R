@@ -29,9 +29,14 @@ devtools::load_all()
 
 
 # call model as function run once to load inputs for ui first (best to automate?)
-P_eid_default <- 0.0
+
 rrmsdessetup(
-  p_eid=0 # proportion of patients on external interval dosing 
+  drc= 0.035, #3.5% discount rate for costs
+  drq= 0.035, #3.5% discount rate for qalys
+  time_horizon = 70, # number of years model is running for starting at intial age
+  p_eid=0, # proportion of patients on external interval dosing
+  jcvtest_cost= 0 #assumed free due to home service, test cost could be £247 privately but not offered in the NHS
+  
 )
 
 
@@ -55,7 +60,7 @@ ui <-
       title = div(img(src="https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png", 
                                id ="logo")),
     
-      # 00  nav panel Project Background:
+      # 01  nav panel Project Background:
       nav_panel(  
         title =  "Project Background",
           card(
@@ -66,7 +71,7 @@ ui <-
 
       ),# nav panel 1 Project Background
       
-      # 01 nav panel Introduction : displays model diagram and model description
+      # 02 nav panel Introduction : displays model diagram and model description
       nav_panel(  
         title =  "Model Info",
         
@@ -91,12 +96,12 @@ ui <-
       ),# nav panel 1 Introduction
       
 
-      #nav panel 2 Model inputs : tabs: treatment costs, admin & monitoring costs
+      #nav panel 3 Model inputs : tabs: treatment effects, treatment costs, admin & monitoring costs
       nav_panel(  
         title =  "Model Inputs",
         
         
-        #02 nav panel for model inputs
+        #03 nav panel for model inputs
         navset_card_underline(
           
           #02A nav panel for model inputs Relative Treatment Effects
@@ -108,30 +113,30 @@ ui <-
               # card body for CDP6
               card(
                    card_header(class="bg-light text-primary",
-                               "Confirmed Disability progresssion at 6 months CDP6 Hazard ratios in comparison to Natalizumab as the reference treatment.
-                               Assuming equivilence of Natalizumab originator, and biosimilar.
+                               "Model inputs: Confirmed Disability progresssion at 6 months CDP6 Hazard ratios in comparison to Natalizumab as the reference treatment.
+                               Model inputs assuming equivilence of Natalizumab originator, and biosimilar.
                           "),
-              "Assuming equivilence of Ublituximab, ofatumumab and ocrelizumab",
+              "Model inputs assuming equivilence of Ublituximab, ofatumumab and ocrelizumab",
               DTOutput(outputId = "to_CDP6"),
               ), #card body
           
             # card body for ARR
             card(
               card_header(class="bg-light text-primary",
-                          "Annualized Relapse Rates ARR rate ratios in comparison to Natalizumab as the reference treatment.
-                          Assuming equivilence of Natalizumab originator, and biosimilar.
+                          "Model inputs: Annualized Relapse Rates ARR rate ratios in comparison to Natalizumab as the reference treatment.
+                          Model inputs assuming equivilence of Natalizumab originator, and biosimilar.
                           "),
-              "Assuming equivilence of Ublituximab and ocrelizumab" , 
+              "Model inputs assuming equivilence of Ublituximab and ocrelizumab" , 
                       DTOutput(outputId = "to_ARR"),
             ), #card body
             
             # card body for AELtD
             card(
               card_header(class="bg-light text-primary",
-                          "Adverse Events Leading to Discontinuation AELtD  rate ratios in comparison to Natalizumab as the reference treatment. 
-                          Assuming equivilence of Natalizumab originator, and biosimilar.
+                          "Model inputs: Adverse Events Leading to Discontinuation AELtD  rate ratios in comparison to Natalizumab as the reference treatment. 
+                          Model inputs assuming equivilence of Natalizumab originator, and biosimilar.
                           "),
-                      "Assuming equivilence of Ublituximab, ofatumumab and ocrelizumab" , 
+                      "Model inputs assuming equivilence of Ublituximab, ofatumumab and ocrelizumab" , 
                       DTOutput(outputId = "to_AELtD"),
             ), #card body
             
@@ -142,43 +147,44 @@ ui <-
           
           #02B nav panel for model inputs treatment costs
           nav_panel(
-            title = "Treatment costs",
+            title = "Treatment Costs",
             
            # card with header, card body x2, and footer 
             card(
-              card_header(class="bg-light text-primary",
-                "Total Annual Treatment costs per DMT"),
+              
 
             # card body for treatment costs
-            card_body(height=300 ,
-                      "Total annual treatment costs can be updated in place by selecting the individual cells in the table and enetring new values:",     
+            card_body(height=250 ,
+                      card_title(class="bg-light text-primary",
+                                  "Model inputs: Total Annual Treatment costs per DMT"),
+                      "Model inputs: Total annual DMT costs can be updated in place by selecting the individual cells in the table and enetring new values:",     
                   DTOutput(outputId = "to_treatment_costs"),
             ), #card body
            
             # card body for description of treatment costs
-            card_body(height=100,
+            card_body(height=250,
+                      card_title(class="bg-light text-primary",
+                                  "Background information on DMT costs"),
               markdown(uiOutput("uo_costs_readme")),
               ), # card body
-            
-            card_footer(class="bg-light", "Refer to publication for more info DOI:")
             
             ) #card layout with header and footer
             ), #nav panel model inputs treatment costs
           
           #02C nav panel for model inputs admin costs
           nav_panel(
-            title = "administration & monitoring costs",
+            title = "Administration & Monitoring Costs",
             #Output
             card(
               
             card_body(
-              card_title(class="bg-light text-primary","Total annual treatment administration costs"),
-              "Total annual treatment administration costs can be updated in place by selecting the individual cells in the table and enetring new values:",
+              card_title(class="bg-light text-primary","Model inputs: Total annual treatment administration costs"),
+              "Model inputs: Total annual treatment administration costs can be updated in place by selecting the individual cells in the table and enetring new values:",
               DTOutput(outputId = "to_administration_costs")),
             
             card_body(
-              card_title(class="bg-light text-primary","Total annual treatment monitoring costs"),
-              "Total annual treatment monitoring costs can be updated in place by selecting the individual cells in the table and enetring new values:",
+              card_title(class="bg-light text-primary","Model inputs: Total annual treatment monitoring costs"),
+              "Model inputs: Total annual treatment monitoring costs can be updated in place by selecting the individual cells in the table and enetring new values:",
               DTOutput(outputId = "to_monitoring_costs"))
         
             )
@@ -189,49 +195,72 @@ ui <-
       ), ##nav panel 2 Model inputs
       
       
-      #03 nav panel Model set-up navigation panel gives model default settings and options for scenarios
+      #04 nav panel Model set-up navigation panel gives model default settings and options for scenarios
       nav_panel(  
         title =  "Model settings and scenarios",
         
-        #layout_column_wrap( 
+        layout_column_wrap( 
           card(
-            card_title("Default settings & Scenarios"),
-            #card_image("shiny/model_diagram.png")
+            card_body(
+            card_title(class="bg-light text-primary", "Model default Settings apply independent of all model inputs & scenarios"),
+            "Change default setting here:",
             
-         #card body for EID assumption:
+            #input for time horizon
+            numericInput(
+              inputId = "ni_time_horizon" , 
+              label = "Time Horizon, number of years for the model to run:",
+              value = 70, min=10, max=100, step=10),
+            #input for discount rate
+            numericInput(
+              inputId = "ni_drc" , 
+              label = "Discount rate for costs:",
+              value = 0.035, min=0, max=1, step=0.01),
+            numericInput(
+              inputId = "ni_drq" , 
+              label = "Discount rate for QALYs:",
+              value = 0.035, min=0, max=1, step=0.01),
+            
+            "Click button to change default settings:",
+            
+            #button to run model
+            actionButton(
+              inputId = "ab_update_default_settings", label = "Update default settings")
+            
+            
+            
+            ), # card body
+          ), #card
+        
+        card(
+          #card body for EID assumption:
           card_body(
-            "Assumption for the perventage of patitents reciving the 6-week interval dosing, this was assumed to be 60% in the appraisal
-            It is set to to be 0% by default,",
-          
+            card_title(class="bg-light text-primary",
+                       "Scenarios are applied to default model inputs, they will relpace custom model inputs by the user"),
+            "Model inputs assumption: the percentage of patitents reciving the 6-week interval dosing, this was assumed to be 60% in the appraisal
+            It is set to be 0% by default in the model,",
+            
             numericInput( 
-            "n_p_eid", 
-            "proportion of people on  extended interval dosing to be changed here:",
-            value= P_eid_default, min = 0, max=1, step=0.01 ),
-          
-          actionButton("update_eid", "Update the EID assumption"),
-          
-          uiOutput("uo_eid")
+              "n_p_eid", 
+              "proportion of people on  extended interval dosing to be changed here:",
+              value= 0.0, min = 0, max=1, step=0.01 ),
+            
+            "Model inputs assumption: manufacturer offering free JVC test as the test is not offered on the NHS, the test is avaible privately",
+            
+            numericInput( 
+              "n_jcv_test_cost", 
+              "JCV test cost could be changed here:",
+              value= 0.0, min = 0, max=1000, step=1 ),
+            
+            actionButton("ab_update_scenarios", "Update the scenarios assumptions"),
+            
+            uiOutput("uo_eid")
           ), #card body
-         # card body for custom treatment costs
-         #not using this now as changing treatment cost within table
-         # card_body(
-         #           # tableOutput(outputId = "to_treatment_costs"),
-         #           "Option to set custom treatment costs for DMTs of choice",
-         #           radioButtons("trt", "Select DMT for which cost is to be updated:",
-         #                        v_treatment_names, inline = TRUE),
-         #           
-         #           numericInput( 
-         #             "ntc", 
-         #             "Enter new cost for selected DMT:",
-         #             value= 0, min=0, max = 50000),
-         #           
-         #           actionButton("update_trt_cost", "Update with custom treatment cost"),
-         # ), #card body
-          ) #card
-        #) #layout_column_wrap
+        ) #card
+        
+        ) #layout_column_wrap
       ), #model setup nav panel
       
-      #04 MS-Model run and results navigation panel
+      #05 MS-Model run and results navigation panel
       nav_panel(  
         
         title =  "MS-DES Model",
@@ -288,7 +317,7 @@ ui <-
         ) #sidebar layout
       ),#Ms model results panel 
       
-      #05 Value of Information Analysis and results navigation panel
+      #06 Value of Information Analysis and results navigation panel
       nav_panel(  
         
         title =  "Value of Information",
@@ -401,7 +430,7 @@ server <-
 
     #display model input in tables with editable fields 
     output$to_treatment_costs <- renderDT({datatable(temp_inputs$tx_costs, editable = TRUE, options = list(dom = 't'))})
-    output$uo_costs_readme <- renderUI({includeMarkdown("README.md")})
+    output$uo_costs_readme <- renderUI({includeMarkdown("shiny/treatmentcostdescription.md")})
     
     output$to_administration_costs <- renderDT({datatable(temp_inputs$tx_admin_costs, editable = TRUE, options = list(dom = 't'))})
     output$to_monitoring_costs <- renderDT({datatable(temp_inputs$tx_monitor_costs, editable = TRUE, options = list(dom = 't'))})
@@ -453,41 +482,53 @@ server <-
                 # custom message confirming action
                 showNotification("Custom monitoring costs specified", type = "message")
               })
+              
+              # reactive update default settings
+              observeEvent(input$ab_update_default_settings, {
+                
+                # new default settings
+                new_time_horizon = reactiveVal(input$ni_time_horizon)
+                new_drc = reactiveVal(input$ni_drc)
+                new_drq = reactiveVal(input$ni_drq)
+                
+                # save new default setting to model inputs
+                inputs[["time_horizon"]] <<- new_time_horizon()
+                inputs[["drc"]] <<- new_drc()
+                inputs[["drq"]] <<- new_drq()
+
+                showNotification("default settings updated", type = "message")
+                
+
+              }) #reactive update default settings
     
-            # reactive update of eid assumption
-              observeEvent(input$update_eid, {
+            # reactive update of scenarios
+              observeEvent(input$ab_update_scenarios, {
                 #update scenarios: p_eid
                 var_new1 = reactiveVal(input$n_p_eid)
-                rrmsdessetup(p_eid=var_new1()) #call in the inputs for the app
+                #update JCV test cost
+                var_new2 = reactiveVal(input$n_jcv_test_cost)
                 
-                #display updated treatment costs after assumption change
+                #reload model inputs with scenarios
+                rrmsdessetup(  drc=inputs[["drc"]], #default or updated default setting
+                               drq=inputs[["drq"]], #default or updated default setting
+                               time_horizon=inputs[["time_horizon"]], #default or updated default setting
+                               p_eid=var_new1(), #new eid scenario
+                               jcvtest_cost= var_new2() #new jcv scenario
+                               ) #call in the inputs for the app
+                
+                #display updated  costs after assumption change
                 output$to_treatment_costs <- 
-                  renderDT({datatable(temp_inputs$tx_costs, editable = TRUE, options = list(dom = 't'))})
-                  # renderTable({inputs[["df_c_tx"]]},rownames=TRUE)
+                  renderDT({datatable(inputs[["df_c_tx"]], editable = TRUE, options = list(dom = 't'))})
+                output$to_administration_costs <- 
+                  renderDT({datatable(inputs[["df_c_tx_admin"]], editable = TRUE, options = list(dom = 't'))})
+                output$to_monitoring_costs <- 
+                  renderDT({datatable(inputs[["df_c_tx_monitor"]], editable = TRUE, options = list(dom = 't'))})
+
                 
-                showNotification("Proportion of patients on EID updated, look at Model inputs > Treatment Costs to view the changes", type = "message")
-                showNotification("Please do not update EID assumption more than once, restart app if needed", type = "warning", duration = 10)
+                showNotification("Scenarios  updated, look at Model inputs to view the changes", type = "message")
                 
-              }) #reactive update of eid assumption
+              }) #reactive update of scenarios
                 
-              #reacive update of treatment costs with radial buttons, 
-              #going to replace this now.
-              # observeEvent(input$update_trt_cost, {
-              #   #update inputs: treatment costs
-              #    var_new = reactiveVal(input$ntc)
-              #   inputs$df_c_tx["cost_annual_yr1", input$trt] <<- var_new()
-              #   inputs$df_c_tx["cost_annual_yr2", input$trt] <<- var_new()
-              # 
-              # 
-              #   #display updated treatment costs after assumption change
-              #   output$to_treatment_costs <-renderTable({inputs[["df_c_tx"]]},rownames=TRUE)
-              # 
-              #   
-              #   showNotification("Custom treatment costs specified, look at Model inputs > Treatment Costs to view the changes", type = "message")
-              # 
-              # })
-    
-     
     
     #Action triggered by run model button pressed
     observeEvent(input$ab_run_model,  {

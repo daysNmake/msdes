@@ -85,8 +85,12 @@ n_edss_values <- length(v_edss_values)
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
 inputs <- gen_inputs(
-  # change assumptions used in scenario analyses
-  p_eid=0.6 # proportion of patients on external interval dosing
+  # change model settings or assumptions used in scenario analyses
+  drc= 0.035, #3.5% discount rate for costs
+  drq= 0.035, #3.5% discount rate for qalys
+  time_horizon = 70, # number of years model is running for starting at intial age
+  p_eid=0.6, # proportion of patients on external interval dosing
+  jcvtest_cost= 0 #assumed free due to home service, test cost could be £247 privately but not offered in the NHS
                      )
 
 # Global parameters of the model as they are common to all patients and treatments

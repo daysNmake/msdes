@@ -11,7 +11,9 @@
 #' @export
 
 #model setup with inputs allowing for reactive changes to take place in shiny
-rrmsdessetup <- function(p_eid=p_eid){
+rrmsdessetup <- function(drc=drc, drq=drq,
+                         time_horizon = time_horizon, p_eid=p_eid,
+                         jcvtest_cost=jcvtest_cost){
   ## Treatments at second line 
   v_treatment_names <<- c("Natalizumab-IV",
                           "Natalizumab-SC",
@@ -58,9 +60,10 @@ rrmsdessetup <- function(p_eid=p_eid){
   n_edss_values <<- length(v_edss_values)
   
   #Function to generate inputs, the same for both packages
-  source("R/generate_inputs.R")
+  #source("R/generate_inputs.R")
   ## Model inputs generated using the generate inputs function
-  inputs <<- gen_inputs(p_eid=p_eid)
+  inputs <<- gen_inputs(drc=drc, drq=drq,
+                        time_horizon = time_horizon, p_eid=p_eid, jcvtest_cost=jcvtest_cost)
 }
 
 

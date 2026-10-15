@@ -9,19 +9,24 @@
 #' @param time_horizon the duration of the patient's life in the model
 #' @param prop_female baseline characteristics
 #' @export
-gen_inputs <- function(p_eid=p_eid){
+gen_inputs <- function(drc=drc, drq=drq,
+                       time_horizon=time_horizon, p_eid=p_eid, jcvtest_cost=jcvtest_cost){
   ## Standard Deviation for probabilistic analysis when uncertainty not reported
   # assumed 1/10 of mean
   sd_psa <- 10
   
+  #discount rate
+  drc<-drc
+  drq<-drq
+  
   ## Baseline population age sex and model time horizon
   initial_age <- rnorm(1,36, 8/36)  # 36 ± 8 both arms of AFFIRM (N = 942)
-  time_horizon <- 100.0000 # Years so lifetime
+  time_horizon <- time_horizon # Years so lifetime
   prop_female <- 0.70 #  (n=660) both arms of AFFIRM (N = 942)
   p_eid <- p_eid # proportion on extended interval dosing
   s_c_tx_adminyr1_natsc <-0.5 # scenario reducing admin cost of natalizumab sc year 1, default is 0.5
   s_c_tx_adminyr2_natsc <-0.5 # scenario reducing admin cost of natalizumab sc year 2, default is 0?
-  s_c_jcv_tx <- 247 #scenario reducing the JCV testing cost to zero
+  jcvtest_cost <- jcvtest_cost #scenario reducing the JCV testing cost to zero
   
   #add sensitivities for NMA here or in generate_global_inputs_warden.R
   
@@ -45,10 +50,10 @@ gen_inputs <- function(p_eid=p_eid){
 
   df_c_tx_monitor <-t(read.csv("data/df_c_monitoring.csv", header = T, row.names = 1))
   df_c_tx_monitor <- df_c_tx_monitor[,intersect(colnames(df_c_tx_monitor),v_treatment_names)]
-  df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] - s_c_jcv_tx) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] - s_c_jcv_tx) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] - s_c_jcv_tx) #  free JCV test 
-  df_c_tx_monitor[,"Natalizumab biosimilar-SC"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-SC"] - s_c_jcv_tx) #  free JCV test
+  df_c_tx_monitor[,"Natalizumab-IV"] <- (df_c_tx_monitor[,"Natalizumab-IV"] -247 + jcvtest_cost) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab-SC"] <- (df_c_tx_monitor[,"Natalizumab-SC"] -247+ jcvtest_cost) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab biosimilar-IV"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-IV"] -247+ jcvtest_cost) #  free JCV test 
+  df_c_tx_monitor[,"Natalizumab biosimilar-SC"] <- (df_c_tx_monitor[,"Natalizumab biosimilar-SC"] -247+ jcvtest_cost) #  free JCV test
   
   ## Annual treatment scheduled
   df_c_tx_load <-t(read.csv("data/df_c_retreatment.csv", header = T, row.names = 1))
@@ -192,6 +197,11 @@ gen_inputs <- function(p_eid=p_eid){
     time_horizon = time_horizon,
     prop_female = prop_female,
     sd_psa =sd_psa,
+    p_eid=p_eid,
+    drc=drc,
+    drq=drq,
+    time_horizon=time_horizon,
+    jcvtest_cost=jcvtest_cost,
     ## baseline distribution of EDSS health states (MS Registry)
     m_n_patients_edss=m_n_patients_edss, 
     ##  Annual treatment, administration and monitoring costs 

@@ -18,8 +18,8 @@ gen_common_all_inputs <- function() {
   v_prior_treatment_indices = v_prior_treatment_indices,
   initial_age = inputs[["initial_age"]],
   time_horizon = inputs[["time_horizon"]],
-  drc = 0.035,                              # discount rate for costs
-  drq = 0.035,                               # discount rate for qaly/lys
+  drc = inputs[["drc"]],                              # discount rate for costs
+  drq = inputs[["drq"]],                               # discount rate for qaly/lys
   prop_female = inputs[["prop_female"]],
   v_edss_values = v_edss_values,
   df_c_tx = inputs[["df_c_tx"]], # drug costs are not probabilistic
