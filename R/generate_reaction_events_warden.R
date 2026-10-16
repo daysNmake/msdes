@@ -22,7 +22,12 @@ gen_react_events <- function(RRMS_events){
                                     spms_flag *  l_c_spms_edss[[names(v_edss_values[edss_value == v_edss_values])]]
 
                  modify_event(
-                   c("death"= abs(min(get_event("death") , inputs[["time_horizon"]]) - inputs[["initial_age"]])) 
+                   c("death"= 
+                       ifelse(get_event("death") - inputs[["initial_age"]] > 0 ,
+                              min(get_event("death") - inputs[["initial_age"]], inputs[["time_horizon"]])      ,
+                              min(get_event("death"), inputs[["time_horizon"]])
+                              )
+                     ) 
                  )
                  
                  # annual cost events
