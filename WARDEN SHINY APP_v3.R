@@ -308,7 +308,7 @@ ui <-
               
               nav_panel(#04D
                 title = "Key Model Events",
-                plotOutput(outputId = "po_keyevents")),
+                DTOutput(outputId = "po_keyevents")),
               
               nav_panel(#04E
                 title = "Mortality Overtime",
