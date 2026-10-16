@@ -7,7 +7,6 @@
 #' 
 #' @param rrmsdessetup() a function setting up model inputs to be modified within the shiny app
 #' @param rrmsdesmodel() a function running the model inputs called within the shiny app
-#' @param p_eid proportion of patients on extended interval dosing
 #' @export
 
 #model setup with inputs allowing for reactive changes to take place in shiny

@@ -1,9 +1,13 @@
 #'
 #' @description
-#' Global parameters of the model as they are common to all patients and treatments
+#' Global input parameters for the model are common to all patients and treatments.
 #' 
 #' @details
-#' Put objects here that do not change as we loop through treatments for a patient
+#' Input parameters here that do not change as we loop through treatments for a patient.
+#' The input parameters are called from 'gen_inputs()' function or the main analysis script.
+#' They are called in with 'WARDEN::add_item()' functions, these are piped with %>% operator.
+#' Probabilistic input parameters are specified with 'WARDEN::pick_val_v()' function creating a list of 
+#' deterministic and probabilistic values
 #' 
 #' @param drc discount rate for costs
 #' @param drq discount rate for qalys

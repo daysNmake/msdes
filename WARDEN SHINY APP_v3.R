@@ -266,11 +266,28 @@ ui <-
         title =  "MS-DES Model",
         #side bar panel has model setup options no. of patients, no. of simulation, and progress bar 
         layout_sidebar(
-          title="",
           #Side bar panel for model inputs
           sidebar= sidebar(
-            title="Simulation settings",
-            #slider for number of patients
+          accordion(  
+            open=c("Willingness to Pay Threshhold (WTP)", "Simulation settings", "Run Model"),
+            
+            accordion_panel(
+              "Willingness to Pay Threshhold (WTP)",
+              
+              numericInput(
+                inputId = "ni_wtp1" , 
+                label = "WTP lower bound",
+                value = 25000, min=1, max=1000000, step=1000),
+              #slider for number of simulations
+              numericInput(
+                inputId = "ni_wtp2" , 
+                label = "WTP Upper bound",
+                value = 35000, min=1, max=1000000, step=1000),
+            ),
+            
+            accordion_panel(
+              "Simulation settings",
+             #slider for number of patients 
             numericInput(
               inputId = "si_n_patients" , 
               label = "Number of simulated patients",
@@ -280,6 +297,9 @@ ui <-
               inputId = "si_n_samples" , 
               label = "Number of simulations to run",
               value = 100, min=1, max=1000, step=10),
+            ),
+            accordion_panel(
+              "Run Model",
             #progress bar
             column(4,progressBar(id = "pb4", value = 0, display_pct = T)),
             #button to run model
@@ -287,8 +307,18 @@ ui <-
               inputId = "ab_run_model", label = "Run DES Model"),
             useShinyjs(),
             textOutput("progress_text")
-          ), #sidebar panel
+            ),
+            ), #accordion
+          ), #sidebar 
           
+          # sidebar= sidebar(
+          #   title="other input",
+          #   #slider for number of patients
+          #   numericInput(
+          #     inputId = "si_wtp" , 
+          #     label = "willingness to pay threshold",
+          #     value = 25000, min=1, max=1000000, step=1000)
+          # ),
           
           #Card panels for model results
           navset_card_underline(
@@ -341,7 +371,7 @@ ui <-
           navset_card_underline(
             #wtp25k
             nav_panel(
-              title = "EVPPI at WTP £25,000",
+              title = paste("EVPPI at WTP £25,000"),
               card(
                 height = 300,
                 style = "resize:vertical;",
@@ -594,7 +624,8 @@ server <-
         total_costs <<- total_costs[,-c(4,5)]
         total_qalys <<- total_qalys[,-c(4,5)]
         
-        results_table <- summarise_ce_results(total_qalys = total_qalys, 
+        results_table <- summarise_ce_results(wtp1 = input$ni_wtp1, wtp2 = input$ni_wtp2,
+                                              total_qalys = total_qalys, 
                                               total_costs = total_costs,
                                               reference = "Natalizumab-IV")
         
@@ -611,7 +642,7 @@ server <-
                           ref = 1,
                           interventions = v_results_treatment_names)
         #plot ce plane
-        ceplane.plot(des_bcea, wtp = 30000,
+        ceplane.plot(des_bcea, wtp = input$ni_wtp2,
                      graph = "ggplot2")
       })
       
@@ -759,7 +790,7 @@ server <-
       
       total_evppi <<- voi::evppi(outputs = list(c = total_costs,
                                                e = total_qalys,
-                                               k = c(25000, 35000)),
+                                               k = c(input$ni_wtp1, input$ni_wtp2)),
                                 inputs = df_inputs,
                                 pars = parameters,
                                 method = "bart",
@@ -782,8 +813,8 @@ server <-
       
       output$po_voi_25k_a <- renderPlot({
         #plot results
-        total_evppi_25k_a <<- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
-        names(total_evppi_25k_a) <<- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        total_evppi_25k_a <<- total_evppi$evppi[total_evppi$k ==input$ni_wtp1 & total_evppi$evppi > mean(total_evppi$evppi)]
+        names(total_evppi_25k_a) <<- total_evppi$pars[total_evppi$k ==input$ni_wtp1 & total_evppi$evppi > mean(total_evppi$evppi)]
         par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
         barplot(
           sort(total_evppi_25k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.9, xlab= "£"
@@ -792,8 +823,8 @@ server <-
       
       output$po_voi_25k_b <- renderPlot({
         #plot results
-        total_evppi_25k_b <<- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
-        names(total_evppi_25k_b) <<- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        total_evppi_25k_b <<- total_evppi$evppi[total_evppi$k ==input$ni_wtp1 & total_evppi$evppi < mean(total_evppi$evppi)]
+        names(total_evppi_25k_b) <<- total_evppi$pars[total_evppi$k ==input$ni_wtp1 & total_evppi$evppi < mean(total_evppi$evppi)]
         par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
         barplot(
           sort(total_evppi_25k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"
@@ -802,8 +833,8 @@ server <-
       
       output$po_voi_35k_a <- renderPlot({
         #plot results
-        total_evppi_35k_a <<- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
-        names(total_evppi_35k_a) <<- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi > mean(total_evppi$evppi)]
+        total_evppi_35k_a <<- total_evppi$evppi[total_evppi$k ==input$ni_wtp2 & total_evppi$evppi > mean(total_evppi$evppi)]
+        names(total_evppi_35k_a) <<- total_evppi$pars[total_evppi$k ==input$ni_wtp2 & total_evppi$evppi > mean(total_evppi$evppi)]
         par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
         barplot(
           sort(total_evppi_35k_a, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"
@@ -812,8 +843,8 @@ server <-
       
       output$po_voi_35k_b <- renderPlot({
         #plot results
-        total_evppi_35k_b <<- total_evppi$evppi[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
-        names(total_evppi_35k_b) <<- total_evppi$pars[total_evppi$k ==35000 & total_evppi$evppi < mean(total_evppi$evppi)]
+        total_evppi_35k_b <<- total_evppi$evppi[total_evppi$k ==input$ni_wtp2 & total_evppi$evppi < mean(total_evppi$evppi)]
+        names(total_evppi_35k_b) <<- total_evppi$pars[total_evppi$k ==input$ni_wtp2 & total_evppi$evppi < mean(total_evppi$evppi)]
         par(las=1, bg="white", mai=c(0.85, 4, 0, 0.5))
         barplot(
           sort(total_evppi_35k_b, decreasing=FALSE), horiz = TRUE, cex.names=0.6, xlab= "£"

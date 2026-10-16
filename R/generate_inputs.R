@@ -1,13 +1,18 @@
 #'
 #' @description
-#' generate model inputs
+#' generate model inputs function, returns a list with all the data required for the model to run.
 #' 
 #' @details
-#' Put all input here that will be called and processed by the other warden functions
+#' Put all input here that will be called and processed by the other warden functions to specify common or unique patient inputs, 
+#' set initial or reaction events. Parameters called by the model are specified here, they can be modified  or new ones can be added.
 #' 
 #' @param initial_age average age of patients entering the model
-#' @param time_horizon the duration of the patient's life in the model
-#' @param prop_female baseline characteristics
+#' @param time_horizon the duration of the patients' life in the model
+#' @param prop_female sex - baseline characteristics
+#' @param drc discount rate for costs
+#' @param drq discount rate for qalys
+#' @param p_eid proportion pf patients treated with Natalizumab Extended Interval Dosing
+#' @returns list what comes out, but not everything
 #' @export
 gen_inputs <- function(drc=drc, drq=drq,
                        time_horizon=time_horizon, p_eid=p_eid, jcvtest_cost=jcvtest_cost){
@@ -15,9 +20,9 @@ gen_inputs <- function(drc=drc, drq=drq,
   # assumed 1/10 of mean
   sd_psa <- 10
   
-  #discount rate
-  drc<-drc
-  drq<-drq
+  
+  drc<-drc #discount rate costs
+  drq<-drq #discount rate qalys
   
   ## Baseline population age sex and model time horizon
   initial_age <- rnorm(1,36, 8/36)  # 36 ± 8 both arms of AFFIRM (N = 942)

@@ -184,7 +184,8 @@ total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
 total_costs <- total_costs[,-c(4,5)]
 total_qalys <- total_qalys[,-c(4,5)]
 
-results_table <- summarise_ce_results(total_qalys = total_qalys, 
+results_table <- summarise_ce_results(wtp1 = 25000, wtp2 = 35000,
+                                      total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
