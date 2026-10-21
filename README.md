@@ -3,18 +3,19 @@
 
 # msdes
 
-<!-- badges: start -->
+<img src="man/figures/logo.png" align="right" height="139"/>
 
-<!-- badges: end -->
-
-The goal of msdes is to …
+msdes is package version of MS-DES (Public prices version) of MS-MTA
+(NICE appraisal version)
 
 ## Installation
+
+currently private page, I think could install with devtools when public
 
 You can install the development version of msdes like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+remotes::install_github("daysNmake/msdes")
 ```
 
 # MS-DES repository
