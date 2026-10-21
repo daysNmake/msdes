@@ -1,6 +1,19 @@
-Package: MS-DES
+Package: msdes
 Title: CE Model
+Author: Ayman Sadek
+Maintainer: Ayman Sadek <ayman.sadek@bristol.ac.uk>
+Description: This is the Multiple Sclerosis MS Multiple Technology Appraisal MTA ID6369 Descrete Event Simulation DES Model.
 Config/roxygen2/version: 8.1.0
 Version: 1.0.0
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+License: GPL (>= 3)
+Depends: 
+    R (>= 3.5)
+LazyData: true

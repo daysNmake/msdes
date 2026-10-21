@@ -8,6 +8,7 @@
 
 rm(list = ls())
 
+library(msdes)
 library(WARDEN)
 library(MASS)
 library(VGAM)
@@ -21,7 +22,7 @@ options(tibble.print_max = 50)
 
 
 #load the functions required for the analysis
-devtools::load_all() # load all functions
+#devtools::load_all() # load all functions replaced with library(msdes)
 
 #summarise_ce_results() # Function to summarise the cost effectiveness results
 #summarise_samples() # Function to summarise any data
