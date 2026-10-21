@@ -5,8 +5,11 @@
 
 <img src="man/figures/logo.png" align="right" height="139"/>
 
+## package info
+
 msdes is package version of MS-DES (Public prices version) of MS-MTA
-(NICE appraisal version)
+(NICE appraisal version). This version will have a github.io address and
+the shiny app will be published via shiny
 
 ## Installation
 

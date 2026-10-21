@@ -110,7 +110,7 @@ Data is loaded in the function gen_inputs(), below is the data contained within 
 #source("R/generate_inputs.R")
 ## Model inputs generated using the generate inputs function
 # saves the input in a list
-setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/msdes")
+# setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/msdes")
 #Function to generate inputs, the same for both packages
 #source("R/generate_inputs.R")
 ## Model inputs generated using the generate inputs function

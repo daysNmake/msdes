@@ -8,8 +8,8 @@
 A matrix with \code{2} rows and \code{10} columns.
 Each column contains the number of patients at that EDSS score:
 \describe{
-\item{harrms}{distribution of patietients}
-\item{rrms}{distribution of patietients}
+\item{harrms}{distribution of patients}
+\item{rrms}{distribution of patients}
 }
 }
 \source{

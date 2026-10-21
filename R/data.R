@@ -5,8 +5,8 @@
 #' @format A matrix with \code{2} rows and \code{10} columns.
 #' Each column contains the number of patients at that EDSS score:
 #' \describe{
-#'   \item{harrms}{distribution of patietients}
-#'   \item{rrms}{distribution of patietients}
+#'   \item{harrms}{distribution of patients}
+#'   \item{rrms}{distribution of patients}
 #' }
 #' @source AFFIRM baseline
 "m_n_patients_edss"
@@ -67,7 +67,6 @@
 
 
 #' A matrix of excess all cause mortality for MS patients by severity 
-
 #'
 #' @format A matrix with \code{3} rows and \code{10} columns.
 #' Each column contains the data by EDSS severity state:
@@ -79,3 +78,66 @@
 #' @source edss<4 (Jick et al), edss>=4 (Harding et al)
 "v_smr_severity_harding"
 
+
+#' A matrix of patient counts stratified by treatment
+#'
+#' @format A matrix with \code{4} rows and \code{8} columns.
+#' Each column contains the number of patients on treatment at line of treatment :
+#' \describe{
+#'   \item{alpha_2ndline}{distribution of patients on 2nd line treatment}
+#'   \item{beta_2ndline}{distribution of patients on 2nd line treatment}
+#'   \item{alpha_3rdline}{distribution of patients on 3rd line treatment}
+#'   \item{beta_3rdline}{distribution of patients on 3rd line treatment}
+#' }
+#' @source MS Registry analysis
+"m_proportion_ontrtline"
+
+#' Natural history treatment dependent coefficients.
+#'
+#' @format A named vector with 3 elements containing the formula coefficients:
+#' #' \describe{
+#'   \item{rate}{intercept coefficient}
+#'   \item{BaselineWebEDSS}{EDSS coefficient}
+#'   \item{DMTNatalizumab}{on treatment with Natalizumab coefficient}
+#' }
+#' @source MS Registry analysis
+#' @name v_tto_edss_increase_harrms_mu
+#' @aliases v_tto_edss_increase_rrms_mu v_tto_relapse_harrms_mu v_tto_sp_conversion_harrms_mu
+NULL
+
+#' Natural history treatment dependent variance covariance.
+#'
+#' @format A matrix with \code{3} rows and \code{3} columns
+#' #' \describe{
+#'   \item{rate}{intercept VCV}
+#'   \item{BaselineWebEDSS}{EDSS VCV}
+#'   \item{DMTNatalizumab}{on treatment with Natalizumab VCV}
+#' }
+#' @source MS Registry analysis
+#' @name m_tto_edss_increase_harrms_sigma 
+#' @aliases m_tto_edss_increase_rrms_sigma tto_relapse_harrms_sigma m_tto_sp_conversion_harrms_sigma
+NULL
+
+#' Natural history coefficients.
+#'
+#' @format A named vector with 2 elements containing the formula coefficients:
+#' #' \describe{
+#'   \item{rate}{intercept coefficient}
+#'   \item{BaselineWebEDSS}{EDSS coefficient}
+#' }
+#' @source MS Registry analysis
+#' @name v_tto_edss_increase_spms_mu
+#' @aliases v_tto_edss_decrease_rrms_mu v_tto_edss_decrease_spms_mu v_tto_relapse_spms_mu
+NULL
+
+#' Natural history variance covariance.
+#'
+#' @format A matrix with \code{2} rows and \code{2} columns
+#' #' \describe{
+#'   \item{rate}{intercept VCV}
+#'   \item{BaselineWebEDSS}{EDSS VCV}
+#' }
+#' @source MS Registry analysis
+#' @name m_tto_edss_increase_spms_sigma
+#' @aliases m_tto_edss_decrease_rrms_sigma m_tto_edss_decrease_spms_sigma m_tto_relapse_spms_sigma
+NULL
