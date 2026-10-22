@@ -1,9 +1,8 @@
+#'Summarise Samples
 #'
-#' @description
-#' Function to summarise PSA samples
+#' `summarise_samples()` Function to summarise PSA samples
 #' 
-#' @details
-#' 'summarise_samples()'returns the mean and 95% Credible Intervals
+#' returns the mean and 95% Credible Intervals
 #' 
 #' @param x data to be supplied
 #' @export

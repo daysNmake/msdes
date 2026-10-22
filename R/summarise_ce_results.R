@@ -1,9 +1,8 @@
-#'
-#' @description
-#' Functions to tabulate the PSA results at willingness to pay (WTP) thresholds
+#' Summarise Cost-effectiveness results
 #' 
-#' @details
-#' 'summarise_ce_results()'returns the incremental cost and qalys
+#' `summarise_ce_results()` Function to tabulate the PSA results at willingness to pay (WTP) thresholds
+#' 
+#' Returns the incremental cost and qalys
 #' calculates the expected incremental cost effectiveness ratio 
 #' calculates the expected incremental net benefit ratio 
 #' returns the probability of treatment arms being cost effective

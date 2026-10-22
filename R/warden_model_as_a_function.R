@@ -1,12 +1,10 @@
-#'
-#' @description
-#' RRMS DES using the WARDN package written as a function to be called from Shiny APP
+#' Model as a function
 #' 
-#' @details
+#' `rrmsdessetup()`RRMS DES model inputs written as a function to be called from Shiny APP
+#' `rrmsdesmodel()`RRMS DES model run written as a function to be called from Shiny APP
+#' 
 #' For exclusive use of SHINY APP.
 #' 
-#' @param rrmsdessetup() a function setting up model inputs to be modified within the shiny app
-#' @param rrmsdesmodel() a function running the model inputs called within the shiny app
 #' @export
 
 #model setup with inputs allowing for reactive changes to take place in shiny

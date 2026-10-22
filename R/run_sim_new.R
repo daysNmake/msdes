@@ -1,8 +1,7 @@
-#'
-#' @description
-#' modified run_sim() function 
+#' Run Sim new
 #' 
-#' @details
+#'  `run_sim_new()` modified run_sim() function 
+#' 
 #' This runs the model to allow for extra functionality for VOI analysis
 #' Appends input_matrix to results, this contains the paramters sampled per simulation
 #' 

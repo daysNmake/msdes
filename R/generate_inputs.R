@@ -1,18 +1,17 @@
-#'
-#' @description
-#' generate model inputs function, returns a list with all the data required for the model to run.
+#' generate inputs
 #' 
-#' @details
-#' Put all input here that will be called and processed by the other warden functions to specify common or unique patient inputs, 
-#' set initial or reaction events. Parameters called by the model are specified here, they can be modified  or new ones can be added.
+#' `gen_inputs()` generates model inputs from saved data and returns a list with the data required for the model to run.
 #' 
-#' @param initial_age average age of patients entering the model
+#' Stored within the function are all the default values of the inputs, some parameters are modifiable by user here as described below. 
+#' The generated inputs will be called and processed by [gen_common_all_inputs()] to specify common and [gen_common_all_inputs()] unique patient inputs, 
+#' by [gen_init_events()] to set initial and [gen_react_events()] reaction events. Parameters called by the model are specified here, they can be modified  or new ones can be added.
+#' 
+#' @param jcvtest_cost JCV test cost assumption
 #' @param time_horizon the duration of the patients' life in the model
-#' @param prop_female sex - baseline characteristics
 #' @param drc discount rate for costs
 #' @param drq discount rate for qalys
 #' @param p_eid proportion pf patients treated with Natalizumab Extended Interval Dosing
-#' @returns list what comes out, but not everything
+#' @returns a list of inputs
 #' @export
 gen_inputs <- function(drc=drc, drq=drq,
                        time_horizon=time_horizon, p_eid=p_eid, jcvtest_cost=jcvtest_cost){

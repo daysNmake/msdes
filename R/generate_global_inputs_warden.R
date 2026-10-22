@@ -1,8 +1,8 @@
-#'
-#' @description
-#' Global input parameters for the model are common to all patients and treatments.
+#' Generate Global inputs
 #' 
-#' @details
+#' `gen_common_all_inputs()` Global input parameters for the model are common to all patients and treatments.
+#' 
+#'
 #' Input parameters here that do not change as we loop through treatments for a patient.
 #' The input parameters are called from 'gen_inputs()' function or the main analysis script.
 #' They are called in with 'WARDEN::add_item()' functions, these are piped with %>% operator.

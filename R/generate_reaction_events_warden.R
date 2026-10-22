@@ -1,8 +1,8 @@
-#'
-#' @description
-#' WARDEN implementation of reaction events
+#' Generate reaction events
 #' 
-#' @details
+#' `gen_react_events()` WARDEN implementation of reaction events
+#' 
+#' 
 #' reaction events run on treatment codes
 #' 
 #' @export

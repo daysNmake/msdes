@@ -1,8 +1,7 @@
-#'
-#' @description
-#' WARDEN implementation of initial events
+#' Generate initial events
 #' 
-#' @details
+#' `gen_init_events()` WARDEN implementation of initial events
+#' 
 #' reaction events run on treatment codes
 #' 
 #' @export
