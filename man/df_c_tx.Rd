@@ -21,4 +21,4 @@ df_c_tx
 \description{
 A matrix of annual Disease Modifying Therapy DMT costs by year
 }
-\keyword{datasets}
+\keyword{data}

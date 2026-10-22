@@ -2,6 +2,7 @@
 #'
 #' A matrix of patient counts stratified by EDSS score.
 #'
+#' @keywords data
 #' @format A matrix with \code{2} rows and \code{10} columns.
 #' Each column contains the number of patients at that EDSS score:
 #' \describe{
@@ -16,6 +17,7 @@
 #'
 #' A matrix of annual Disease Modifying Therapy DMT costs by year
 #'
+#' @keywords data
 #' @format A matrix with \code{3} rows and \code{17} columns.
 #' Each column contains the costs by treatment:
 #' \describe{
@@ -30,6 +32,7 @@
 #'
 #' A matrix of annual treatment administration costs by year
 #'
+#' @keywords data
 #' @format A matrix with \code{3} rows and \code{17} columns.
 #' Each column contains the costs by treatment:
 #' \describe{
@@ -44,6 +47,7 @@
 #'
 #' A matrix of annual treatment monitoring costs by year
 #'
+#' @keywords data
 #' @format A matrix with \code{3} rows and \code{17} columns.
 #' Each column contains the costs by treatment:
 #' \describe{
@@ -57,7 +61,8 @@
 #' Annual treatment scheduled load factors years 1-5
 #'
 #' A matrix of annual treatment scheduled load factors years 1-5
-#'
+#' 
+#' @keywords data
 #' @format A matrix with \code{5} rows and \code{8} columns.
 #' Each column contains the percentage of patients treated/re-treated by by DMT, 
 #' with the 5 rows repenting the load factors during the first years.
@@ -67,7 +72,8 @@
 
 
 #' A matrix of excess all cause mortality for MS patients by severity 
-#'
+#' 
+#' @keywords data
 #' @format A matrix with \code{3} rows and \code{10} columns.
 #' Each column contains the data by EDSS severity state:
 #' \describe{
@@ -80,7 +86,8 @@
 
 
 #' A matrix of patient counts stratified by treatment
-#'
+#' 
+#' @keywords data
 #' @format A matrix with \code{4} rows and \code{8} columns.
 #' Each column contains the number of patients on treatment at line of treatment :
 #' \describe{
@@ -93,7 +100,8 @@
 "m_proportion_ontrtline"
 
 #' Natural history treatment dependent coefficients.
-#'
+#' 
+#' @keywords data
 #' @format A named vector with 3 elements containing the formula coefficients:
 #' #' \describe{
 #'   \item{rate}{intercept coefficient}
@@ -106,7 +114,8 @@
 NULL
 
 #' Natural history treatment dependent variance covariance.
-#'
+#' 
+#' @keywords data
 #' @format A matrix with \code{3} rows and \code{3} columns
 #' #' \describe{
 #'   \item{rate}{intercept VCV}
@@ -119,7 +128,8 @@ NULL
 NULL
 
 #' Natural history coefficients.
-#'
+#' 
+#' @keywords data
 #' @format A named vector with 2 elements containing the formula coefficients:
 #' #' \describe{
 #'   \item{rate}{intercept coefficient}
@@ -131,7 +141,8 @@ NULL
 NULL
 
 #' Natural history variance covariance.
-#'
+#' 
+#' @keywords data
 #' @format A matrix with \code{2} rows and \code{2} columns
 #' #' \describe{
 #'   \item{rate}{intercept VCV}

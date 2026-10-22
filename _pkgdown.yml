@@ -1,7 +1,6 @@
 url: https://daysnmake.github.io/msdes/
 template:
   bootstrap: 5
-  
 reference:
   - title: Functions
     desc: Functions exported by the package
@@ -13,16 +12,12 @@ reference:
       - gen_react_events
       - draw_tte_new_warden
       - pluck_vector_from_env
-      - rrmsdesmodel
       - rrmsdessetup
       - run_sim_new
-      - run_sim_parallel_new
       - summarise_ce_results
       - summarise_samples
-      - summarise_tha_results
 
   - title: Data
     desc: Datasets included in the package
     contents:
       - has_keyword("data")
-

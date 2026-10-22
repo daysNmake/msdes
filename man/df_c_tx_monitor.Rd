@@ -21,4 +21,4 @@ df_c_tx_monitor
 \description{
 A matrix of annual treatment monitoring costs by year
 }
-\keyword{datasets}
+\keyword{data}

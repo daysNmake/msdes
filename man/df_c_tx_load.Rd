@@ -18,4 +18,4 @@ df_c_tx_load
 \description{
 A matrix of annual treatment scheduled load factors years 1-5
 }
-\keyword{datasets}
+\keyword{data}

@@ -20,3 +20,4 @@ MS Registry analysis
 \description{
 Natural history treatment dependent coefficients.
 }
+\keyword{data}

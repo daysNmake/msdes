@@ -21,4 +21,4 @@ df_c_tx_admin
 \description{
 A matrix of annual treatment administration costs by year
 }
-\keyword{datasets}
+\keyword{data}

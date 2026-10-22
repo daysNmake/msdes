@@ -21,4 +21,4 @@ m_n_patients_edss
 \description{
 A matrix of patient counts stratified by EDSS score.
 }
-\keyword{datasets}
+\keyword{data}

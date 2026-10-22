@@ -23,4 +23,4 @@ m_proportion_ontrtline
 \description{
 A matrix of patient counts stratified by treatment
 }
-\keyword{datasets}
+\keyword{data}

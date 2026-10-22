@@ -22,4 +22,4 @@ v_smr_severity_harding
 \description{
 A matrix of excess all cause mortality for MS patients by severity
 }
-\keyword{datasets}
+\keyword{data}

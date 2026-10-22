@@ -19,3 +19,4 @@ MS Registry analysis
 \description{
 Natural history coefficients.
 }
+\keyword{data}
