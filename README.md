@@ -18,7 +18,7 @@ currently private page, I think could install with devtools when public
 You can install the development version of msdes like so:
 
 ``` r
-remotes::install_github("daysNmake/msdes")
+install.packages("msdes", repos = "https://daysNmake.r-universe.dev")
 ```
 
 # MS-DES repository

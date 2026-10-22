@@ -17,3 +17,4 @@ License: GPL (>= 3)
 Depends: 
     R (>= 3.5)
 LazyData: true
+URL: https://daysnmake.github.io/msdes/
