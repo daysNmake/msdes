@@ -18,3 +18,18 @@ Depends:
     R (>= 3.5)
 LazyData: true
 URL: https://daysnmake.github.io/msdes/
+Imports: 
+    hesim,
+    purrr,
+    rlang,
+    progressr,
+    data.table,
+    MASS,
+    utils,
+    flexsurv,
+    BCEA,
+    voi,
+    VGAM,
+    WARDEN,
+    utils
+    

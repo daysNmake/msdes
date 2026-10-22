@@ -4,7 +4,7 @@ author: "Ayman Sadek"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{MS-DES}
+  %\VignetteIndexEntry{msdes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -27,7 +27,11 @@ library(MASS)
 library(VGAM)
 library(utils)
 library(flexsurv)
-library(tidyverse)
+library(hesim)
+library(purrr)
+library(rlang)
+library(progressr)
+library(data.table)
 library(BCEA)
 library(voi)
 ```
@@ -231,7 +235,7 @@ results_table <- summarise_ce_results(wtp1 = 25000, wtp2 = 35000,
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
-View(results_table)
+knitr::kable(results_table) 
 #write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
 
 #plot results
@@ -285,7 +289,7 @@ key_events_trt_grps <- as.data.frame(rbind(
               "average no. of years on 2ndline", "average no. of years on 3rdline",
               "average no. of years on 4thline")
 )
-View(key_events_trt_grps)
+knitr::kable(key_events_trt_grps)
 
 
 #  VOI analysis
@@ -295,7 +299,7 @@ total_evpi <- voi::evpi(outputs = list(c = total_costs,
                                        e = total_qalys,
                                        k = c(0, 25000, 50000, 75000, 100000)))
 
-View(total_evpi)
+knitr::kable(total_evpi)
 plot(x=total_evpi$k, y=total_evpi$evpi, type="l")
 
 # Total EVPPI
@@ -311,7 +315,7 @@ plot(x=total_evpi$k, y=total_evpi$evpi, type="l")
 #                           method = "bart", 
 #                           verbose = TRUE)
 # 
-# View(total_evppi)
+# knitr::kable(total_evppi)
 # 
 # #plot in base R split ober A and B panels as there are too many parameters to plot
 # total_evppi_25k_a <- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
