@@ -7,7 +7,7 @@ reference:
     desc: Functions exported by the package
     contents:
       - gen_inputs
-      - gen_common_all_input
+      - gen_common_all_inputs
       - gen_unique_pt_inputs
       - gen_init_events
       - gen_react_events
