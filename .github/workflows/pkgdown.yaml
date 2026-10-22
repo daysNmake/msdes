@@ -45,3 +45,27 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
+          
+      reference:
+        - title: Functions
+          desc: Functions exported by the package
+          contents:
+            - gen_inputs
+            - gen_common_all_input
+            - gen_unique_pt_inputs
+            - gen_init_events
+            - gen_react_events
+            - draw_tte_new_warden
+            - pluck_vector_from_env
+            - rrmsdesmodel"         
+            - rrmsdessetup        
+            - run_sim_new
+            - run_sim_parallel_new
+            - summarise_ce_results
+            - summarise_samples
+            - summarise_tha_results
+
+          - title: Data
+            desc: Datasets included in the package
+            contents:
+              - has_keyword("data")
