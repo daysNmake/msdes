@@ -1,0 +1,9 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  msdes: msdes.html
+last_built: 2026-10-22T19:56Z
+urls:
+  reference: https://daysnmake.github.io/msdes/reference
+  article: https://daysnmake.github.io/msdes/articles
