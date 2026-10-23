@@ -4,7 +4,7 @@
 
 
 
-pak::pak("daysNmake/msdes")
+
 
 library(msdes)
 
