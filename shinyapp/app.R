@@ -2,7 +2,11 @@
 #======== Authored: by Ayman Sadek  ============================#
 #======= ACM2 Committee preferred assumptions(Public Prices) =#
 
+
+install.packages('msdes', repos = c('https://daysnmake.r-universe.dev', 'https://cloud.r-project.org'))
+
 library(msdes)
+library(deSolve)
 library(WARDEN)
 library(MASS)
 library(VGAM)
@@ -82,13 +86,13 @@ ui <-
          card(
            card_header(class = "bg-light text-primary","Model Description"),
            card_body(markdown(uiOutput("uo_modedescription"))),
-           card_image("shiny/trtsq_diagram.png")
+           card_image("trtsq_diagram.png")
          ),
          #model diagram:
         card(
           card_header(class = "bg-light text-primary", "Model Diagram"),
           "Figure-1",
-          card_image("shiny/model_diagram.png")
+          card_image("model_diagram.png")
         )
 
         
@@ -411,20 +415,20 @@ server <-
     
     # #render project background file
     output$uo_projectbackground <- renderUI({
-      includeMarkdown("shiny/project background.md")
+      includeMarkdown("project background.md")
     })
     
     # #render model description file
     output$uo_modedescription <- renderUI({
-      includeMarkdown("shiny/model description.md")
+      includeMarkdown("model description.md")
     })
     
     #initialize reactive variable with temp model inputs: 
-    temp_cdp6 <- read.csv("data/Releff_RRMS_CDP6_FE.csv",header = TRUE, row.names=1)
+    temp_cdp6 <- read.csv("data-raw/Releff_RRMS_CDP6_FE.csv",header = TRUE, row.names=1)
     temp_cdp6 <- round(exp(temp_cdp6[c(3,9),c(3,5,9)]), digits=3)
-    temp_arr <- read.csv("data/Releff_RRMS_ARR_FE.csv",header = TRUE, row.names=1)
+    temp_arr <- read.csv("data-raw/Releff_RRMS_ARR_FE.csv",header = TRUE, row.names=1)
     temp_arr <- round(exp(temp_arr[c(3,12, 13),c(3,5,9)]), digits=3)
-    temp_discontinuation <- read.csv("data/Releff_RRMS_Discontinuation_FE.csv", header = TRUE, row.names=1)
+    temp_discontinuation <- read.csv("data-raw/Releff_RRMS_Discontinuation_FE.csv", header = TRUE, row.names=1)
     temp_discontinuation <- round(exp(temp_discontinuation[c(3,11),c(3,5,9)]), digits=3)
     
     temp_inputs <- reactiveValues(
@@ -460,7 +464,7 @@ server <-
 
     #display model input in tables with editable fields 
     output$to_treatment_costs <- renderDT({datatable(temp_inputs$tx_costs, editable = TRUE, options = list(dom = 't'))})
-    output$uo_costs_readme <- renderUI({includeMarkdown("shiny/treatmentcostdescription.md")})
+    output$uo_costs_readme <- renderUI({includeMarkdown("treatmentcostdescription.md")})
     
     output$to_administration_costs <- renderDT({datatable(temp_inputs$tx_admin_costs, editable = TRUE, options = list(dom = 't'))})
     output$to_monitoring_costs <- renderDT({datatable(temp_inputs$tx_monitor_costs, editable = TRUE, options = list(dom = 't'))})

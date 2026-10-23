@@ -1,0 +1,27 @@
+---
+title: "Model description"
+author: "Ayman Sadek"
+date: "2026-08-10"
+---
+
+```{r setup, include = FALSE}
+
+```
+
+### Model Overview
+The DES model simulates Individual patients’ events conditional on individual attributes updated in continuous time.10 The simulated individual patient attributes represent important patient, disease and treatment characteristics. Attributes at baseline are HARRMS patients with average age of 36 years, 70% female and severity of EDSS=xx. The model simulates Individual patient trajectories by randomly drawing event times for the following events; severity progression & lessening, relapse, adverse events, treatment switching, conversion to SPMS and death. The model is illustrated in figure 1. Simulated patients start in the model on a random initial treatment, they have to ability to switch on to later line treatment and rescue therapy as recommended by the guideline. Treatment sequence is represented in figure 2. Costs and effects are added for treatments on an annual basis, for events instantaneously, and a 3.5% discount factor is applied. The analysis was conducted from National Health Service (NHS) and Personal Social Services (PSS) perspective with a life-time horizon.
+
+### Competing Risks
+The DES model runs in continuous time as per the cpu clock, which allows it to track event times for individual patients.  At the start, the model draws m event times (1, 2, 3, … m events) for patient i (1, 2, 3, …i patients) on treatment k (1, 2, 3, …k treatments). The model initiates a clock for all m events; it will only trigger the event occurring first.11 This mechanism resolves the competing risks at the start. 
+The DES model runs forward in time and updates individual patient attributes when events are triggered. The costs and QALYs are recorded and discounting applied instantaneously. New event times are sampled from the TtE data which may accelerate or decelerate according to the changes in attributes as outlines in the model inputs section. This updates the competing risks and allows the model to resolve them till the end of the simulation when the final patient is dead.
+
+
+#### Figure 2- Treatment Sequence
+
+```{r imager, echo = FALSE}
+trtsq_diagram<- imager::load.image("trtsq_diagram.png")
+plot(trtsq_diagram, axes=FALSE)
+```
+
+
+
