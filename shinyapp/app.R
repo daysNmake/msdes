@@ -4,7 +4,7 @@
 
 
 
-remotes::install_github(repo = "daysNmake/msdes")
+pak::pak("daysNmake/msdes")
 
 library(msdes)
 
