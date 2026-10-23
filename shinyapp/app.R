@@ -3,10 +3,11 @@
 #======= ACM2 Committee preferred assumptions(Public Prices) =#
 
 
-install.packages('msdes', repos = c('https://daysnmake.r-universe.dev', 'https://cloud.r-project.org'))
+
+remotes::install_github(repo = "daysNmake/msdes")
 
 library(msdes)
-library(deSolve)
+
 library(WARDEN)
 library(MASS)
 library(VGAM)
