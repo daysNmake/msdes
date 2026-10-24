@@ -16,8 +16,6 @@ Functions exported by the package
   : Generate reaction events
 - [`draw_tte_new_warden()`](https://daysnmake.github.io/msdes/reference/draw_tte_new_warden.md)
   : Draw time to Event custom function
-- [`pluck_vector_from_env()`](https://daysnmake.github.io/msdes/reference/pluck_vector_from_env.md)
-  : Pluck vector from enviroment
 - [`rrmsdessetup()`](https://daysnmake.github.io/msdes/reference/rrmsdessetup.md)
   : SetupModel as a function
 - [`rrmsdesmodel()`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md)

@@ -6,7 +6,7 @@ from Shiny APP
 ## Usage
 
 ``` r
-rrmsdesmodel(n_patients, n_samples)
+rrmsdesmodel(n_patients = n_patients, n_samples = n_samples)
 ```
 
 ## Details
