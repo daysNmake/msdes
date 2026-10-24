@@ -21,13 +21,6 @@ options(scipen = 999)
 options(tibble.print_max = 50)
 
 
-#load the functions required for the analysis
-#devtools::load_all() # load all functions replaced with library(msdes)
-
-#summarise_ce_results() # Function to summarise the cost effectiveness results
-#summarise_samples() # Function to summarise any data
-#run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI
-
 ## set a seed 
 n_seed<-243523452
 set.seed(n_seed)

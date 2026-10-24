@@ -13,20 +13,19 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
 # Introduction
-This document runs the MS discrete event simulation model without explaining the internal workings
+This is a simple overview of the internal workings of the MS discrete event simulation model. Refer to articles for mode detailed explanations.
 
 ## Main options
 Load the required packages
-
-```{r setup}
+```{r setup, verbose=FALSE}
 library(msdes)
-library(magrittr)
 library(WARDEN)
-library(flexsurv)
-library(VGAM)
 library(MASS)
+library(VGAM)
 library(utils)
+library(flexsurv)
 library(hesim)
 library(purrr)
 library(rlang)
@@ -37,22 +36,134 @@ library(voi)
 ```
 
 ## model setup
-Data is loaded in the function gen_inputs(), below is the data contained within this function
+Treatment names, treatment lines, MS severity states and DES key events are specified.
 
-```{r load}
-rrmsdessetup(  # change model settings or assumptions used in scenario analyses
+```{r model_setup}
+
+## Treatments at second line 
+v_treatment_names <- c("Natalizumab-IV",
+                       "Natalizumab-SC",
+                       "Natalizumab biosimilar-IV",
+                       "Natalizumab biosimilar-SC",
+                       "Cladribine", 
+                       "Ublituximab" ,
+                       "Ofatumumab",
+                       "Ocrelizumab")
+
+## number of treatments
+n_treatments <- length(v_treatment_names)
+
+## specify codes for the treatments
+v_treatment_codes <- c(seq(1, n_treatments))
+names(v_treatment_codes) <- v_treatment_names
+
+## Treatments that patients can move to at 3rd and higher line 
+v_higher_line_treatments <- c("Natalizumab-IV",
+                              "Natalizumab-SC",
+                              "Natalizumab biosimilar-IV",
+                              "Natalizumab biosimilar-SC",
+                              "Cladribine",
+                              "Ublituximab",
+                              "Ofatumumab",
+                              "Ocrelizumab"
+                              )
+v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
+names(v_higher_line_treatment_codes) <- v_higher_line_treatments
+
+## prior treatment index
+v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
+names(v_prior_treatment_indices) <- v_higher_line_treatments
+
+## Model event states
+v_event_names <- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death"
+                   )
+
+## Define the possible EDSS values
+v_edss_values <- c(0:9)
+names(v_edss_values) <- paste("EDSS", v_edss_values)
+
+# Number of EDSS categories
+n_edss_values <- length(v_edss_values)
+
+
+```
+
+## Load Data
+Data is loaded in the function [`gen_inputs()`] below is the default data are contained within this function
+
+
+```{r load_data}
+
+# saves the inputs in a list
+inputs <- gen_inputs(
+  # change model settings or assumptions used in scenario analyses
   drc= 0.035, #3.5% discount rate for costs
   drq= 0.035, #3.5% discount rate for qalys
   time_horizon = 70, # number of years model is running for starting at intial age
   p_eid=0.6, # proportion of patients on external interval dosing
   jcvtest_cost= 0 #assumed free due to home service, test cost could be £247 privately but not offered in the NHS
-  )
+                     )
+
+# Global parameters of the model as they are common to all patients and treatments
+indicators <-1
+common_all_inputs <- gen_common_all_inputs()
+
+# patient parameters reflecting heterogeneous characteristics that depend on treatment
+unique_pt_inputs <- gen_unique_pt_inputs()
+
+# Generate initial events and reaction events
+init_event_list <- gen_init_events(RRMS_events=v_event_names)
+evt_react_list <- gen_react_events(RRMS_events=v_event_names)
+
+#utilities and costs
+util_ongoing <- "utilities_disease"
+cost_ongoing <- "costs_disease"
+util_instant <- c("utilities_relapse", "utilities_sae")
+cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
+
 ```
 
 ## Run Model
 Model is run
-```{r run}
-rrmsdesmodel(n_patients=10,n_samples=10)
+```{r run_model}
+
+## set a seed 
+n_seed<-243523452
+set.seed(n_seed)
+
+## number of patients and samples
+n_patients <- 10
+n_samples <- 10
+
+
+# Run the simulation
+environment(run_sim_new) <- asNamespace("WARDEN") 
+
+total_runtime <- system.time({
+  results <- run_sim_new(  
+    npats = n_patients, 
+    n_sim = n_samples,        # number of simulations to run
+    psa_bool = TRUE,            # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+    debug = FALSE,
+    sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
+    arm_list = v_treatment_names,             # intervention list
+    common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
+    #common_pt_inputs = common_pt_inputs,     # inputs that change within a simulation but are not affected by the intervention
+    unique_pt_inputs = unique_pt_inputs,      # inputs that change within a simulation between interventions
+    init_event_list = init_event_list,        # initial event list
+    evt_react_list = evt_react_list,          # reaction of events
+    util_ongoing_list = util_ongoing,         # ongoing rrms or spms disease utilities
+    cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
+    util_instant_list = util_instant,
+    cost_instant_list = cost_instant,         # instantaneous treatment costs
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code", "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", 
+                "t_2ndline", "t_3rdline", "t_4thline", "waning"), # patient history to monitor
+     save_input_matrix = TRUE # Export the input matrix for EVPPI
+  )
+})
+
+
+
 ```
 
 ## Plot Results
