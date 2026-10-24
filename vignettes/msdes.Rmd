@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 # Introduction
-This document runs the MS discrete event simulation model. for now a dummy vignette to test if works or would need to switch to article type.
+This document runs the MS discrete event simulation model. 
 
 ## Main options
 Load the required packages
