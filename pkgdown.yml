@@ -3,7 +3,8 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   msdes: msdes.html
-last_built: 2026-10-23T16:31Z
+  simple: simple.html
+last_built: 2026-10-24T14:12Z
 urls:
   reference: https://daysnmake.github.io/msdes/reference
   article: https://daysnmake.github.io/msdes/articles

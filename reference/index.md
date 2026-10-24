@@ -19,7 +19,9 @@ Functions exported by the package
 - [`pluck_vector_from_env()`](https://daysnmake.github.io/msdes/reference/pluck_vector_from_env.md)
   : Pluck vector from enviroment
 - [`rrmsdessetup()`](https://daysnmake.github.io/msdes/reference/rrmsdessetup.md)
-  : Model as a function
+  : SetupModel as a function
+- [`rrmsdesmodel()`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md)
+  : RunModel as a function
 - [`run_sim_new()`](https://daysnmake.github.io/msdes/reference/run_sim_new.md)
   : Run Sim new
 - [`summarise_ce_results()`](https://daysnmake.github.io/msdes/reference/summarise_ce_results.md)

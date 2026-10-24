@@ -36,6 +36,12 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/msdes.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/simple.html">simple</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -57,7 +63,7 @@
                         <h4 data-toc-skip class="author">Ayman
 Sadek</h4>
             
-            <h4 data-toc-skip class="date">October 23, 2026</h4>
+            <h4 data-toc-skip class="date">October 24, 2026</h4>
       
 
       <div class="d-none name"><code>msdes.Rmd</code></div>
@@ -68,9 +74,7 @@ Sadek</h4>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>This document runs the MS discrete event simulation model. for now a
-dummy vignette to test if works or would need to switch to article
-type.</p>
+<p>This document runs the MS discrete event simulation model.</p>
 <div class="section level3">
 <h3 id="main-options">Main options<a class="anchor" aria-label="anchor" href="#main-options"></a>
 </h3>
@@ -137,19 +141,6 @@ type.</p>
 contained within this function</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span></span>
-<span><span class="co">#summarise_ce_results() # Function to summarise the cost effectiveness results</span></span>
-<span><span class="co">#summarise_samples() # Function to summarise any data</span></span>
-<span><span class="co">#run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI</span></span>
-<span></span>
-<span><span class="co">## set a seed </span></span>
-<span><span class="va">n_seed</span><span class="op">&lt;-</span><span class="fl">243523452</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">n_seed</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## number of patients and samples</span></span>
-<span><span class="va">n_patients</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span></span>
 <span><span class="co">## Treatments at second line </span></span>
 <span><span class="va">v_treatment_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Natalizumab-IV"</span>,</span>
 <span>                       <span class="st">"Natalizumab-SC"</span>,</span>
@@ -202,17 +193,7 @@ contained within this function</p>
 contained within this function</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co">#load the functions required for the analysis</span></span>
-<span><span class="co">#devtools::load_all() # load all functions</span></span>
-<span><span class="co">#Function to generate inputs, the same for both packages</span></span>
-<span><span class="co">#source("R/generate_inputs.R")</span></span>
-<span><span class="co">## Model inputs generated using the generate inputs function</span></span>
-<span><span class="co"># saves the input in a list</span></span>
-<span><span class="co"># setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/msdes")</span></span>
-<span><span class="co">#Function to generate inputs, the same for both packages</span></span>
-<span><span class="co">#source("R/generate_inputs.R")</span></span>
-<span><span class="co">## Model inputs generated using the generate inputs function</span></span>
-<span><span class="co"># saves the input in a list</span></span>
+<span><span class="co"># saves the inputs in a list</span></span>
 <span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gen_inputs.html">gen_inputs</a></span><span class="op">(</span></span>
 <span>  <span class="co"># change model settings or assumptions used in scenario analyses</span></span>
 <span>  drc<span class="op">=</span> <span class="fl">0.035</span>, <span class="co">#3.5% discount rate for costs</span></span>
@@ -230,15 +211,10 @@ contained within this function</p>
 <span><span class="va">unique_pt_inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gen_unique_pt_inputs.html">gen_unique_pt_inputs</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Generate initial events and reaction events</span></span>
-<span><span class="co"># Add time to event for each patient for each of the treatments</span></span>
-<span><span class="co"># Setting trt to all treatments should mean that the event applies to all treatments</span></span>
-<span></span>
 <span><span class="va">init_event_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gen_init_events.html">gen_init_events</a></span><span class="op">(</span>RRMS_events<span class="op">=</span><span class="va">v_event_names</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">evt_react_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gen_react_events.html">gen_react_events</a></span><span class="op">(</span>RRMS_events<span class="op">=</span><span class="va">v_event_names</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">#util_ongoing_list &lt;- gen_util_ongoing(dmt=v_treatment_names, severity = v_edss_values, RRMS_events=v_event_names)</span></span>
-<span></span>
+<span><span class="co">#utilities and costs</span></span>
 <span><span class="va">util_ongoing</span> <span class="op">&lt;-</span> <span class="st">"utilities_disease"</span></span>
 <span><span class="va">cost_ongoing</span> <span class="op">&lt;-</span> <span class="st">"costs_disease"</span></span>
 <span><span class="va">util_instant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"utilities_relapse"</span>, <span class="st">"utilities_sae"</span><span class="op">)</span></span>
@@ -247,20 +223,26 @@ contained within this function</p>
 <div class="section level3">
 <h3 id="run-model">Run Model<a class="anchor" aria-label="anchor" href="#run-model"></a>
 </h3>
-<p>model is run</p>
+<p>Model is run</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co">#environment(run_sim_parallel_new) &lt;- asNamespace("WARDEN") </span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="va">run_sim_new</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ns-internal.html" class="external-link">asNamespace</a></span><span class="op">(</span><span class="st">"WARDEN"</span><span class="op">)</span> </span>
+<span><span class="co">## set a seed </span></span>
+<span><span class="va">n_seed</span><span class="op">&lt;-</span><span class="fl">243523452</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">n_seed</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## number of patients and samples</span></span>
+<span><span class="va">n_patients</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span><span class="va">n_samples</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
 <span></span>
 <span></span>
 <span><span class="co"># Run the simulation</span></span>
-<span><span class="co">#Logic is: per patient, per intervention, per event, react to that event.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="va">run_sim_new</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ns-internal.html" class="external-link">asNamespace</a></span><span class="op">(</span><span class="st">"WARDEN"</span><span class="op">)</span> </span>
+<span></span>
 <span><span class="va">total_runtime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_sim_new.html">run_sim_new</a></span><span class="op">(</span>                                  <span class="co"># use run_sim_parallel() for more than 1 simulation, although I've experienced errors</span></span>
-<span>    npats <span class="op">=</span> <span class="va">n_patients</span>,                               <span class="co"># number of patients to be simulated</span></span>
-<span>    n_sim <span class="op">=</span> <span class="va">n_samples</span>,                                  <span class="co"># number of simulations to run</span></span>
-<span>    psa_bool <span class="op">=</span> <span class="cn">TRUE</span>,                         <span class="co"># use PSA or not. If n_sim &gt; 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  </span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_sim_new.html">run_sim_new</a></span><span class="op">(</span>  </span>
+<span>    npats <span class="op">=</span> <span class="va">n_patients</span>, </span>
+<span>    n_sim <span class="op">=</span> <span class="va">n_samples</span>,        <span class="co"># number of simulations to run</span></span>
+<span>    psa_bool <span class="op">=</span> <span class="cn">TRUE</span>,            <span class="co"># use PSA or not. If n_sim &gt; 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  </span></span>
 <span>    debug <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    sensitivity_bool<span class="op">=</span> <span class="cn">FALSE</span>,                  <span class="co"># sensitivity analysis not implemented,</span></span>
 <span>    arm_list <span class="op">=</span> <span class="va">v_treatment_names</span>,             <span class="co"># intervention list</span></span>
@@ -273,35 +255,34 @@ contained within this function</p>
 <span>    cost_ongoing_list <span class="op">=</span> <span class="va">cost_ongoing</span>,         <span class="co"># ongoing rrms or spms disease costs</span></span>
 <span>    util_instant_list <span class="op">=</span> <span class="va">util_instant</span>,</span>
 <span>    cost_instant_list <span class="op">=</span> <span class="va">cost_instant</span>,         <span class="co"># instantaneous treatment costs</span></span>
-<span>    input_out<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"spms_flag"</span>, <span class="st">"edss_value"</span>, <span class="st">"n_relapse"</span>, <span class="st">"n_sae_evts"</span>, <span class="st">"n_edssinc_evts"</span>, <span class="st">"n_edssdec_evts"</span>, <span class="st">"current_treatment_code"</span>,</span>
-<span>                 <span class="st">"treatment_line"</span>, <span class="st">"n_switch"</span>, <span class="st">"years_on_treatment"</span>, <span class="st">"treatment_stop"</span>, <span class="st">"t_2ndline"</span>, <span class="st">"t_3rdline"</span>, <span class="st">"t_4thline"</span>, <span class="st">"waning"</span><span class="op">)</span>,</span>
-<span>    <span class="co"># v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds</span></span>
+<span>    input_out<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"spms_flag"</span>, <span class="st">"edss_value"</span>, <span class="st">"n_relapse"</span>, <span class="st">"n_sae_evts"</span>, <span class="st">"n_edssinc_evts"</span>, <span class="st">"n_edssdec_evts"</span>, <span class="st">"current_treatment_code"</span>, <span class="st">"treatment_line"</span>, <span class="st">"n_switch"</span>, <span class="st">"years_on_treatment"</span>, <span class="st">"treatment_stop"</span>, </span>
+<span>                <span class="st">"t_2ndline"</span>, <span class="st">"t_3rdline"</span>, <span class="st">"t_4thline"</span>, <span class="st">"waning"</span><span class="op">)</span>, <span class="co"># patient history to monitor</span></span>
 <span>     save_input_matrix <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># Export the input matrix for EVPPI</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Analysis number: 1</span></span>
 <span><span class="co">#&gt; Simulation number: 1</span></span>
-<span><span class="co">#&gt; Time to run simulation 1: 1.06s</span></span>
+<span><span class="co">#&gt; Time to run simulation 1: 1.11s</span></span>
 <span><span class="co">#&gt; Simulation number: 2</span></span>
-<span><span class="co">#&gt; Time to run simulation 2: 1.14s</span></span>
+<span><span class="co">#&gt; Time to run simulation 2: 1.24s</span></span>
 <span><span class="co">#&gt; Simulation number: 3</span></span>
-<span><span class="co">#&gt; Time to run simulation 3: 1s</span></span>
+<span><span class="co">#&gt; Time to run simulation 3: 1.06s</span></span>
 <span><span class="co">#&gt; Simulation number: 4</span></span>
-<span><span class="co">#&gt; Time to run simulation 4: 1.01s</span></span>
+<span><span class="co">#&gt; Time to run simulation 4: 1.06s</span></span>
 <span><span class="co">#&gt; Simulation number: 5</span></span>
-<span><span class="co">#&gt; Time to run simulation 5: 1.13s</span></span>
+<span><span class="co">#&gt; Time to run simulation 5: 1.16s</span></span>
 <span><span class="co">#&gt; Simulation number: 6</span></span>
-<span><span class="co">#&gt; Time to run simulation 6: 1.24s</span></span>
+<span><span class="co">#&gt; Time to run simulation 6: 1.32s</span></span>
 <span><span class="co">#&gt; Simulation number: 7</span></span>
-<span><span class="co">#&gt; Time to run simulation 7: 1.01s</span></span>
+<span><span class="co">#&gt; Time to run simulation 7: 1.07s</span></span>
 <span><span class="co">#&gt; Simulation number: 8</span></span>
-<span><span class="co">#&gt; Time to run simulation 8: 0.96s</span></span>
+<span><span class="co">#&gt; Time to run simulation 8: 1.02s</span></span>
 <span><span class="co">#&gt; Simulation number: 9</span></span>
-<span><span class="co">#&gt; Time to run simulation 9: 1.02s</span></span>
+<span><span class="co">#&gt; Time to run simulation 9: 1.09s</span></span>
 <span><span class="co">#&gt; Simulation number: 10</span></span>
-<span><span class="co">#&gt; Time to run simulation 10: 1.05s</span></span>
-<span><span class="co">#&gt; Time to run analysis 1: 10.63s</span></span>
-<span><span class="co">#&gt; Total time to run: 10.63s</span></span>
+<span><span class="co">#&gt; Time to run simulation 10: 1.13s</span></span>
+<span><span class="co">#&gt; Time to run analysis 1: 11.27s</span></span>
+<span><span class="co">#&gt; Total time to run: 11.28s</span></span>
 <span><span class="co">#&gt; Simulation finalized;</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -381,10 +362,10 @@ contained within this function</p>
 <tbody>
 <tr class="odd">
 <td align="left">Natalizumab-IV</td>
-<td align="left">350,087.83 (305,986.55, 404,112.50)</td>
-<td align="left">9.47 (7.78, 11.27)</td>
-<td align="left">-113,352.24 (-173,052.55, -27,495.65)</td>
-<td align="left">-18,658.00 (-92,134.41, 83,900.71)</td>
+<td align="left">351,983.65 (307,662.42, 406,091.90)</td>
+<td align="left">9.53 (7.81, 11.37)</td>
+<td align="left">-113,842.77 (-174,017.68, -26,843.39)</td>
+<td align="left">-18,586.42 (-92,828.03, 85,484.22)</td>
 <td align="left">0.00 (0.00, 0.00)</td>
 <td align="left">0.00 (0.00, 0.00)</td>
 <td align="left">0.00 (0.00, 0.00)</td>
@@ -394,66 +375,66 @@ contained within this function</p>
 </tr>
 <tr class="even">
 <td align="left">Natalizumab-SC</td>
-<td align="left">308,420.14 (257,195.67, 347,549.23)</td>
-<td align="left">8.69 (6.09, 10.72)</td>
-<td align="left">-91,045.19 (-145,788.57, -15,833.05)</td>
-<td align="left">-4,095.21 (-84,902.41, 87,959.10)</td>
-<td align="left">-41,667.70 (-109,838.51, 22,753.11)</td>
-<td align="left">-0.77 (-3.11, 1.56)</td>
-<td align="left">22,307.05 (-18,981.04, 62,584.38)</td>
-<td align="left">14,562.79 (-48,830.31, 73,813.71)</td>
+<td align="left">307,119.99 (254,825.07, 349,972.93)</td>
+<td align="left">8.79 (6.42, 10.81)</td>
+<td align="left">-87,475.73 (-130,088.51, -16,054.09)</td>
+<td align="left">381.97 (-57,166.74, 88,724.47)</td>
+<td align="left">-44,863.65 (-117,556.93, 23,377.02)</td>
+<td align="left">-0.74 (-3.16, 1.56)</td>
+<td align="left">26,367.04 (-19,743.08, 65,111.96)</td>
+<td align="left">18,968.39 (-49,966.19, 74,651.46)</td>
 <td align="left">0.3</td>
 <td align="left">0.2</td>
 </tr>
 <tr class="odd">
 <td align="left">Natalizumab biosimilar-IV</td>
-<td align="left">333,512.62 (298,599.82, 363,665.80)</td>
-<td align="left">9.32 (5.15, 12.96)</td>
-<td align="left">-100,520.23 (-201,924.20, -24,329.92)</td>
-<td align="left">-7,323.27 (-150,443.50, 103,427.12)</td>
-<td align="left">-16,575.22 (-63,264.88, 30,022.62)</td>
-<td align="left">-0.15 (-3.36, 3.62)</td>
-<td align="left">12,832.01 (-37,223.92, 84,997.27)</td>
-<td align="left">11,334.73 (-67,587.23, 121,244.23)</td>
+<td align="left">335,639.43 (300,172.95, 366,383.61)</td>
+<td align="left">9.37 (5.17, 13.02)</td>
+<td align="left">-101,346.79 (-203,893.87, -24,260.76)</td>
+<td align="left">-7,629.74 (-152,180.34, 104,096.81)</td>
+<td align="left">-16,344.21 (-63,438.11, 30,093.22)</td>
+<td align="left">-0.15 (-3.37, 3.64)</td>
+<td align="left">12,495.98 (-38,068.58, 85,145.35)</td>
+<td align="left">10,956.69 (-68,749.69, 121,517.63)</td>
 <td align="left">0.2</td>
 <td align="left">0.2</td>
 </tr>
 <tr class="even">
 <td align="left">Ublituximab</td>
-<td align="left">356,696.85 (318,927.43, 380,577.63)</td>
-<td align="left">9.46 (6.34, 12.79)</td>
-<td align="left">-120,149.71 (-198,893.85, -57,033.82)</td>
-<td align="left">-25,530.86 (-135,458.98, 67,935.66)</td>
-<td align="left">6,609.02 (-39,749.02, 56,197.10)</td>
-<td align="left">-0.0075 (-2.99, 3.22)</td>
-<td align="left">-6,797.48 (-77,624.13, 93,886.67)</td>
-<td align="left">-6,872.86 (-104,726.45, 124,047.56)</td>
+<td align="left">358,531.30 (320,909.58, 382,255.80)</td>
+<td align="left">9.52 (6.39, 12.86)</td>
+<td align="left">-120,565.32 (-200,000.73, -56,702.17)</td>
+<td align="left">-25,378.93 (-136,137.79, 68,986.73)</td>
+<td align="left">6,547.66 (-39,880.26, 56,276.70)</td>
+<td align="left">-0.007 (-2.99, 3.24)</td>
+<td align="left">-6,722.55 (-77,678.40, 94,597.22)</td>
+<td align="left">-6,792.51 (-104,922.20, 124,893.82)</td>
 <td align="left">0.3</td>
 <td align="left">0.3</td>
 </tr>
 <tr class="odd">
 <td align="left">Ofatumumab</td>
-<td align="left">374,415.43 (332,270.68, 421,737.65)</td>
-<td align="left">8.82 (7.17, 10.21)</td>
-<td align="left">-153,874.53 (-229,529.64, -81,441.11)</td>
-<td align="left">-65,658.18 (-155,130.72, 19,517.41)</td>
-<td align="left">24,327.59 (-37,163.68, 63,718.05)</td>
-<td align="left">-0.65 (-1.87, 0.45)</td>
-<td align="left">-40,522.30 (-87,138.63, 22,074.28)</td>
-<td align="left">-47,000.18 (-103,734.82, 16,743.38)</td>
+<td align="left">376,459.79 (333,842.01, 424,864.00)</td>
+<td align="left">8.88 (7.22, 10.29)</td>
+<td align="left">-154,457.35 (-231,609.74, -80,398.90)</td>
+<td align="left">-65,656.38 (-156,666.10, 21,522.09)</td>
+<td align="left">24,476.14 (-37,033.99, 65,102.60)</td>
+<td align="left">-0.65 (-1.87, 0.46)</td>
+<td align="left">-40,614.58 (-88,075.19, 21,261.62)</td>
+<td align="left">-47,069.95 (-104,895.79, 16,015.75)</td>
 <td align="left">0</td>
 <td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">Ocrelizumab</td>
-<td align="left">399,164.83 (340,270.16, 442,365.77)</td>
-<td align="left">9.38 (6.75, 12.81)</td>
-<td align="left">-164,753.03 (-218,884.78, -102,187.02)</td>
-<td align="left">-70,988.31 (-146,904.62, 20,730.03)</td>
-<td align="left">49,076.99 (-3,189.51, 108,555.98)</td>
-<td align="left">-0.093 (-1.78, 3.14)</td>
-<td align="left">-51,400.79 (-115,904.19, 8,933.74)</td>
-<td align="left">-52,330.31 (-123,337.63, 38,547.14)</td>
+<td align="left">398,560.74 (342,704.38, 444,491.77)</td>
+<td align="left">9.44 (6.78, 12.89)</td>
+<td align="left">-162,498.18 (-219,503.94, -102,139.76)</td>
+<td align="left">-68,073.15 (-147,570.83, 21,565.49)</td>
+<td align="left">46,577.10 (-2,960.08, 108,924.42)</td>
+<td align="left">-0.083 (-1.78, 3.16)</td>
+<td align="left">-48,655.40 (-116,194.26, 9,154.72)</td>
+<td align="left">-49,486.73 (-123,248.85, 40,781.92)</td>
 <td align="left">0</td>
 <td align="left">0</td>
 </tr>
@@ -545,9 +526,9 @@ contained within this function</p>
 <tr class="odd">
 <td align="left">proportion with spms</td>
 <td align="left">0.29 (0.1; 0.5)</td>
-<td align="left">0.33 (0.1; 0.6)</td>
-<td align="left">0.34 (0.1; 0.8)</td>
-<td align="left">0.25 (0; 0.6)</td>
+<td align="left">0.32 (0.1; 0.6)</td>
+<td align="left">0.35 (0.1; 0.8)</td>
+<td align="left">0.26 (0; 0.6)</td>
 <td align="left">0.35 (0.2; 0.7)</td>
 <td align="left">0.34 (0.1; 0.5)</td>
 <td align="left">0.35 (0.2; 0.5)</td>
@@ -555,113 +536,113 @@ contained within this function</p>
 </tr>
 <tr class="even">
 <td align="left">average no. of relapses</td>
-<td align="left">2.45 (1; 4.3)</td>
+<td align="left">2.48 (1; 4.3)</td>
 <td align="left">2.13 (1.2; 3.7)</td>
-<td align="left">2.47 (0.8; 4.1)</td>
-<td align="left">2.21 (0.9; 3.2)</td>
-<td align="left">2.46 (1.3; 3.6)</td>
-<td align="left">2.21 (0.7; 3.3)</td>
-<td align="left">2.47 (1; 4.2)</td>
-<td align="left">2.55 (1.3; 5)</td>
+<td align="left">2.51 (0.8; 4.1)</td>
+<td align="left">2.23 (0.9; 3.2)</td>
+<td align="left">2.51 (1.3; 3.7)</td>
+<td align="left">2.25 (0.7; 3.4)</td>
+<td align="left">2.5 (1; 4.3)</td>
+<td align="left">2.57 (1.3; 5.2)</td>
 </tr>
 <tr class="odd">
 <td align="left">average no. of edss increases</td>
-<td align="left">2.63 (1.4; 4)</td>
-<td align="left">2.33 (1; 4.1)</td>
-<td align="left">2.22 (1.1; 3.6)</td>
-<td align="left">2.55 (1.2; 4.5)</td>
-<td align="left">2.97 (1.2; 6.3)</td>
-<td align="left">2.68 (1.1; 3.7)</td>
-<td align="left">2.36 (0.9; 4)</td>
-<td align="left">2.36 (1.4; 3.8)</td>
+<td align="left">2.66 (1.5; 4)</td>
+<td align="left">2.31 (1; 4.1)</td>
+<td align="left">2.27 (1.1; 3.8)</td>
+<td align="left">2.58 (1.2; 4.6)</td>
+<td align="left">3 (1.2; 6.3)</td>
+<td align="left">2.71 (1.1; 3.8)</td>
+<td align="left">2.39 (0.9; 4.2)</td>
+<td align="left">2.34 (1.4; 3.8)</td>
 </tr>
 <tr class="even">
 <td align="left">average no. of edss decreases</td>
-<td align="left">1.71 (1.4; 2.2)</td>
+<td align="left">1.74 (1.4; 2.3)</td>
 <td align="left">1.59 (1.2; 2)</td>
 <td align="left">1.5 (1; 1.9)</td>
-<td align="left">1.65 (1.4; 2)</td>
-<td align="left">1.62 (1; 2.8)</td>
+<td align="left">1.66 (1.4; 2)</td>
+<td align="left">1.63 (1; 2.8)</td>
 <td align="left">1.6 (1.1; 2.2)</td>
-<td align="left">1.54 (1; 2.2)</td>
-<td align="left">1.65 (1; 2.2)</td>
+<td align="left">1.55 (1; 2.2)</td>
+<td align="left">1.65 (1; 2.3)</td>
 </tr>
 <tr class="odd">
 <td align="left">final edss value</td>
-<td align="left">4.65 (3; 5.7)</td>
-<td align="left">4.63 (3.2; 6.2)</td>
-<td align="left">4.65 (3.6; 6.2)</td>
-<td align="left">4.67 (2.8; 5.9)</td>
-<td align="left">5.16 (4; 6.7)</td>
-<td align="left">4.74 (2.9; 5.9)</td>
-<td align="left">4.74 (3.9; 5.9)</td>
-<td align="left">4.62 (3.1; 6)</td>
+<td align="left">4.65 (3; 5.6)</td>
+<td align="left">4.61 (3.2; 6.2)</td>
+<td align="left">4.7 (3.7; 6.4)</td>
+<td align="left">4.69 (2.7; 6)</td>
+<td align="left">5.18 (4; 6.7)</td>
+<td align="left">4.77 (2.9; 5.9)</td>
+<td align="left">4.76 (3.9; 5.9)</td>
+<td align="left">4.6 (3.1; 6)</td>
 </tr>
 <tr class="even">
 <td align="left">average no. of SAEs</td>
-<td align="left">3.99 (2.2; 7)</td>
-<td align="left">3.65 (2.8; 7)</td>
-<td align="left">4.58 (2.6; 6.5)</td>
-<td align="left">4.07 (3.2; 5.9)</td>
-<td align="left">4.04 (2.7; 6.4)</td>
-<td align="left">3.99 (2.5; 7.3)</td>
-<td align="left">7.39 (3.4; 20.7)</td>
-<td align="left">4.4 (2.4; 6.6)</td>
+<td align="left">4.09 (2.3; 7.2)</td>
+<td align="left">3.58 (2.8; 7)</td>
+<td align="left">4.65 (2.6; 6.6)</td>
+<td align="left">4.1 (3.2; 5.9)</td>
+<td align="left">4.12 (2.7; 6.8)</td>
+<td align="left">4.02 (2.5; 7.4)</td>
+<td align="left">7.42 (3.4; 20.8)</td>
+<td align="left">4.39 (2.4; 6.4)</td>
 </tr>
 <tr class="odd">
 <td align="left">average no. of treatment switches</td>
-<td align="left">1.09 (0.3; 1.9)</td>
-<td align="left">1.19 (0.7; 1.8)</td>
-<td align="left">1.11 (0.6; 1.9)</td>
+<td align="left">1.11 (0.4; 1.9)</td>
+<td align="left">1.19 (0.6; 1.8)</td>
+<td align="left">1.12 (0.6; 1.9)</td>
 <td align="left">1.17 (0.6; 1.8)</td>
-<td align="left">1.13 (0.6; 1.7)</td>
+<td align="left">1.14 (0.6; 1.7)</td>
 <td align="left">1.12 (0.4; 1.7)</td>
-<td align="left">1.24 (0.5; 2.2)</td>
+<td align="left">1.25 (0.5; 2.2)</td>
 <td align="left">1.11 (0.6; 1.9)</td>
 </tr>
 <tr class="even">
 <td align="left">average no. of years on treatment</td>
-<td align="left">20.57 (14.7; 32.6)</td>
-<td align="left">18.08 (8.3; 23.8)</td>
-<td align="left">20.56 (11.8; 35.2)</td>
-<td align="left">19.15 (12.2; 30.7)</td>
-<td align="left">14.85 (3.3; 23.3)</td>
-<td align="left">17.96 (9.9; 24.6)</td>
-<td align="left">19.47 (9.7; 22.6)</td>
-<td align="left">17.88 (11.2; 24.3)</td>
+<td align="left">20.75 (15.1; 30.7)</td>
+<td align="left">18.36 (8.7; 24.5)</td>
+<td align="left">20.85 (11.9; 35.7)</td>
+<td align="left">19.54 (12.6; 31.1)</td>
+<td align="left">15.02 (3.3; 23.8)</td>
+<td align="left">18.33 (9.9; 25.1)</td>
+<td align="left">19.33 (10.3; 23.1)</td>
+<td align="left">18.19 (11.4; 24.7)</td>
 </tr>
 <tr class="odd">
 <td align="left">average no. of years on 2ndline</td>
-<td align="left">19.34 (11.2; 32.2)</td>
-<td align="left">16.39 (9.9; 24.5)</td>
-<td align="left">17.54 (6.4; 32.4)</td>
-<td align="left">18.67 (13.1; 28.1)</td>
-<td align="left">14.5 (7.7; 19.4)</td>
-<td align="left">17.28 (7.5; 26.7)</td>
-<td align="left">15.51 (10.1; 21.2)</td>
-<td align="left">17.97 (9; 28)</td>
+<td align="left">19.43 (11.3; 32.4)</td>
+<td align="left">16.49 (10; 24.7)</td>
+<td align="left">17.65 (6.4; 32.8)</td>
+<td align="left">18.79 (13.1; 28.5)</td>
+<td align="left">14.58 (7.7; 19.7)</td>
+<td align="left">17.37 (7.5; 26.9)</td>
+<td align="left">15.58 (10.1; 21.2)</td>
+<td align="left">18.06 (9; 28.1)</td>
 </tr>
 <tr class="even">
 <td align="left">average no. of years on 3rdline</td>
-<td align="left">6.89 (1.4; 12.1)</td>
-<td align="left">5.47 (2.1; 9.7)</td>
-<td align="left">5.78 (2; 14.2)</td>
-<td align="left">6.21 (0.6; 14.2)</td>
-<td align="left">5.28 (1.6; 13.7)</td>
-<td align="left">6.42 (2.8; 14.6)</td>
-<td align="left">6.1 (2.3; 15.7)</td>
-<td align="left">6.67 (2.8; 11.4)</td>
+<td align="left">6.97 (1.4; 12.2)</td>
+<td align="left">5.53 (2.2; 9.9)</td>
+<td align="left">5.85 (2; 14.4)</td>
+<td align="left">6.26 (0.6; 14.3)</td>
+<td align="left">5.36 (1.6; 13.9)</td>
+<td align="left">6.5 (2.8; 14.8)</td>
+<td align="left">6.17 (2.5; 15.8)</td>
+<td align="left">6.75 (2.9; 11.4)</td>
 </tr>
 <tr class="odd">
 <td align="left">average no. of years on 4thline</td>
-<td align="left">4.64 (0.9; 12)</td>
-<td align="left">5.16 (0; 15.6)</td>
-<td align="left">3.91 (0; 9.6)</td>
-<td align="left">4.71 (1.8; 7.7)</td>
-<td align="left">3.52 (0; 7.2)</td>
-<td align="left">4.16 (0; 6.7)</td>
-<td align="left">5.1 (0; 12)</td>
-<td align="left">4.26 (0.2; 6.9)</td>
+<td align="left">4.78 (0.9; 12.2)</td>
+<td align="left">5.27 (0; 15.9)</td>
+<td align="left">4 (0; 9.8)</td>
+<td align="left">4.83 (1.9; 8)</td>
+<td align="left">3.6 (0.1; 7.4)</td>
+<td align="left">4.26 (0; 7)</td>
+<td align="left">5.21 (0; 12.2)</td>
+<td align="left">4.34 (0.2; 7)</td>
 </tr>
 </tbody>
 </table>
@@ -684,23 +665,23 @@ contained within this function</p>
 <tbody>
 <tr class="odd">
 <td align="right">0</td>
-<td align="right">6609.939</td>
+<td align="right">6620.079</td>
 </tr>
 <tr class="even">
 <td align="right">25000</td>
-<td align="right">20786.200</td>
+<td align="right">16847.855</td>
 </tr>
 <tr class="odd">
 <td align="right">50000</td>
-<td align="right">73549.324</td>
+<td align="right">74268.245</td>
 </tr>
 <tr class="even">
 <td align="right">75000</td>
-<td align="right">117721.152</td>
+<td align="right">118801.232</td>
 </tr>
 <tr class="odd">
 <td align="right">100000</td>
-<td align="right">161978.456</td>
+<td align="right">163334.219</td>
 </tr>
 </tbody>
 </table>

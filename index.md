@@ -1,6 +1,6 @@
 # msdes
 
-![](reference/figures/logo.png)
+\#![](reference/figures/logo.png)
 
 ## package info
 

@@ -2,8 +2,7 @@
 
 ## Introduction
 
-This document runs the MS discrete event simulation model. for now a
-dummy vignette to test if works or would need to switch to article type.
+This document runs the MS discrete event simulation model.
 
 ### Main options
 
@@ -74,19 +73,6 @@ within this function
 ``` r
 
 
-
-#summarise_ce_results() # Function to summarise the cost effectiveness results
-#summarise_samples() # Function to summarise any data
-#run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI
-
-## set a seed 
-n_seed<-243523452
-set.seed(n_seed)
-
-## number of patients and samples
-n_patients <- 10
-n_samples <- 10
-
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
                        "Natalizumab-SC",
@@ -141,17 +127,7 @@ within this function
 ``` r
 
 
-#load the functions required for the analysis
-#devtools::load_all() # load all functions
-#Function to generate inputs, the same for both packages
-#source("R/generate_inputs.R")
-## Model inputs generated using the generate inputs function
-# saves the input in a list
-# setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/msdes")
-#Function to generate inputs, the same for both packages
-#source("R/generate_inputs.R")
-## Model inputs generated using the generate inputs function
-# saves the input in a list
+# saves the inputs in a list
 inputs <- gen_inputs(
   # change model settings or assumptions used in scenario analyses
   drc= 0.035, #3.5% discount rate for costs
@@ -169,15 +145,10 @@ common_all_inputs <- gen_common_all_inputs()
 unique_pt_inputs <- gen_unique_pt_inputs()
 
 # Generate initial events and reaction events
-# Add time to event for each patient for each of the treatments
-# Setting trt to all treatments should mean that the event applies to all treatments
-
 init_event_list <- gen_init_events(RRMS_events=v_event_names)
-
 evt_react_list <- gen_react_events(RRMS_events=v_event_names)
 
-#util_ongoing_list <- gen_util_ongoing(dmt=v_treatment_names, severity = v_edss_values, RRMS_events=v_event_names)
-
+#utilities and costs
 util_ongoing <- "utilities_disease"
 cost_ongoing <- "costs_disease"
 util_instant <- c("utilities_relapse", "utilities_sae")
@@ -186,22 +157,28 @@ cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 
 ### Run Model
 
-model is run
+Model is run
 
 ``` r
 
 
-#environment(run_sim_parallel_new) <- asNamespace("WARDEN") 
-environment(run_sim_new) <- asNamespace("WARDEN") 
+## set a seed 
+n_seed<-243523452
+set.seed(n_seed)
+
+## number of patients and samples
+n_patients <- 10
+n_samples <- 10
 
 
 # Run the simulation
-#Logic is: per patient, per intervention, per event, react to that event.
+environment(run_sim_new) <- asNamespace("WARDEN") 
+
 total_runtime <- system.time({
-  results <- run_sim_new(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
-    npats = n_patients,                               # number of patients to be simulated
-    n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+  results <- run_sim_new(  
+    npats = n_patients, 
+    n_sim = n_samples,        # number of simulations to run
+    psa_bool = TRUE,            # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
     arm_list = v_treatment_names,             # intervention list
@@ -214,35 +191,34 @@ total_runtime <- system.time({
     cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
     util_instant_list = util_instant,
     cost_instant_list = cost_instant,         # instantaneous treatment costs
-    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
-                 "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
-    # v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code", "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", 
+                "t_2ndline", "t_3rdline", "t_4thline", "waning"), # patient history to monitor
      save_input_matrix = TRUE # Export the input matrix for EVPPI
   )
 })
 #> Analysis number: 1
 #> Simulation number: 1
-#> Time to run simulation 1: 1.06s
+#> Time to run simulation 1: 1.11s
 #> Simulation number: 2
-#> Time to run simulation 2: 1.14s
+#> Time to run simulation 2: 1.24s
 #> Simulation number: 3
-#> Time to run simulation 3: 1s
+#> Time to run simulation 3: 1.06s
 #> Simulation number: 4
-#> Time to run simulation 4: 1.01s
+#> Time to run simulation 4: 1.06s
 #> Simulation number: 5
-#> Time to run simulation 5: 1.13s
+#> Time to run simulation 5: 1.16s
 #> Simulation number: 6
-#> Time to run simulation 6: 1.24s
+#> Time to run simulation 6: 1.32s
 #> Simulation number: 7
-#> Time to run simulation 7: 1.01s
+#> Time to run simulation 7: 1.07s
 #> Simulation number: 8
-#> Time to run simulation 8: 0.96s
+#> Time to run simulation 8: 1.02s
 #> Simulation number: 9
-#> Time to run simulation 9: 1.02s
+#> Time to run simulation 9: 1.09s
 #> Simulation number: 10
-#> Time to run simulation 10: 1.05s
-#> Time to run analysis 1: 10.63s
-#> Total time to run: 10.63s
+#> Time to run simulation 10: 1.13s
+#> Time to run analysis 1: 11.27s
+#> Total time to run: 11.28s
 #> Simulation finalized;
 ```
 
@@ -297,12 +273,12 @@ knitr::kable(results_table)
 
 |  | Total costs (95% CrI) | Total QALYs (95% CrI) | Net benefit at £25000/QALY (95% CrI) | Net benefit at £35000/QALY (95% CrI) | Incremental costs (95% CrI) | Incremental QALYs (95% CrI) | INB at £25000/QALY (95% CrI) | INB at £35000/QALY (95% CrI) | CEAC at £25000/QALY (95% CrI) | CEAC at £35000/QALY (95% CrI) |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| Natalizumab-IV | 350,087.83 (305,986.55, 404,112.50) | 9.47 (7.78, 11.27) | -113,352.24 (-173,052.55, -27,495.65) | -18,658.00 (-92,134.41, 83,900.71) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.2 | 0.3 |
-| Natalizumab-SC | 308,420.14 (257,195.67, 347,549.23) | 8.69 (6.09, 10.72) | -91,045.19 (-145,788.57, -15,833.05) | -4,095.21 (-84,902.41, 87,959.10) | -41,667.70 (-109,838.51, 22,753.11) | -0.77 (-3.11, 1.56) | 22,307.05 (-18,981.04, 62,584.38) | 14,562.79 (-48,830.31, 73,813.71) | 0.3 | 0.2 |
-| Natalizumab biosimilar-IV | 333,512.62 (298,599.82, 363,665.80) | 9.32 (5.15, 12.96) | -100,520.23 (-201,924.20, -24,329.92) | -7,323.27 (-150,443.50, 103,427.12) | -16,575.22 (-63,264.88, 30,022.62) | -0.15 (-3.36, 3.62) | 12,832.01 (-37,223.92, 84,997.27) | 11,334.73 (-67,587.23, 121,244.23) | 0.2 | 0.2 |
-| Ublituximab | 356,696.85 (318,927.43, 380,577.63) | 9.46 (6.34, 12.79) | -120,149.71 (-198,893.85, -57,033.82) | -25,530.86 (-135,458.98, 67,935.66) | 6,609.02 (-39,749.02, 56,197.10) | -0.0075 (-2.99, 3.22) | -6,797.48 (-77,624.13, 93,886.67) | -6,872.86 (-104,726.45, 124,047.56) | 0.3 | 0.3 |
-| Ofatumumab | 374,415.43 (332,270.68, 421,737.65) | 8.82 (7.17, 10.21) | -153,874.53 (-229,529.64, -81,441.11) | -65,658.18 (-155,130.72, 19,517.41) | 24,327.59 (-37,163.68, 63,718.05) | -0.65 (-1.87, 0.45) | -40,522.30 (-87,138.63, 22,074.28) | -47,000.18 (-103,734.82, 16,743.38) | 0 | 0 |
-| Ocrelizumab | 399,164.83 (340,270.16, 442,365.77) | 9.38 (6.75, 12.81) | -164,753.03 (-218,884.78, -102,187.02) | -70,988.31 (-146,904.62, 20,730.03) | 49,076.99 (-3,189.51, 108,555.98) | -0.093 (-1.78, 3.14) | -51,400.79 (-115,904.19, 8,933.74) | -52,330.31 (-123,337.63, 38,547.14) | 0 | 0 |
+| Natalizumab-IV | 351,983.65 (307,662.42, 406,091.90) | 9.53 (7.81, 11.37) | -113,842.77 (-174,017.68, -26,843.39) | -18,586.42 (-92,828.03, 85,484.22) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.00 (0.00, 0.00) | 0.2 | 0.3 |
+| Natalizumab-SC | 307,119.99 (254,825.07, 349,972.93) | 8.79 (6.42, 10.81) | -87,475.73 (-130,088.51, -16,054.09) | 381.97 (-57,166.74, 88,724.47) | -44,863.65 (-117,556.93, 23,377.02) | -0.74 (-3.16, 1.56) | 26,367.04 (-19,743.08, 65,111.96) | 18,968.39 (-49,966.19, 74,651.46) | 0.3 | 0.2 |
+| Natalizumab biosimilar-IV | 335,639.43 (300,172.95, 366,383.61) | 9.37 (5.17, 13.02) | -101,346.79 (-203,893.87, -24,260.76) | -7,629.74 (-152,180.34, 104,096.81) | -16,344.21 (-63,438.11, 30,093.22) | -0.15 (-3.37, 3.64) | 12,495.98 (-38,068.58, 85,145.35) | 10,956.69 (-68,749.69, 121,517.63) | 0.2 | 0.2 |
+| Ublituximab | 358,531.30 (320,909.58, 382,255.80) | 9.52 (6.39, 12.86) | -120,565.32 (-200,000.73, -56,702.17) | -25,378.93 (-136,137.79, 68,986.73) | 6,547.66 (-39,880.26, 56,276.70) | -0.007 (-2.99, 3.24) | -6,722.55 (-77,678.40, 94,597.22) | -6,792.51 (-104,922.20, 124,893.82) | 0.3 | 0.3 |
+| Ofatumumab | 376,459.79 (333,842.01, 424,864.00) | 8.88 (7.22, 10.29) | -154,457.35 (-231,609.74, -80,398.90) | -65,656.38 (-156,666.10, 21,522.09) | 24,476.14 (-37,033.99, 65,102.60) | -0.65 (-1.87, 0.46) | -40,614.58 (-88,075.19, 21,261.62) | -47,069.95 (-104,895.79, 16,015.75) | 0 | 0 |
+| Ocrelizumab | 398,560.74 (342,704.38, 444,491.77) | 9.44 (6.78, 12.89) | -162,498.18 (-219,503.94, -102,139.76) | -68,073.15 (-147,570.83, 21,565.49) | 46,577.10 (-2,960.08, 108,924.42) | -0.083 (-1.78, 3.16) | -48,655.40 (-116,194.26, 9,154.72) | -49,486.73 (-123,248.85, 40,781.92) | 0 | 0 |
 
 ``` r
 
@@ -376,17 +352,17 @@ knitr::kable(key_events_trt_grps)
 
 |  | Natalizumab-IV | Natalizumab-SC | Natalizumab biosimilar-IV | Natalizumab biosimilar-SC | Cladribine | Ublituximab | Ofatumumab | Ocrelizumab |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| proportion with spms | 0.29 (0.1; 0.5) | 0.33 (0.1; 0.6) | 0.34 (0.1; 0.8) | 0.25 (0; 0.6) | 0.35 (0.2; 0.7) | 0.34 (0.1; 0.5) | 0.35 (0.2; 0.5) | 0.27 (0; 0.5) |
-| average no. of relapses | 2.45 (1; 4.3) | 2.13 (1.2; 3.7) | 2.47 (0.8; 4.1) | 2.21 (0.9; 3.2) | 2.46 (1.3; 3.6) | 2.21 (0.7; 3.3) | 2.47 (1; 4.2) | 2.55 (1.3; 5) |
-| average no. of edss increases | 2.63 (1.4; 4) | 2.33 (1; 4.1) | 2.22 (1.1; 3.6) | 2.55 (1.2; 4.5) | 2.97 (1.2; 6.3) | 2.68 (1.1; 3.7) | 2.36 (0.9; 4) | 2.36 (1.4; 3.8) |
-| average no. of edss decreases | 1.71 (1.4; 2.2) | 1.59 (1.2; 2) | 1.5 (1; 1.9) | 1.65 (1.4; 2) | 1.62 (1; 2.8) | 1.6 (1.1; 2.2) | 1.54 (1; 2.2) | 1.65 (1; 2.2) |
-| final edss value | 4.65 (3; 5.7) | 4.63 (3.2; 6.2) | 4.65 (3.6; 6.2) | 4.67 (2.8; 5.9) | 5.16 (4; 6.7) | 4.74 (2.9; 5.9) | 4.74 (3.9; 5.9) | 4.62 (3.1; 6) |
-| average no. of SAEs | 3.99 (2.2; 7) | 3.65 (2.8; 7) | 4.58 (2.6; 6.5) | 4.07 (3.2; 5.9) | 4.04 (2.7; 6.4) | 3.99 (2.5; 7.3) | 7.39 (3.4; 20.7) | 4.4 (2.4; 6.6) |
-| average no. of treatment switches | 1.09 (0.3; 1.9) | 1.19 (0.7; 1.8) | 1.11 (0.6; 1.9) | 1.17 (0.6; 1.8) | 1.13 (0.6; 1.7) | 1.12 (0.4; 1.7) | 1.24 (0.5; 2.2) | 1.11 (0.6; 1.9) |
-| average no. of years on treatment | 20.57 (14.7; 32.6) | 18.08 (8.3; 23.8) | 20.56 (11.8; 35.2) | 19.15 (12.2; 30.7) | 14.85 (3.3; 23.3) | 17.96 (9.9; 24.6) | 19.47 (9.7; 22.6) | 17.88 (11.2; 24.3) |
-| average no. of years on 2ndline | 19.34 (11.2; 32.2) | 16.39 (9.9; 24.5) | 17.54 (6.4; 32.4) | 18.67 (13.1; 28.1) | 14.5 (7.7; 19.4) | 17.28 (7.5; 26.7) | 15.51 (10.1; 21.2) | 17.97 (9; 28) |
-| average no. of years on 3rdline | 6.89 (1.4; 12.1) | 5.47 (2.1; 9.7) | 5.78 (2; 14.2) | 6.21 (0.6; 14.2) | 5.28 (1.6; 13.7) | 6.42 (2.8; 14.6) | 6.1 (2.3; 15.7) | 6.67 (2.8; 11.4) |
-| average no. of years on 4thline | 4.64 (0.9; 12) | 5.16 (0; 15.6) | 3.91 (0; 9.6) | 4.71 (1.8; 7.7) | 3.52 (0; 7.2) | 4.16 (0; 6.7) | 5.1 (0; 12) | 4.26 (0.2; 6.9) |
+| proportion with spms | 0.29 (0.1; 0.5) | 0.32 (0.1; 0.6) | 0.35 (0.1; 0.8) | 0.26 (0; 0.6) | 0.35 (0.2; 0.7) | 0.34 (0.1; 0.5) | 0.35 (0.2; 0.5) | 0.27 (0; 0.5) |
+| average no. of relapses | 2.48 (1; 4.3) | 2.13 (1.2; 3.7) | 2.51 (0.8; 4.1) | 2.23 (0.9; 3.2) | 2.51 (1.3; 3.7) | 2.25 (0.7; 3.4) | 2.5 (1; 4.3) | 2.57 (1.3; 5.2) |
+| average no. of edss increases | 2.66 (1.5; 4) | 2.31 (1; 4.1) | 2.27 (1.1; 3.8) | 2.58 (1.2; 4.6) | 3 (1.2; 6.3) | 2.71 (1.1; 3.8) | 2.39 (0.9; 4.2) | 2.34 (1.4; 3.8) |
+| average no. of edss decreases | 1.74 (1.4; 2.3) | 1.59 (1.2; 2) | 1.5 (1; 1.9) | 1.66 (1.4; 2) | 1.63 (1; 2.8) | 1.6 (1.1; 2.2) | 1.55 (1; 2.2) | 1.65 (1; 2.3) |
+| final edss value | 4.65 (3; 5.6) | 4.61 (3.2; 6.2) | 4.7 (3.7; 6.4) | 4.69 (2.7; 6) | 5.18 (4; 6.7) | 4.77 (2.9; 5.9) | 4.76 (3.9; 5.9) | 4.6 (3.1; 6) |
+| average no. of SAEs | 4.09 (2.3; 7.2) | 3.58 (2.8; 7) | 4.65 (2.6; 6.6) | 4.1 (3.2; 5.9) | 4.12 (2.7; 6.8) | 4.02 (2.5; 7.4) | 7.42 (3.4; 20.8) | 4.39 (2.4; 6.4) |
+| average no. of treatment switches | 1.11 (0.4; 1.9) | 1.19 (0.6; 1.8) | 1.12 (0.6; 1.9) | 1.17 (0.6; 1.8) | 1.14 (0.6; 1.7) | 1.12 (0.4; 1.7) | 1.25 (0.5; 2.2) | 1.11 (0.6; 1.9) |
+| average no. of years on treatment | 20.75 (15.1; 30.7) | 18.36 (8.7; 24.5) | 20.85 (11.9; 35.7) | 19.54 (12.6; 31.1) | 15.02 (3.3; 23.8) | 18.33 (9.9; 25.1) | 19.33 (10.3; 23.1) | 18.19 (11.4; 24.7) |
+| average no. of years on 2ndline | 19.43 (11.3; 32.4) | 16.49 (10; 24.7) | 17.65 (6.4; 32.8) | 18.79 (13.1; 28.5) | 14.58 (7.7; 19.7) | 17.37 (7.5; 26.9) | 15.58 (10.1; 21.2) | 18.06 (9; 28.1) |
+| average no. of years on 3rdline | 6.97 (1.4; 12.2) | 5.53 (2.2; 9.9) | 5.85 (2; 14.4) | 6.26 (0.6; 14.3) | 5.36 (1.6; 13.9) | 6.5 (2.8; 14.8) | 6.17 (2.5; 15.8) | 6.75 (2.9; 11.4) |
+| average no. of years on 4thline | 4.78 (0.9; 12.2) | 5.27 (0; 15.9) | 4 (0; 9.8) | 4.83 (1.9; 8) | 3.6 (0.1; 7.4) | 4.26 (0; 7) | 5.21 (0; 12.2) | 4.34 (0.2; 7) |
 
 ``` r
 
@@ -404,11 +380,11 @@ knitr::kable(total_evpi)
 
 |      k |       evpi |
 |-------:|-----------:|
-|      0 |   6609.939 |
-|  25000 |  20786.200 |
-|  50000 |  73549.324 |
-|  75000 | 117721.152 |
-| 100000 | 161978.456 |
+|      0 |   6620.079 |
+|  25000 |  16847.855 |
+|  50000 |  74268.245 |
+|  75000 | 118801.232 |
+| 100000 | 163334.219 |
 
 ``` r
 
