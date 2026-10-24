@@ -11,7 +11,6 @@ reference:
   - gen_init_events
   - gen_react_events
   - draw_tte_new_warden
-  - pluck_vector_from_env
   - rrmsdessetup
   - rrmsdesmodel
   - run_sim_new

@@ -4,7 +4,7 @@
 \alias{rrmsdesmodel}
 \title{RunModel as a function}
 \usage{
-rrmsdesmodel(n_patients, n_samples)
+rrmsdesmodel(n_patients = n_patients, n_samples = n_samples)
 }
 \description{
 \code{rrmsdesmodel()}RRMS DES model run written as a function to be called from Shiny APP
