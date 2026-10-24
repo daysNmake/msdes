@@ -41,19 +41,6 @@ Data is loaded in the function gen_inputs(), below is the data contained within 
 
 ```{r model_setup}
 
-
-#summarise_ce_results() # Function to summarise the cost effectiveness results
-#summarise_samples() # Function to summarise any data
-#run_sim_parallel_new() Function includes input matrix for EVPPI and EVSI
-
-## set a seed 
-n_seed<-243523452
-set.seed(n_seed)
-
-## number of patients and samples
-n_patients <- 10
-n_samples <- 10
-
 ## Treatments at second line 
 v_treatment_names <- c("Natalizumab-IV",
                        "Natalizumab-SC",
@@ -108,17 +95,7 @@ Data is loaded in the function gen_inputs(), below is the data contained within 
 
 ```{r load_data}
 
-#load the functions required for the analysis
-#devtools::load_all() # load all functions
-#Function to generate inputs, the same for both packages
-#source("R/generate_inputs.R")
-## Model inputs generated using the generate inputs function
-# saves the input in a list
-# setwd("C:/Users/po22525/University of Bristol/grp-Bristol TAG - MTA-MS - MTA-MS/Working Folder_HE/MS Models/Git Repo/msdes")
-#Function to generate inputs, the same for both packages
-#source("R/generate_inputs.R")
-## Model inputs generated using the generate inputs function
-# saves the input in a list
+# saves the inputs in a list
 inputs <- gen_inputs(
   # change model settings or assumptions used in scenario analyses
   drc= 0.035, #3.5% discount rate for costs
@@ -136,15 +113,10 @@ common_all_inputs <- gen_common_all_inputs()
 unique_pt_inputs <- gen_unique_pt_inputs()
 
 # Generate initial events and reaction events
-# Add time to event for each patient for each of the treatments
-# Setting trt to all treatments should mean that the event applies to all treatments
-
 init_event_list <- gen_init_events(RRMS_events=v_event_names)
-
 evt_react_list <- gen_react_events(RRMS_events=v_event_names)
 
-#util_ongoing_list <- gen_util_ongoing(dmt=v_treatment_names, severity = v_edss_values, RRMS_events=v_event_names)
-
+#utilities and costs
 util_ongoing <- "utilities_disease"
 cost_ongoing <- "costs_disease"
 util_instant <- c("utilities_relapse", "utilities_sae")
@@ -153,20 +125,26 @@ cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
 ```
 
 ## Run Model
-model is run
+Model is run
 ```{r run_model}
 
-#environment(run_sim_parallel_new) <- asNamespace("WARDEN") 
-environment(run_sim_new) <- asNamespace("WARDEN") 
+## set a seed 
+n_seed<-243523452
+set.seed(n_seed)
+
+## number of patients and samples
+n_patients <- 10
+n_samples <- 10
 
 
 # Run the simulation
-#Logic is: per patient, per intervention, per event, react to that event.
+environment(run_sim_new) <- asNamespace("WARDEN") 
+
 total_runtime <- system.time({
-  results <- run_sim_new(                                  # use run_sim_parallel() for more than 1 simulation, although I've experienced errors
-    npats = n_patients,                               # number of patients to be simulated
-    n_sim = n_samples,                                  # number of simulations to run
-    psa_bool = TRUE,                         # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
+  results <- run_sim_new(  
+    npats = n_patients, 
+    n_sim = n_samples,        # number of simulations to run
+    psa_bool = TRUE,            # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
     debug = FALSE,
     sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
     arm_list = v_treatment_names,             # intervention list
@@ -179,9 +157,8 @@ total_runtime <- system.time({
     cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
     util_instant_list = util_instant,
     cost_instant_list = cost_instant,         # instantaneous treatment costs
-    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code",
-                 "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", "t_2ndline", "t_3rdline", "t_4thline", "waning"),
-    # v_random_seed_sequence = c(1:n_samples), # Sequence of random seeds
+    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code", "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", 
+                "t_2ndline", "t_3rdline", "t_4thline", "waning"), # patient history to monitor
      save_input_matrix = TRUE # Export the input matrix for EVPPI
   )
 })
