@@ -2,7 +2,9 @@
 
 ## Introduction
 
-This document runs the MS discrete event simulation model.
+This shows how to run the MS discrete event simulation model in its
+simplest case. Refer to articles for explanation of the internal
+workings.
 
 ### Main options
 
@@ -11,21 +13,27 @@ Load the required packages
 ``` r
 
 library(msdes)
+library(magrittr)
 library(WARDEN)
-library(MASS)
+library(flexsurv)
+#> Loading required package: survival
 library(VGAM)
 #> Loading required package: stats4
 #> Loading required package: splines
-library(utils)
-library(flexsurv)
-#> Loading required package: survival
 #> 
-#> Attaching package: 'flexsurv'
-#> The following objects are masked from 'package:VGAM':
+#> Attaching package: 'VGAM'
+#> The following objects are masked from 'package:flexsurv':
 #> 
 #>     AICc, dgompertz, pgompertz, qgompertz, rgompertz
+library(MASS)
+library(utils)
 library(hesim)
 library(purrr)
+#> 
+#> Attaching package: 'purrr'
+#> The following object is masked from 'package:magrittr':
+#> 
+#>     set_names
 library(rlang)
 #> 
 #> Attaching package: 'rlang'
@@ -33,6 +41,9 @@ library(rlang)
 #> 
 #>     flatten, flatten_chr, flatten_dbl, flatten_int, flatten_lgl,
 #>     flatten_raw, invoke, splice
+#> The following object is masked from 'package:magrittr':
+#> 
+#>     set_names
 library(progressr)
 library(data.table)
 #> 
@@ -67,158 +78,55 @@ library(voi)
 
 ### model setup
 
-Data is loaded in the function gen_inputs(), below is the data contained
-within this function
+Data is loaded with the function
+\[[`rrmsdessetup()`](https://daysnmake.github.io/msdes/reference/rrmsdessetup.md)\]
+below, all the data is self contained within this function. The user has
+the option to change a few of the inputs.
 
 ``` r
 
-
-## Treatments at second line 
-v_treatment_names <- c("Natalizumab-IV",
-                       "Natalizumab-SC",
-                       "Natalizumab biosimilar-IV",
-                       "Natalizumab biosimilar-SC",
-                       "Cladribine", 
-                       "Ublituximab" ,
-                       "Ofatumumab",
-                       "Ocrelizumab")
-
-## number of treatments
-n_treatments <- length(v_treatment_names)
-
-## specify codes for the treatments
-v_treatment_codes <- c(seq(1, n_treatments))
-names(v_treatment_codes) <- v_treatment_names
-
-## Treatments that patients can move to at 3rd and higher line 
-v_higher_line_treatments <- c("Natalizumab-IV",
-                              "Natalizumab-SC",
-                              "Natalizumab biosimilar-IV",
-                              "Natalizumab biosimilar-SC",
-                              "Cladribine",
-                              "Ublituximab",
-                              "Ofatumumab",
-                              "Ocrelizumab"
-                              )
-v_higher_line_treatment_codes <- c(seq(1, length(v_higher_line_treatments)))
-names(v_higher_line_treatment_codes) <- v_higher_line_treatments
-
-## prior treatment index
-v_prior_treatment_indices <- c(rep(0, length(v_higher_line_treatments)))
-names(v_prior_treatment_indices) <- v_higher_line_treatments
-
-## Model event states
-v_event_names <- c("initialise","age" , "relapse", "edss_increase", "edss_decrease", "progression", "treatment_switch", "annual_treatment", "serious_adverse_event", "death"
-                   )
-
-## Define the possible EDSS values
-v_edss_values <- c(0:9)
-names(v_edss_values) <- paste("EDSS", v_edss_values)
-
-# Number of EDSS categories
-n_edss_values <- length(v_edss_values)
-```
-
-### Load Data
-
-Data is loaded in the function gen_inputs(), below is the data contained
-within this function
-
-``` r
-
-
-# saves the inputs in a list
-inputs <- gen_inputs(
-  # change model settings or assumptions used in scenario analyses
+rrmsdessetup(  # change model settings or assumptions used in scenario analyses
   drc= 0.035, #3.5% discount rate for costs
   drq= 0.035, #3.5% discount rate for qalys
   time_horizon = 70, # number of years model is running for starting at intial age
   p_eid=0.6, # proportion of patients on external interval dosing
   jcvtest_cost= 0 #assumed free due to home service, test cost could be £247 privately but not offered in the NHS
-                     )
-
-# Global parameters of the model as they are common to all patients and treatments
-indicators <-1
-common_all_inputs <- gen_common_all_inputs()
-
-# patient parameters reflecting heterogeneous characteristics that depend on treatment
-unique_pt_inputs <- gen_unique_pt_inputs()
-
-# Generate initial events and reaction events
-init_event_list <- gen_init_events(RRMS_events=v_event_names)
-evt_react_list <- gen_react_events(RRMS_events=v_event_names)
-
-#utilities and costs
-util_ongoing <- "utilities_disease"
-cost_ongoing <- "costs_disease"
-util_instant <- c("utilities_relapse", "utilities_sae")
-cost_instant <- c("costs_treatment", "costs_relapse", "costs_sae")
+  )
 ```
 
 ### Run Model
 
-Model is run
+Model is run with the function
+\[[`rrmsdesmodel()`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md)\]
+below. The user has the specify the number of patients and number of
+inputs.
 
 ``` r
 
-
-## set a seed 
-n_seed<-243523452
-set.seed(n_seed)
-
-## number of patients and samples
-n_patients <- 10
-n_samples <- 10
-
-
-# Run the simulation
-environment(run_sim_new) <- asNamespace("WARDEN") 
-
-total_runtime <- system.time({
-  results <- run_sim_new(  
-    npats = n_patients, 
-    n_sim = n_samples,        # number of simulations to run
-    psa_bool = TRUE,            # use PSA or not. If n_sim > 1 and psa_bool = FALSE, then difference in outcomes is due to sampling (number of pats simulated)  
-    debug = FALSE,
-    sensitivity_bool= FALSE,                  # sensitivity analysis not implemented,
-    arm_list = v_treatment_names,             # intervention list
-    common_all_inputs = common_all_inputs,    # inputs common that do not change within a simulation
-    #common_pt_inputs = common_pt_inputs,     # inputs that change within a simulation but are not affected by the intervention
-    unique_pt_inputs = unique_pt_inputs,      # inputs that change within a simulation between interventions
-    init_event_list = init_event_list,        # initial event list
-    evt_react_list = evt_react_list,          # reaction of events
-    util_ongoing_list = util_ongoing,         # ongoing rrms or spms disease utilities
-    cost_ongoing_list = cost_ongoing,         # ongoing rrms or spms disease costs
-    util_instant_list = util_instant,
-    cost_instant_list = cost_instant,         # instantaneous treatment costs
-    input_out=c("age", "sex", "spms_flag", "edss_value", "n_relapse", "n_sae_evts", "n_edssinc_evts", "n_edssdec_evts", "current_treatment_code", "treatment_line", "n_switch", "years_on_treatment", "treatment_stop", 
-                "t_2ndline", "t_3rdline", "t_4thline", "waning"), # patient history to monitor
-     save_input_matrix = TRUE # Export the input matrix for EVPPI
-  )
-})
+rrmsdesmodel(n_patients=10,n_samples=10)
 #> Analysis number: 1
 #> Simulation number: 1
-#> Time to run simulation 1: 1.11s
+#> Time to run simulation 1: 0.93s
 #> Simulation number: 2
-#> Time to run simulation 2: 1.24s
+#> Time to run simulation 2: 1.02s
 #> Simulation number: 3
-#> Time to run simulation 3: 1.06s
+#> Time to run simulation 3: 0.87s
 #> Simulation number: 4
-#> Time to run simulation 4: 1.06s
+#> Time to run simulation 4: 0.87s
 #> Simulation number: 5
-#> Time to run simulation 5: 1.16s
+#> Time to run simulation 5: 0.96s
 #> Simulation number: 6
-#> Time to run simulation 6: 1.32s
+#> Time to run simulation 6: 1.16s
 #> Simulation number: 7
-#> Time to run simulation 7: 1.07s
+#> Time to run simulation 7: 0.89s
 #> Simulation number: 8
-#> Time to run simulation 8: 1.02s
+#> Time to run simulation 8: 0.84s
 #> Simulation number: 9
-#> Time to run simulation 9: 1.09s
+#> Time to run simulation 9: 0.91s
 #> Simulation number: 10
-#> Time to run simulation 10: 1.13s
-#> Time to run analysis 1: 11.27s
-#> Total time to run: 11.28s
+#> Time to run simulation 10: 0.93s
+#> Time to run analysis 1: 9.39s
+#> Total time to run: 9.4s
 #> Simulation finalized;
 ```
 
