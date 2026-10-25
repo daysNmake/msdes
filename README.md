@@ -41,8 +41,6 @@ Note this is free posit account with a limited number of tokens for usage.
 
 ## About the project
 
-https://doi.org/10.5281/zenodo.23643283
-
 *NIHR 2026*
 
 - NIHR Journal article <https://doi.org/10.3310/GJHT1811>
@@ -62,3 +60,5 @@ https://doi.org/10.5281/zenodo.23643283
   <https://github.com/r-hta/r-hta-workshop-2025/blob/main/README.md>
 
 - Presentation Recording <https://www.youtube.com/watch?v=MhyEtZG_52Q>
+
+[![DOI](https://zenodo.org/badge/daysNmaks/msdes.svg)](https://doi.org/10.5281/zenodo.23643283/daysNmake/msdes)
