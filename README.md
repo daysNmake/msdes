@@ -41,6 +41,8 @@ Note this is free posit account with a limited number of tokens for usage.
 
 ## About the project
 
+https://doi.org/10.5281/zenodo.23643283
+
 *NIHR 2026*
 
 - NIHR Journal article <https://doi.org/10.3310/GJHT1811>
