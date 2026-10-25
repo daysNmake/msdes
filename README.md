@@ -7,6 +7,7 @@
 
 msdes is package version of the MS-MTA (NICE appraisal version). The
 model is documented at: <https://daysnmake.github.io/msdes/>
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
 
 ## Installation
 
@@ -61,5 +62,3 @@ Note this is free posit account with a limited number of tokens for usage.
 
 - Presentation Recording <https://www.youtube.com/watch?v=MhyEtZG_52Q>
 
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
