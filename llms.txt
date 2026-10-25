@@ -1,10 +1,10 @@
 # msdes
 
-## package info
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
+\## package info
 
 msdes is package version of the MS-MTA (NICE appraisal version). The
 model is documented at: <https://daysnmake.github.io/msdes/>
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
 
 ## Installation
 
