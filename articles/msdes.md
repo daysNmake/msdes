@@ -106,27 +106,27 @@ inputs.
 rrmsdesmodel(n_patients=10,n_samples=10)
 #> Analysis number: 1
 #> Simulation number: 1
-#> Time to run simulation 1: 1.05s
+#> Time to run simulation 1: 0.77s
 #> Simulation number: 2
-#> Time to run simulation 2: 1.14s
+#> Time to run simulation 2: 0.85s
 #> Simulation number: 3
-#> Time to run simulation 3: 1.02s
+#> Time to run simulation 3: 0.77s
 #> Simulation number: 4
-#> Time to run simulation 4: 1s
+#> Time to run simulation 4: 0.77s
 #> Simulation number: 5
-#> Time to run simulation 5: 1.11s
+#> Time to run simulation 5: 0.86s
 #> Simulation number: 6
-#> Time to run simulation 6: 1.26s
+#> Time to run simulation 6: 1.05s
 #> Simulation number: 7
-#> Time to run simulation 7: 1.03s
+#> Time to run simulation 7: 0.76s
 #> Simulation number: 8
-#> Time to run simulation 8: 0.96s
+#> Time to run simulation 8: 0.71s
 #> Simulation number: 9
-#> Time to run simulation 9: 1.05s
+#> Time to run simulation 9: 0.77s
 #> Simulation number: 10
-#> Time to run simulation 10: 1.04s
-#> Time to run analysis 1: 10.66s
-#> Total time to run: 10.66s
+#> Time to run simulation 10: 0.86s
+#> Time to run analysis 1: 8.19s
+#> Total time to run: 8.19s
 #> Simulation finalized;
 ```
 
