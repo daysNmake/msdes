@@ -61,4 +61,5 @@ Note this is free posit account with a limited number of tokens for usage.
 
 - Presentation Recording <https://www.youtube.com/watch?v=MhyEtZG_52Q>
 
-[![DOI](https://zenodo.org/badge/daysNmaks/msdes.svg)](https://doi.org/10.5281/zenodo.23643283/daysNmake/msdes)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
