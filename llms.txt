@@ -1,8 +1,5 @@
 # msdes
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20428659.svg)](https://doi.org/10.5281/zenodo.20428659)
-\## package info
-
 msdes is package version of the MS-MTA (NICE appraisal version). The
 model is documented at: <https://daysnmake.github.io/msdes/>
 
@@ -37,7 +34,8 @@ experimentation
 
 Navigate here:
 <https://01a17047-ff37-58f7-1edc-21c85cbda23a.share.connect.posit.cloud/>
-Note this is free posit account with a limited number of tokens for
+
+Note this is a free posit account with a limited number of tokens for
 usage.
 
 ## About the project
@@ -61,6 +59,8 @@ usage.
   <https://github.com/r-hta/r-hta-workshop-2025/blob/main/README.md>
 
 - Presentation Recording <https://www.youtube.com/watch?v=MhyEtZG_52Q>
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23643283.svg)](https://doi.org/10.5281/zenodo.23643283)
 
 # Package index
 
