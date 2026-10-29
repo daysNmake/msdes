@@ -1,17 +1,29 @@
-#' Generate Global inputs
-#' 
-#' `gen_common_all_inputs()` Global input parameters for the model are common to all patients and treatments.
-#' 
+#' Generate Common Global Model Inputs
 #'
-#' Input parameters here that do not change as we loop through treatments for a patient.
-#' The input parameters are called from 'gen_inputs()' function or the main analysis script.
-#' They are called in with 'WARDEN::add_item()' functions, these are piped with %>% operator.
-#' Probabilistic input parameters are specified with 'WARDEN::pick_val_v()' function creating a list of 
-#' deterministic and probabilistic values
-#' 
-#' @param drc discount rate for costs
-#' @param drq discount rate for qalys
-#' @param reference The treatment arm specified as the reference for the comparison
+#' Generates input parameters that are common to all patients and treatment
+#' arms, and do not change as the simulation loops through treatments for a
+#' given patient. Returns a WARDEN \code{add_item()} chain consumed by
+#' \code{\link[msdes]{rrmsdesmodel}}.
+#'
+#' @details
+#' All inputs are read from the global \code{inputs} list populated by
+#' \code{\link[msdes]{gen_inputs}} via \code{\link[msdes]{rrmsdessetup}}.
+#' Probabilistic values are specified using \code{\link[WARDEN]{pick_val_v}},
+#' which returns a list of deterministic and probabilistic values controlled
+#' by \code{psa_bool} and \code{sensitivity_bool}. Items are chained with
+#' \code{\link[WARDEN]{add_item}} using the \code{\%>\%} pipe operator.
+#'
+#'
+#' @return A WARDEN \code{add_item()} object containing all common global
+#'   inputs, passed directly to \code{\link[WARDEN]{run_sim_new}} via the
+#'   \code{common_all_inputs} argument in
+#'   \code{\link[msdes]{rrmsdesmodel}}.
+#'
+#' @seealso
+#'   \code{\link[msdes]{gen_inputs}},
+#'   \code{\link[WARDEN]{add_item}},
+#'   \code{\link[WARDEN]{pick_val_v}},
+#'   
 #' @export
 gen_common_all_inputs <- function() {
   add_item(
@@ -215,19 +227,6 @@ gen_common_all_inputs <- function() {
     deploy_env= FALSE
   )
   
-  
-# ) %>% add_item(
-#   # MS Registry time to EDSS decrease SPMS patients
-#   l_spms_edss_decrease <- pick_val_v(
-#     base = inputs$v_tto_edss_decrease_spms_mu,
-#     psa =         mvrnorm(n = 1, mu = inputs$v_tto_edss_decrease_spms_mu, 
-#                           Sigma = inputs$m_tto_edss_decrease_spms_sigma) ,
-#     #sens = , 
-#     psa_ind = psa_bool,
-#     sens_ind = sensitivity_bool,    
-#     indicator = rep(indicators, length(inputs$v_tto_edss_decrease_spms_mu)),    
-#     names_out = colnames(inputs$v_tto_edss_decrease_spms_mu)
-#   )
   
 )%>% add_item(
   # MS Registry time to progression HARRMS to SPMS 

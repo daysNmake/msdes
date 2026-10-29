@@ -2,13 +2,48 @@
 % Please edit documentation in R/modelrun_as_a_function.R
 \name{rrmsdesmodel}
 \alias{rrmsdesmodel}
-\title{RunModel as a function}
+\title{Run the RRMS Discrete Event Simulation Model}
 \usage{
 rrmsdesmodel(n_patients = n_patients, n_samples = n_samples)
 }
-\description{
-\code{rrmsdesmodel()}RRMS DES model run written as a function to be called from Shiny APP
+\arguments{
+\item{n_patients}{Integer. Number of patients to simulate per PSA sample.
+Defaults to the value of \code{n_patients} in the calling environment.}
+
+\item{n_samples}{Integer. Number of PSA samples (simulations) to run.
+Defaults to the value of \code{n_samples} in the calling environment.}
 }
-\details{
-For quick deployment, also used in ShinyApp.
+\description{
+Executes the RRMS DES model for a specified number of patients and
+probabilistic sensitivity analysis (PSA) samples using the WARDEN
+simulation framework. Results are written to the global environment
+for downstream use in the Shiny application or interactive analysis.
+}
+\examples{
+\dontrun{
+rrmsdessetup(
+  drc          = 0.035,
+  drq          = 0.035,
+  time_horizon = 70,
+  p_eid        = 0,
+  jcvtest_cost = 0
+)
+
+rrmsdesmodel(n_patients = 10, n_samples = 100)
+
+# Results are now available in the global environment
+ipd <- msdes::summarise_ipd(
+  res_list   = results[[1]],
+  n_samples  = 100,
+  n_patients = 10
+)
+}
+
+
+}
+\seealso{
+\code{\link[msdes]{rrmsdessetup}},
+\code{\link[msdes]{summarise_ipd}},
+\code{\link[msdes]{plot_mortality_curves}},
+\code{\link[WARDEN]{run_sim_new}}
 }

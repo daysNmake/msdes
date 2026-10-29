@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_inputs.R
 \name{gen_inputs}
 \alias{gen_inputs}
-\title{generate inputs}
+\title{Generate RRMS DES Model Inputs}
 \usage{
 gen_inputs(
   drc = drc,
@@ -13,24 +13,181 @@ gen_inputs(
 )
 }
 \arguments{
-\item{drc}{discount rate for costs}
+\item{drc}{Numeric. Annual discount rate for costs, expressed as a
+proportion (e.g. \code{0.035} for 3.5\\%).}
 
-\item{drq}{discount rate for qalys}
+\item{drq}{Numeric. Annual discount rate for QALYs, expressed as a
+proportion (e.g. \code{0.035} for 3.5\\%).}
 
-\item{time_horizon}{the duration of the patients' life in the model}
+\item{time_horizon}{Integer. Model time horizon in years.}
 
-\item{p_eid}{proportion pf patients treated with Natalizumab Extended Interval Dosing}
+\item{p_eid}{Numeric. Proportion of patients receiving extended
+interval dosing (EID) of Natalizumab, expressed as a proportion
+(e.g. \code{0.6} for 60\\%). Set to \code{0} to assume standard dosing
+for all patients.}
 
-\item{jcvtest_cost}{JCV test cost assumption}
+\item{jcvtest_cost}{Numeric. Unit cost (£) of a JC virus (JCV) antibody
+test. Set to \code{0} if the test is assumed to be provided free of
+charge (e.g. via manufacturer home service). The private cost is £247.}
 }
 \value{
-a list of inputs
+A named list of model inputs. Key elements include:
+\describe{
+\item{\code{initial_age}}{Numeric. Baseline age in years.}
+\item{\code{time_horizon}}{Integer. Model time horizon in years.}
+\item{\code{prop_female}}{Numeric. Proportion of patients who are female
+(0.70).}
+\item{\code{sd_psa}}{Numeric. Default PSA standard deviation (10).}
+\item{\code{p_eid}}{Numeric. Proportion on extended interval dosing.}
+\item{\code{drc}, \code{drq}}{Numeric. Discount rates for costs and
+QALYs.}
+\item{\code{jcvtest_cost}}{Numeric. JCV test unit cost (£).}
+\item{\code{m_n_patients_edss}}{Matrix. Baseline EDSS distribution from
+the MS Registry.}
+\item{\code{df_c_tx}, \code{df_c_tx_admin},
+\code{df_c_tx_monitor}}{Data frames of annual treatment, administration,
+and monitoring costs per DMT, adjusted for EID and JCV test assumptions.}
+\item{\code{df_c_tx_load}}{Data frame of annual treatment scheduled load
+factors for years 1–5.}
+\item{\code{v_smr_severity_harding}}{Matrix. Excess all-cause mortality
+SMRs by EDSS severity (Harding et al.).}
+\item{\code{m_proportion_ontrtline}}{Matrix. Proportions of patients on
+2nd and 3rd line treatment.}
+\item{\code{v_tto_edss_increase_harrms_mu},
+\code{m_tto_edss_increase_harrms_sigma}}{Time-to-event parameters for
+EDSS increase in HARRMS patients (MS Registry).}
+\item{\code{v_tto_edss_increase_rrms_mu},
+\code{m_tto_edss_increase_rrms_sigma}}{Time-to-event parameters for
+EDSS increase in RRMS patients.}
+\item{\code{v_tto_edss_increase_spms_mu},
+\code{m_tto_edss_increase_spms_sigma}}{Time-to-event parameters for
+EDSS increase in SPMS patients.}
+\item{\code{v_tto_edss_decrease_rrms_mu},
+\code{m_tto_edss_decrease_rrms_sigma}}{Time-to-event parameters for
+EDSS decrease in RRMS patients.}
+\item{\code{v_tto_edss_decrease_spms_mu},
+\code{m_tto_edss_decrease_spms_sigma}}{Time-to-event parameters for
+EDSS decrease in SPMS patients.}
+\item{\code{v_tto_relapse_harrms_mu},
+\code{tto_relapse_harrms_sigma}}{Time-to-event parameters for relapse
+in HARRMS patients.}
+\item{\code{v_tto_relapse_spms_mu},
+\code{m_tto_relapse_spms_sigma}}{Time-to-event parameters for relapse
+in SPMS patients.}
+\item{\code{v_tto_sp_conversion_harrms_mu},
+\code{m_tto_sp_conversion_harrms_sigma}}{Time-to-event parameters for
+secondary progressive conversion in HARRMS patients.}
+\item{\code{initial_spms_prop}}{Numeric. Baseline proportion of patients
+with SPMS (0).}
+\item{\code{p_relapse_hospital}}{Numeric. Proportion of relapses leading
+to hospital admission (Hawton et al. 2026).}
+\item{\code{sae_names}}{Character vector of serious adverse event names
+from AFFIRM.}
+\item{\code{n_sae}}{Integer. Number of serious adverse events in the
+model.}
+\item{\code{v_weight_sae}}{Numeric vector. Weights for SAE cost and
+utility calculations.}
+\item{\code{m_saes}}{Matrix. SAE incidence on Natalizumab from AFFIRM
+(Polman 2006).}
+\item{\code{v_smr}}{Numeric vector. Excess all-cause mortality SMRs
+(Jick 2014).}
+\item{\code{m_r_mortality}}{Matrix. ONS all-cause mortality rates by age,
+male, and female.}
+\item{\code{m_c_edss_rrms}, \code{m_c_edss_spms}}{Matrices of direct
+medical costs by EDSS state for RRMS and SPMS (Tyas et al. 2005,
+inflated to 2022/23).}
+\item{\code{df_c_spms}}{Matrix of SPMS treatment costs.}
+\item{\code{p_siponimod}}{Numeric. Proportion treated with Siponimod
+based on MS Registry data (0.557).}
+\item{\code{m_c_relapse}}{Matrix of annualised relapse costs (Hawton
+2016, inflated to 2023).}
+\item{\code{df_c_sae}}{Matrix of serious adverse event costs (MS-MTA
+report).}
+\item{\code{m_u_edss_rrms}, \code{m_u_edss_spms}}{Matrices of EDSS
+utilities for RRMS and SPMS (Orme).}
+\item{\code{df_u_relapse}}{Data frame of relapse utilities.}
+\item{\code{m_u_carer}}{Matrix of carer disutilities.}
+\item{\code{df_u_sae}}{Matrix of serious adverse event disutilities
+(MS-MTA report).}
+\item{\code{m_discontinuation}}{Matrix of baseline discontinuation rates
+(AFFIRM and Antilope).}
+\item{\code{m_hr_rrms_cdp3_fe}}{Matrix. CDP3 NMA hazard ratios (mean,
+SD).}
+\item{\code{m_hr_rrms_cdp6_fe}}{Matrix. CDP6 NMA hazard ratios (mean,
+SD).}
+\item{\code{m_hr_rrms_arr_fe}}{Matrix. ARR NMA rate ratios (mean, SD).}
+\item{\code{m_hr_rrms_saes_fe}}{Matrix. SAE NMA rate ratios (mean, SD).}
+\item{\code{m_hr_rrms_discontinuation_fe}}{Matrix. Discontinuation NMA
+hazard ratios (mean, SD).}
+}
 }
 \description{
-\code{gen_inputs()} generates model inputs from saved data and returns a list with the data required for the model to run.
+Generates all model inputs from package data and user-specified assumptions,
+returning a named list consumed by \code{\link[msdes]{rrmsdessetup}} and
+subsequently passed to \code{\link[msdes]{rrmsdesmodel}} via the global
+\code{inputs} object.
 }
 \details{
-Stored within the function are all the default values of the inputs, some parameters are modifiable by user here as described below.
-The generated inputs will be called and processed by \code{\link[=gen_common_all_inputs]{gen_common_all_inputs()}} to specify common and \code{\link[=gen_common_all_inputs]{gen_common_all_inputs()}} unique patient inputs,
-by \code{\link[=gen_init_events]{gen_init_events()}} to set initial and \code{\link[=gen_react_events]{gen_react_events()}} reaction events. Parameters called by the model are specified here, they can be modified  or new ones can be added.
+All default parameter values are stored within this function. The following
+processing steps are performed before inputs are returned:
+
+\strong{Population}
+\itemize{
+\item Baseline age is drawn from \code{Normal(36, 8/36)} reflecting both
+arms of the AFFIRM trial (N = 942).
+\item Proportion female set to 0.70 (n = 660, AFFIRM).
+\item PSA standard deviation set to 1/10 of the mean (\code{sd_psa = 10})
+where uncertainty is not reported.
+}
+
+\strong{Treatment costs (\code{df_c_tx}, \code{df_c_tx_admin},
+\code{df_c_tx_monitor})}
+\itemize{
+\item Row 3 is dropped from each cost matrix and columns are restricted to
+active treatment names in \code{v_treatment_names}.
+\item Natalizumab IV and SC (columns 1–4) are adjusted for the proportion
+on EID using a 5.55-week interval dosing schedule
+(\code{round(52/5.55, 2)/13}).
+\item Administration costs for Natalizumab SC in year 1 and year 2 are
+scaled by \code{s_c_tx_adminyr1_natsc} and \code{s_c_tx_adminyr2_natsc}
+respectively (both defaulting to 0.5).
+\item Zero administration costs are set to 0.1 to prevent \code{NaN}
+values in downstream calculations.
+\item Monitoring costs for all four Natalizumab formulations are reduced
+by £247 and replaced with \code{jcvtest_cost}.
+}
+
+\strong{Mortality}
+\itemize{
+\item  standardised mortality ratios (SMR) EDSS 8 and 9 are assumed equal
+to EDSS 7 (Harding et al.).
+\item ONS all-cause mortality rates by age, male, ands ex.
+}
+
+\strong{Relapse costs}
+\itemize{
+\item Annualisedrelapse costs (Hawton 2016, inflated to 2023)
+}
+
+\strong{NMA data}
+\itemize{
+\item Mean and standard deviation columns are extracted from each NMA
+result object (CDP3, CDP6, ARR, SAEs, discontinuation)
+}
+}
+\examples{
+\dontrun{
+inputs <- gen_inputs(
+  drc          = 0.035,
+  drq          = 0.035,
+  time_horizon = 70,
+  p_eid        = 0,
+  jcvtest_cost = 0
+)
+
+# Access individual inputs
+inputs[["df_c_tx"]]
+inputs[["time_horizon"]]
+}
+
 }

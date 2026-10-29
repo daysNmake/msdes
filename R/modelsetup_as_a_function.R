@@ -1,8 +1,39 @@
-#' SetupModel as a function
-#' 
-#' `rrmsdessetup()`RRMS DES model inputs written as a function to be called from Shiny APP
-#' 
-#' For quick deployment, also used in ShinyApp.
+#' Set Up RRMS DES Model Inputs
+#'
+#' Initialises all structural model parameters, treatment definitions, event
+#' states, and cost and utility inputs required to run the RRMS DES model.
+#' Must be called before \code{\link[msdes]{rrmsdesmodel}}. 
+#'
+#' @param drc          Numeric. Annual discount rate for costs, expressed as a
+#'   proportion (e.g. \code{0.035} for 3.5\%).
+#' @param drq          Numeric. Annual discount rate for QALYs, expressed as a
+#'   proportion (e.g. \code{0.035} for 3.5\%).
+#' @param time_horizon Integer. Model time horizon in years.
+#' @param p_eid        Numeric. Proportion of patients receiving extended
+#'   interval dosing (EID) of Natalizumab, expressed as a proportion
+#'   (e.g. \code{0.6} for 60\%). Set to \code{0} to assume standard dosing
+#'   for all patients.
+#' @param jcvtest_cost Numeric. Unit cost (£) of a JC virus (JCV) antibody
+#'   test. Set to \code{0} if the test is assumed to be provided free of
+#'   charge (e.g. via manufacturer home service).
+#'
+#' @seealso
+#'   \code{\link[msdes]{rrmsdesmodel}},
+#'   \code{\link[msdes]{summarise_ipd}},
+#'   \code{\link[msdes]{plot_mortality_curves}}
+#'   
+#'#' @examples
+#' \dontrun{
+#' rrmsdessetup(
+#'   drc          = 0.035,
+#'   drq          = 0.035,
+#'   time_horizon = 70,
+#'   p_eid        = 0,
+#'   jcvtest_cost = 0
+#' )
+#'
+#' rrmsdesmodel(n_patients = 10, n_samples = 100)
+#' }
 #' 
 #' @export
 #model setup with inputs allowing for reactive changes to take place in shiny

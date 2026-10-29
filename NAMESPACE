@@ -6,8 +6,25 @@ export(gen_init_events)
 export(gen_inputs)
 export(gen_react_events)
 export(gen_unique_pt_inputs)
+export(plot_mortality_curves)
 export(rrmsdesmodel)
 export(rrmsdessetup)
 export(run_sim_new)
 export(summarise_ce_results)
+export(summarise_ipd)
 export(summarise_samples)
+importFrom(ggplot2,
+  aes,
+  geom_step,
+  ggplot,
+  labs,
+  scale_linetype_manual,
+  theme,
+  theme_bw,
+  xlim,
+  ylim
+)
+importFrom(survival,
+  Surv,
+  survfit
+)

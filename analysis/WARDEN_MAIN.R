@@ -142,49 +142,22 @@ total_runtime <- system.time({
 
 
 # Summarise the results
-
-dim_results <- c(n_samples, n_treatments, n_patients)
-trt_idx <- setNames(seq_along(v_treatment_names), v_treatment_names)
-total_costs_ipd <- total_qalys_ipd <-  array(
-  NA_real_,
-  dim = dim_results,
-  dimnames = list(NULL, v_treatment_names, NULL)
-)
-
-for (i_sample in seq_len(n_samples)) {
-  
-  df <- results[[1]][[i_sample]]$merged_df
-  
-  # Keep only final ("death") rows
-  df <- df[df$evtname == "death", ]
-  
-  idx <- cbind(
-    i_sample,
-    trt_idx[df$arm],
-    df$pat_id
-  )
-  
-  total_costs_ipd[idx]         <- df$total_costs
-  total_qalys_ipd[idx]         <- df$total_qalys
-}
-
-
 options(scipen = 999)
-total_costs <- apply(total_costs_ipd, c(1, 2), mean)
-total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
-
+ipdcesummary <- summarise_ipd(results[[1]], n_samples, n_patients)
 
 #drop natalizumab-biosimilar-SC and cladrebiene
-total_costs <- total_costs[,-c(4,5)]
-total_qalys <- total_qalys[,-c(4,5)]
+total_costs <- ipdcesummary$costs[,-c(4,5)]
+total_qalys <- ipdcesummary$qalys[,-c(4,5)]
 
 results_table <- summarise_ce_results(wtp1 = 25000, wtp2 = 35000,
                                       total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
 
+
+
 View(results_table)
-#write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
+
 
 #plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]
@@ -208,37 +181,49 @@ ceac.plot(des_multi_ce, graph = "ggplot2",
 )
 
 
-
 #compare key events by treatment groups
-modelresults_summarised <- summary_results_sim(results[[1]])
-proportion_spms  <- modelresults_summarised["spms_flag",]
-average_numberof_relapses <- modelresults_summarised["n_relapse",] 
-average_numberof_edssincreases <- modelresults_summarised["n_edssinc_evts",] 
-average_numberof_edssdecreases<- modelresults_summarised["n_edssdec_evts",] 
-average_numberof_saes<- modelresults_summarised["n_sae_evts",] 
-final_edss_value <- modelresults_summarised["edss_value",]
-average_numberof_treatmentswitches <- modelresults_summarised["n_switch",] 
-average_numberof_yearsontreatment <- modelresults_summarised["years_on_treatment",] 
-average_numberof_yearson2ndline<- modelresults_summarised["t_2ndline",] 
-average_numberof_yearson3rdline<- modelresults_summarised["t_3rdline",] 
-average_numberof_yearson4thline<- modelresults_summarised["t_4thline",]
+ms <- summary_results_sim(results[[1]])
 
-key_events_trt_grps <- as.data.frame(rbind(
-  proportion_spms,   average_numberof_relapses, 
-  average_numberof_edssincreases,   average_numberof_edssdecreases, 
-  final_edss_value,   average_numberof_saes,
-  average_numberof_treatmentswitches,  average_numberof_yearsontreatment,
-  average_numberof_yearson2ndline,  average_numberof_yearson3rdline,
-  average_numberof_yearson4thline),
-  row.names=c("proportion with spms", "average no. of relapses", 
-              "average no. of edss increases", "average no. of edss decreases", 
-              "final edss value", "average no. of SAEs",
-              "average no. of treatment switches", "average no. of years on treatment",
-              "average no. of years on 2ndline", "average no. of years on 3rdline",
-              "average no. of years on 4thline")
+key_df <- as.data.frame(
+  rbind(
+    ms["spms_flag",],
+    ms["n_relapse",],
+    ms["n_edssinc_evts",],
+    ms["n_edssdec_evts",],
+    ms["edss_value",],
+    ms["n_sae_evts",],
+    ms["n_switch",],
+    ms["years_on_treatment",],
+    ms["t_2ndline",],
+    ms["t_3rdline",],
+    ms["t_4thline",]
+  ),
+  row.names = c(
+    "Proportion with SPMS",
+    "Average no. of relapses",
+    "Average no. of EDSS increases",
+    "Average no. of EDSS decreases",
+    "Final EDSS value",
+    "Average no. of SAEs",
+    "Average no. of treatment switches",
+    "Average years on treatment",
+    "Average years on 2nd line",
+    "Average years on 3rd line",
+    "Average years on 4th line"
+  )
 )
-View(key_events_trt_grps)
 
+View(key_df)
+
+# plot mortality
+
+plot_mortality_curves(
+  runresults    = results[[1]],
+  n_samples     = n_samples,
+  n_patients    = n_patients,
+  n_treatments  = n_treatments,
+  trt_names     = v_treatment_names
+)
 
 #  VOI analysis
 #total EVPI
