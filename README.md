@@ -3,8 +3,6 @@
 
 # msdes
 
-## package info
-
 msdes is package version of the MS-MTA (NICE appraisal version). The
 model is documented at: <https://daysnmake.github.io/msdes/>
 
@@ -31,7 +29,14 @@ By default `n_patients` and `n_samples` are set to `10` but it is
 advised to try running this with a larger number as a test (e.g., `100`
 each). Running with the full `1000` each may take up to 30 hours.
 Convergence checks found that `100` each was sufficient for
-experimentation.
+experimentation
+
+## To run the model on the web
+
+Navigate here:
+<https://01a17047-ff37-58f7-1edc-21c85cbda23a.share.connect.posit.cloud/>
+
+Note this is a free posit account with a limited number of tokens for usage.
 
 ## About the project
 
@@ -54,3 +59,7 @@ experimentation.
   <https://github.com/r-hta/r-hta-workshop-2025/blob/main/README.md>
 
 - Presentation Recording <https://www.youtube.com/watch?v=MhyEtZG_52Q>
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23643283.svg)](https://doi.org/10.5281/zenodo.23643283)
+
