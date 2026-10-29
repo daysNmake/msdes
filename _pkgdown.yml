@@ -11,10 +11,12 @@ reference:
   - gen_init_events
   - gen_react_events
   - draw_tte_new_warden
+  - plot_mortality_curves
   - rrmsdessetup
   - rrmsdesmodel
   - run_sim_new
   - summarise_ce_results
+  - summarise_ipd
   - summarise_samples
 - title: Data
   desc: Datasets included in the package

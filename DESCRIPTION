@@ -31,4 +31,6 @@ Imports:
     voi,
     VGAM,
     WARDEN,
-    utils
+    utils,
+    ggplot2,
+    survival
