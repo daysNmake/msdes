@@ -201,75 +201,46 @@ total_runtime <- system.time({
 })
 #> Analysis number: 1
 #> Simulation number: 1
-#> Time to run simulation 1: 0.52s
+#> Time to run simulation 1: 0.57s
 #> Simulation number: 2
-#> Time to run simulation 2: 0.57s
+#> Time to run simulation 2: 0.55s
 #> Simulation number: 3
-#> Time to run simulation 3: 0.49s
+#> Time to run simulation 3: 0.47s
 #> Simulation number: 4
-#> Time to run simulation 4: 0.49s
+#> Time to run simulation 4: 0.51s
 #> Simulation number: 5
-#> Time to run simulation 5: 0.58s
+#> Time to run simulation 5: 0.55s
 #> Simulation number: 6
-#> Time to run simulation 6: 0.76s
+#> Time to run simulation 6: 0.74s
 #> Simulation number: 7
-#> Time to run simulation 7: 0.51s
+#> Time to run simulation 7: 0.49s
 #> Simulation number: 8
-#> Time to run simulation 8: 0.47s
+#> Time to run simulation 8: 0.48s
 #> Simulation number: 9
-#> Time to run simulation 9: 0.52s
+#> Time to run simulation 9: 0.49s
 #> Simulation number: 10
-#> Time to run simulation 10: 0.55s
-#> Time to run analysis 1: 5.46s
-#> Total time to run: 5.46s
+#> Time to run simulation 10: 0.48s
+#> Time to run analysis 1: 5.34s
+#> Total time to run: 5.35s
 #> Simulation finalized;
 ```
 
-### Plot Results
+### view Results
 
 ``` r
 
-# Summarise the results
-
-dim_results <- c(n_samples, n_treatments, n_patients)
-trt_idx <- setNames(seq_along(v_treatment_names), v_treatment_names)
-total_costs_ipd <- total_qalys_ipd <-  array(
-  NA_real_,
-  dim = dim_results,
-  dimnames = list(NULL, v_treatment_names, NULL)
-)
-
-for (i_sample in seq_len(n_samples)) {
-  
-  df <- results[[1]][[i_sample]]$merged_df
-  
-  # Keep only final ("death") rows
-  df <- df[df$evtname == "death", ]
-  
-  idx <- cbind(
-    i_sample,
-    trt_idx[df$arm],
-    df$pat_id
-  )
-  
-  total_costs_ipd[idx]         <- df$total_costs
-  total_qalys_ipd[idx]         <- df$total_qalys
-}
-
-
 options(scipen = 999)
-total_costs <- apply(total_costs_ipd, c(1, 2), mean)
-total_qalys <- apply(total_qalys_ipd, c(1, 2), mean)
-
+ipdcesummary <- summarise_ipd(results[[1]], n_samples, n_patients)
 
 #drop natalizumab-biosimilar-SC and cladrebiene
-total_costs <- total_costs[,-c(4,5)]
-total_qalys <- total_qalys[,-c(4,5)]
+total_costs <- ipdcesummary$costs[,-c(4,5)]
+total_qalys <- ipdcesummary$qalys[,-c(4,5)]
 
 results_table <- summarise_ce_results(wtp1 = 25000, wtp2 = 35000,
                                       total_qalys = total_qalys, 
                                       total_costs = total_costs,
                                       reference = "Natalizumab-IV")
+
 
 knitr::kable(results_table) 
 ```
@@ -283,11 +254,10 @@ knitr::kable(results_table)
 | Ofatumumab | 376,459.79 (333,842.01, 424,864.00) | 8.88 (7.22, 10.29) | -154,457.35 (-231,609.74, -80,398.90) | -65,656.38 (-156,666.10, 21,522.09) | 24,476.14 (-37,033.99, 65,102.60) | -0.65 (-1.87, 0.46) | -40,614.58 (-88,075.19, 21,261.62) | -47,069.95 (-104,895.79, 16,015.75) | 0 | 0 |
 | Ocrelizumab | 398,560.74 (342,704.38, 444,491.77) | 9.44 (6.78, 12.89) | -162,498.18 (-219,503.94, -102,139.76) | -68,073.15 (-147,570.83, 21,565.49) | 46,577.10 (-2,960.08, 108,924.42) | -0.083 (-1.78, 3.16) | -48,655.40 (-116,194.26, 9,154.72) | -49,486.73 (-123,248.85, 40,781.92) | 0 | 0 |
 
+\##plot results
+
 ``` r
 
-#write.csv(results_table, paste0(c("results/results warden determenistic", n_samples, "x", n_patients, ".csv"), collapse = " "))
-
-#plot results
 v_results_treatment_names<- v_treatment_names[-c(4,5)]
 
 # Create a BCEA object
@@ -317,59 +287,81 @@ ceac.plot(des_multi_ce, graph = "ggplot2",
 
 ![](simple_files/figure-html/plot_results-2.png)
 
+### Key events and mortality
+
 ``` r
 
 
-
-
 #compare key events by treatment groups
-modelresults_summarised <- summary_results_sim(results[[1]])
-proportion_spms  <- modelresults_summarised["spms_flag",]
-average_numberof_relapses <- modelresults_summarised["n_relapse",] 
-average_numberof_edssincreases <- modelresults_summarised["n_edssinc_evts",] 
-average_numberof_edssdecreases<- modelresults_summarised["n_edssdec_evts",] 
-average_numberof_saes<- modelresults_summarised["n_sae_evts",] 
-final_edss_value <- modelresults_summarised["edss_value",]
-average_numberof_treatmentswitches <- modelresults_summarised["n_switch",] 
-average_numberof_yearsontreatment <- modelresults_summarised["years_on_treatment",] 
-average_numberof_yearson2ndline<- modelresults_summarised["t_2ndline",] 
-average_numberof_yearson3rdline<- modelresults_summarised["t_3rdline",] 
-average_numberof_yearson4thline<- modelresults_summarised["t_4thline",]
+ms <- summary_results_sim(results[[1]])
 
-key_events_trt_grps <- as.data.frame(rbind(
-  proportion_spms,   average_numberof_relapses, 
-  average_numberof_edssincreases,   average_numberof_edssdecreases, 
-  final_edss_value,   average_numberof_saes,
-  average_numberof_treatmentswitches,  average_numberof_yearsontreatment,
-  average_numberof_yearson2ndline,  average_numberof_yearson3rdline,
-  average_numberof_yearson4thline),
-  row.names=c("proportion with spms", "average no. of relapses", 
-              "average no. of edss increases", "average no. of edss decreases", 
-              "final edss value", "average no. of SAEs",
-              "average no. of treatment switches", "average no. of years on treatment",
-              "average no. of years on 2ndline", "average no. of years on 3rdline",
-              "average no. of years on 4thline")
+key_df <- as.data.frame(
+  rbind(
+    ms["spms_flag",],
+    ms["n_relapse",],
+    ms["n_edssinc_evts",],
+    ms["n_edssdec_evts",],
+    ms["edss_value",],
+    ms["n_sae_evts",],
+    ms["n_switch",],
+    ms["years_on_treatment",],
+    ms["t_2ndline",],
+    ms["t_3rdline",],
+    ms["t_4thline",]
+  ),
+  row.names = c(
+    "Proportion with SPMS",
+    "Average no. of relapses",
+    "Average no. of EDSS increases",
+    "Average no. of EDSS decreases",
+    "Final EDSS value",
+    "Average no. of SAEs",
+    "Average no. of treatment switches",
+    "Average years on treatment",
+    "Average years on 2nd line",
+    "Average years on 3rd line",
+    "Average years on 4th line"
+  )
 )
-knitr::kable(key_events_trt_grps)
+
+knitr::kable(key_df)
 ```
 
 |  | Natalizumab-IV | Natalizumab-SC | Natalizumab biosimilar-IV | Natalizumab biosimilar-SC | Cladribine | Ublituximab | Ofatumumab | Ocrelizumab |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| proportion with spms | 0.29 (0.1; 0.5) | 0.32 (0.1; 0.6) | 0.35 (0.1; 0.8) | 0.26 (0; 0.6) | 0.35 (0.2; 0.7) | 0.34 (0.1; 0.5) | 0.35 (0.2; 0.5) | 0.27 (0; 0.5) |
-| average no. of relapses | 2.48 (1; 4.3) | 2.13 (1.2; 3.7) | 2.51 (0.8; 4.1) | 2.23 (0.9; 3.2) | 2.51 (1.3; 3.7) | 2.25 (0.7; 3.4) | 2.5 (1; 4.3) | 2.57 (1.3; 5.2) |
-| average no. of edss increases | 2.66 (1.5; 4) | 2.31 (1; 4.1) | 2.27 (1.1; 3.8) | 2.58 (1.2; 4.6) | 3 (1.2; 6.3) | 2.71 (1.1; 3.8) | 2.39 (0.9; 4.2) | 2.34 (1.4; 3.8) |
-| average no. of edss decreases | 1.74 (1.4; 2.3) | 1.59 (1.2; 2) | 1.5 (1; 1.9) | 1.66 (1.4; 2) | 1.63 (1; 2.8) | 1.6 (1.1; 2.2) | 1.55 (1; 2.2) | 1.65 (1; 2.3) |
-| final edss value | 4.65 (3; 5.6) | 4.61 (3.2; 6.2) | 4.7 (3.7; 6.4) | 4.69 (2.7; 6) | 5.18 (4; 6.7) | 4.77 (2.9; 5.9) | 4.76 (3.9; 5.9) | 4.6 (3.1; 6) |
-| average no. of SAEs | 4.09 (2.3; 7.2) | 3.58 (2.8; 7) | 4.65 (2.6; 6.6) | 4.1 (3.2; 5.9) | 4.12 (2.7; 6.8) | 4.02 (2.5; 7.4) | 7.42 (3.4; 20.8) | 4.39 (2.4; 6.4) |
-| average no. of treatment switches | 1.11 (0.4; 1.9) | 1.19 (0.6; 1.8) | 1.12 (0.6; 1.9) | 1.17 (0.6; 1.8) | 1.14 (0.6; 1.7) | 1.12 (0.4; 1.7) | 1.25 (0.5; 2.2) | 1.11 (0.6; 1.9) |
-| average no. of years on treatment | 20.75 (15.1; 30.7) | 18.36 (8.7; 24.5) | 20.85 (11.9; 35.7) | 19.54 (12.6; 31.1) | 15.02 (3.3; 23.8) | 18.33 (9.9; 25.1) | 19.33 (10.3; 23.1) | 18.19 (11.4; 24.7) |
-| average no. of years on 2ndline | 19.43 (11.3; 32.4) | 16.49 (10; 24.7) | 17.65 (6.4; 32.8) | 18.79 (13.1; 28.5) | 14.58 (7.7; 19.7) | 17.37 (7.5; 26.9) | 15.58 (10.1; 21.2) | 18.06 (9; 28.1) |
-| average no. of years on 3rdline | 6.97 (1.4; 12.2) | 5.53 (2.2; 9.9) | 5.85 (2; 14.4) | 6.26 (0.6; 14.3) | 5.36 (1.6; 13.9) | 6.5 (2.8; 14.8) | 6.17 (2.5; 15.8) | 6.75 (2.9; 11.4) |
-| average no. of years on 4thline | 4.78 (0.9; 12.2) | 5.27 (0; 15.9) | 4 (0; 9.8) | 4.83 (1.9; 8) | 3.6 (0.1; 7.4) | 4.26 (0; 7) | 5.21 (0; 12.2) | 4.34 (0.2; 7) |
+| Proportion with SPMS | 0.29 (0.1; 0.5) | 0.32 (0.1; 0.6) | 0.35 (0.1; 0.8) | 0.26 (0; 0.6) | 0.35 (0.2; 0.7) | 0.34 (0.1; 0.5) | 0.35 (0.2; 0.5) | 0.27 (0; 0.5) |
+| Average no. of relapses | 2.48 (1; 4.3) | 2.13 (1.2; 3.7) | 2.51 (0.8; 4.1) | 2.23 (0.9; 3.2) | 2.51 (1.3; 3.7) | 2.25 (0.7; 3.4) | 2.5 (1; 4.3) | 2.57 (1.3; 5.2) |
+| Average no. of EDSS increases | 2.66 (1.5; 4) | 2.31 (1; 4.1) | 2.27 (1.1; 3.8) | 2.58 (1.2; 4.6) | 3 (1.2; 6.3) | 2.71 (1.1; 3.8) | 2.39 (0.9; 4.2) | 2.34 (1.4; 3.8) |
+| Average no. of EDSS decreases | 1.74 (1.4; 2.3) | 1.59 (1.2; 2) | 1.5 (1; 1.9) | 1.66 (1.4; 2) | 1.63 (1; 2.8) | 1.6 (1.1; 2.2) | 1.55 (1; 2.2) | 1.65 (1; 2.3) |
+| Final EDSS value | 4.65 (3; 5.6) | 4.61 (3.2; 6.2) | 4.7 (3.7; 6.4) | 4.69 (2.7; 6) | 5.18 (4; 6.7) | 4.77 (2.9; 5.9) | 4.76 (3.9; 5.9) | 4.6 (3.1; 6) |
+| Average no. of SAEs | 4.09 (2.3; 7.2) | 3.58 (2.8; 7) | 4.65 (2.6; 6.6) | 4.1 (3.2; 5.9) | 4.12 (2.7; 6.8) | 4.02 (2.5; 7.4) | 7.42 (3.4; 20.8) | 4.39 (2.4; 6.4) |
+| Average no. of treatment switches | 1.11 (0.4; 1.9) | 1.19 (0.6; 1.8) | 1.12 (0.6; 1.9) | 1.17 (0.6; 1.8) | 1.14 (0.6; 1.7) | 1.12 (0.4; 1.7) | 1.25 (0.5; 2.2) | 1.11 (0.6; 1.9) |
+| Average years on treatment | 20.75 (15.1; 30.7) | 18.36 (8.7; 24.5) | 20.85 (11.9; 35.7) | 19.54 (12.6; 31.1) | 15.02 (3.3; 23.8) | 18.33 (9.9; 25.1) | 19.33 (10.3; 23.1) | 18.19 (11.4; 24.7) |
+| Average years on 2nd line | 19.43 (11.3; 32.4) | 16.49 (10; 24.7) | 17.65 (6.4; 32.8) | 18.79 (13.1; 28.5) | 14.58 (7.7; 19.7) | 17.37 (7.5; 26.9) | 15.58 (10.1; 21.2) | 18.06 (9; 28.1) |
+| Average years on 3rd line | 6.97 (1.4; 12.2) | 5.53 (2.2; 9.9) | 5.85 (2; 14.4) | 6.26 (0.6; 14.3) | 5.36 (1.6; 13.9) | 6.5 (2.8; 14.8) | 6.17 (2.5; 15.8) | 6.75 (2.9; 11.4) |
+| Average years on 4th line | 4.78 (0.9; 12.2) | 5.27 (0; 15.9) | 4 (0; 9.8) | 4.83 (1.9; 8) | 3.6 (0.1; 7.4) | 4.26 (0; 7) | 5.21 (0; 12.2) | 4.34 (0.2; 7) |
 
 ``` r
 
 
+# plot mortality
+
+plot_mortality_curves(
+  runresults    = results[[1]],
+  n_samples     = n_samples,
+  n_patients    = n_patients,
+  n_treatments  = n_treatments,
+  trt_names     = v_treatment_names
+)
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_step()`).
+```
+
+![](simple_files/figure-html/key_events_and_mortality-1.png)
+
+### Value of Information Analysis
+
+``` r
 
 #  VOI analysis
 #total EVPI
@@ -394,12 +386,12 @@ knitr::kable(total_evpi)
 plot(x=total_evpi$k, y=total_evpi$evpi, type="l")
 ```
 
-![](simple_files/figure-html/plot_results-3.png)
+![](simple_files/figure-html/value_of_information_analysis-1.png)
 
 ``` r
 
 
-# Total EVPPI
+# Total EVPPI - Not run in vigneette ae results are too wide to plot in dicument
 # All  parameters excluding hazard ratios that are constant as it causes errors
 # df_inputs <- as.data.frame(results[["input_matrix"]][,-c(73:76,81:84,89:92,79:101)])
 # parameters <- as.list(colnames(df_inputs))
@@ -409,12 +401,13 @@ plot(x=total_evpi$k, y=total_evpi$evpi, type="l")
 #                                          k = c(25000, 35000)),
 #                           inputs = df_inputs,
 #                           pars = parameters,
-#                           method = "bart", 
-#                           verbose = TRUE)
+#                           method = "bart",
+#                           verbose = FALSE)
 # 
 # knitr::kable(total_evppi)
-# 
-# #plot in base R split ober A and B panels as there are too many parameters to plot
+
+#plot in base R split over A and B panels as there are too many parameters to plot
+
 # total_evppi_25k_a <- total_evppi$evppi[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
 # names(total_evppi_25k_a) <- total_evppi$pars[total_evppi$k ==25000 & total_evppi$evppi > mean(total_evppi$evppi)]
 # par(las=1, bg="white", mai=c(0.85, 4, 0.5, 0.5))

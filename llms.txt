@@ -69,25 +69,29 @@ usage.
 Functions exported by the package
 
 - [`gen_inputs()`](https://daysnmake.github.io/msdes/reference/gen_inputs.md)
-  : generate inputs
+  : Generate RRMS DES Model Inputs
 - [`gen_common_all_inputs()`](https://daysnmake.github.io/msdes/reference/gen_common_all_inputs.md)
-  : Generate Global inputs
+  : Generate Common Global Model Inputs
 - [`gen_unique_pt_inputs()`](https://daysnmake.github.io/msdes/reference/gen_unique_pt_inputs.md)
-  : Generate Individual inputs
+  : Generate Unique Individual Patient Inputs
 - [`gen_init_events()`](https://daysnmake.github.io/msdes/reference/gen_init_events.md)
-  : Generate initial events
+  : Generate Initial Events for the RRMS DES Model
 - [`gen_react_events()`](https://daysnmake.github.io/msdes/reference/gen_react_events.md)
-  : Generate reaction events
+  : Generate Reaction Events for the RRMS DES Model
 - [`draw_tte_new_warden()`](https://daysnmake.github.io/msdes/reference/draw_tte_new_warden.md)
   : Draw time to Event custom function
+- [`plot_mortality_curves()`](https://daysnmake.github.io/msdes/reference/plot_mortality_curves.md)
+  : Plot Predicted Mortality Over Time by Treatment Arm
 - [`rrmsdessetup()`](https://daysnmake.github.io/msdes/reference/rrmsdessetup.md)
-  : SetupModel as a function
+  : Set Up RRMS DES Model Inputs
 - [`rrmsdesmodel()`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md)
-  : RunModel as a function
+  : Run the RRMS Discrete Event Simulation Model
 - [`run_sim_new()`](https://daysnmake.github.io/msdes/reference/run_sim_new.md)
   : Run Sim new
 - [`summarise_ce_results()`](https://daysnmake.github.io/msdes/reference/summarise_ce_results.md)
   : Summarise Cost-effectiveness results
+- [`summarise_ipd()`](https://daysnmake.github.io/msdes/reference/summarise_ipd.md)
+  : Summarise Individual Patient Data from DES Results
 - [`summarise_samples()`](https://daysnmake.github.io/msdes/reference/summarise_samples.md)
   : Summarise Samples
 
