@@ -35,12 +35,7 @@ Initialises all structural model parameters, treatment definitions, event
 states, and cost and utility inputs required to run the RRMS DES model.
 Must be called before \code{\link[msdes]{rrmsdesmodel}}.
 }
-\seealso{
-\code{\link[msdes]{rrmsdesmodel}},
-\code{\link[msdes]{summarise_ipd}},
-\code{\link[msdes]{plot_mortality_curves}}
-
-#' @examples
+\examples{
 \dontrun{
 rrmsdessetup(
   drc          = 0.035,
@@ -52,4 +47,10 @@ rrmsdessetup(
 
 rrmsdesmodel(n_patients = 10, n_samples = 100)
 }
+
+}
+\seealso{
+\code{\link[msdes]{rrmsdesmodel}},
+\code{\link[msdes]{summarise_ipd}},
+\code{\link[msdes]{plot_mortality_curves}}
 }

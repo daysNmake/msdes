@@ -22,7 +22,7 @@
 #'   \code{\link[msdes]{summarise_ipd}},
 #'   \code{\link[msdes]{plot_mortality_curves}}
 #'   
-#'#' @examples
+#' @examples
 #' \dontrun{
 #' rrmsdessetup(
 #'   drc          = 0.035,
