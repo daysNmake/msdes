@@ -32,5 +32,4 @@ rrmsdessetup(
   [`rrmsdesmodel`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md).
   [`rrmsdesmodel`](https://daysnmake.github.io/msdes/reference/rrmsdesmodel.md),
   [`summarise_ipd`](https://daysnmake.github.io/msdes/reference/summarise_ipd.md),
-  [`plot_mortality_curves`](https://daysnmake.github.io/msdes/reference/plot_mortality_curves.md)\#'
-  @examples
+  [`plot_mortality_curves`](https://daysnmake.github.io/msdes/reference/plot_mortality_curves.md)
