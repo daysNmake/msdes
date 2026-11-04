@@ -2,7 +2,7 @@
 
 library(hexSticker)
 sticker(
-  subplot      = "https://www.bristol.ac.uk/media-library/sites/populationhealth/images/TAG%20icon%20long%2016kb.png",
+  subplot      = "data-raw/TAG NIHR LONG.png",
   s_x          = 1,        # horizontal position of image
   s_y          = 0.75,      # vertical position of image
   s_width      = 0.85,      # image width
