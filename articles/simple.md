@@ -201,27 +201,27 @@ total_runtime <- system.time({
 })
 #> Analysis number: 1
 #> Simulation number: 1
-#> Time to run simulation 1: 1.08s
+#> Time to run simulation 1: 1.06s
 #> Simulation number: 2
-#> Time to run simulation 2: 1.08s
+#> Time to run simulation 2: 1.05s
 #> Simulation number: 3
-#> Time to run simulation 3: 0.96s
+#> Time to run simulation 3: 0.91s
 #> Simulation number: 4
-#> Time to run simulation 4: 0.98s
+#> Time to run simulation 4: 0.95s
 #> Simulation number: 5
-#> Time to run simulation 5: 1.04s
+#> Time to run simulation 5: 1.02s
 #> Simulation number: 6
-#> Time to run simulation 6: 1.22s
+#> Time to run simulation 6: 1.25s
 #> Simulation number: 7
-#> Time to run simulation 7: 0.97s
+#> Time to run simulation 7: 0.91s
 #> Simulation number: 8
-#> Time to run simulation 8: 0.95s
+#> Time to run simulation 8: 0.9s
 #> Simulation number: 9
-#> Time to run simulation 9: 0.98s
+#> Time to run simulation 9: 0.93s
 #> Simulation number: 10
-#> Time to run simulation 10: 0.95s
-#> Time to run analysis 1: 10.22s
-#> Total time to run: 10.22s
+#> Time to run simulation 10: 0.9s
+#> Time to run analysis 1: 9.88s
+#> Total time to run: 9.88s
 #> Simulation finalized;
 ```
 
